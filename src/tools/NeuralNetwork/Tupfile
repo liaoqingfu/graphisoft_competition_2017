@@ -6,4 +6,4 @@ include $(COMPILE_TUP)
 
 include $(ARCHIVE_TUP)
 
-: *.o |> !ar |> %B.a
+: *.o |> !ar |> libNeuralNetwork.a

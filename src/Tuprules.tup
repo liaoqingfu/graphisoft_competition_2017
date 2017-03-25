@@ -18,10 +18,13 @@ TEST_TUP = $(TUP_CWD)/test.tup
 UTIL_DIR = $(TUP_CWD)/util
 
 CPP_UTIL_DIR = $(TUP_CWD)/cpp-util
+CPP_UTIL_LIB = $(CPP_UTIL_DIR)/lib/libcpp-util.a
 
 TOOLS_DIR = $(TUP_CWD)/tools
 NEURAL_NETWORK_DIR = $(TOOLS_DIR)/NeuralNetwork
+NEURAL_NETWORK_LIB = $(NEURAL_NETWORK_DIR)/libNeuralNetwork.a
 GENETIC_LEARNING_DIR = $(TOOLS_DIR)/GeneticLearning
+GENETIC_LEARNING_LIB = $(GENETIC_LEARNING_DIR)/libGeneticLearning.a
 
 CXX = clang++
 LD = $(CXX)

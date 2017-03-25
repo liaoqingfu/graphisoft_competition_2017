@@ -52,4 +52,13 @@ private:
     static constexpr unsigned bestCopies = 1;
 };
 
+struct LearningParameters;
+
+void loadPopulation(const LearningParameters& parameters,
+        GeneticPopulation& population);
+void savePopulation(const LearningParameters& parameters,
+        const GeneticPopulation& population);
+void saveNeuralNetwork(const LearningParameters& parameters,
+        const Genome& genome);
+
 #endif // CREEP_GENETICPOPULATION_HPP

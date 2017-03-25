@@ -1,12 +1,11 @@
-#ifndef CREEP_LEARNINGPARAMETERS_HPP
-#define CREEP_LEARNINGPARAMETERS_HPP
+#ifndef TOOLS_GENETICLEARNING_LEARNINGPARAMETERS_HPP
+#define TOOLS_GENETICLEARNING_LEARNINGPARAMETERS_HPP
 
-#include <thread>
-#include <boost/optional.hpp>
-#include "CommonParameters.hpp"
+#include <string>
 
 struct LearningParameters {
-    CommonParameters commonParameters;
+    unsigned inputNeuronCount = 0;
+    unsigned outputNeuronCount = 0;
 
     //Neural network parameters
     unsigned hiddenLayerCount = 1;
@@ -27,4 +26,4 @@ struct LearningParameters {
     unsigned populationCutoff = 10;
 };
 
-#endif // CREEP_LEARNINGPARAMETERS_HPP
+#endif // TOOLS_GENETICLEARNING_LEARNINGPARAMETERS_HPP

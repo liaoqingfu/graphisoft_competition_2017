@@ -1,0 +1,12 @@
+include_rules
+
+include $(COMPILE_TUP)
+
+INCLUDE_DIRS += -I$(GENETIC_LEARNING_DIR) -I$(NEURAL_NETWORK_DIR) -I$(CPP_UTIL_DIR)/include
+LIBS += -lpthread -lboost_system -lboost_thread -lboost_serialization -lboost_filesystem
+
+: foreach *.cpp |> !cxx |>
+
+include $(LINK_TUP)
+
+: *.o $(GENETIC_LEARNING_LIB) $(NEURAL_NETWORK_LIB) $(CPP_UTIL_LIB) |> !linker |> genetic_test

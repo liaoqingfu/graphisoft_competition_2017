@@ -1,1 +1,1 @@
-!ar = |> ^ AR %o^ $(AR) cru %o %f |>
+!ar = |> ^ AR %o^ $(AR) crs %o %f |>

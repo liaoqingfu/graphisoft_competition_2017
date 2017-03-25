@@ -1,0 +1,3 @@
+[submodule "src/cpp-util"]
+	path = src/cpp-util
+	url = git@github.com:petersohn/cpp-util.git

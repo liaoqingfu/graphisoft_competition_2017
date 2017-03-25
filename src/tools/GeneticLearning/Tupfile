@@ -8,4 +8,4 @@ INCLUDE_DIRS += -I$(NEURAL_NETWORK_DIR)
 
 include $(ARCHIVE_TUP)
 
-: *.o |> !ar |> %B.a
+: *.o |> !ar |> libGeneticLearning.a
