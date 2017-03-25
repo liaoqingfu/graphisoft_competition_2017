@@ -1,5 +1,5 @@
-#ifndef GENOME_HPP
-#define GENOME_HPP
+#ifndef TOOLS_GENETICLEARNING_GENOME_HPP
+#define TOOLS_GENETICLEARNING_GENOME_HPP
 
 #include <vector>
 #include <memory>
@@ -44,4 +44,4 @@ bool operator<(const Genome& left, const Genome& right) {
 
 BOOST_CLASS_VERSION(Genome, 0)
 
-#endif /* !GENOME_HPP */
+#endif // TOOLS_GENETICLEARNING_GENOME_HPP

@@ -1,5 +1,5 @@
-#ifndef CREEP_NEURALNETWORK_HPP
-#define CREEP_NEURALNETWORK_HPP
+#ifndef TOOLS_NEURALNETWORK_NEURALNETWORK_HPP
+#define TOOLS_NEURALNETWORK_NEURALNETWORK_HPP
 
 #include <vector>
 #include <map>
@@ -104,4 +104,4 @@ NeuralNetwork loadNeuralNetworkFromFile(const std::string& fileName);
 
 BOOST_CLASS_VERSION(NeuralNetwork, 2)
 
-#endif // CREEP_NEURALNETWORK_HPP
+#endif // TOOLS_NEURALNETWORK_NEURALNETWORK_HPP

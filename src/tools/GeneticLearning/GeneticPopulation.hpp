@@ -1,5 +1,5 @@
-#ifndef CREEP_GENETICPOPULATION_HPP
-#define CREEP_GENETICPOPULATION_HPP
+#ifndef TOOLS_GENETICLEARNING_GENETICPOPULATION_HPP
+#define TOOLS_GENETICLEARNING_GENETICPOPULATION_HPP
 
 #include <vector>
 
@@ -61,4 +61,4 @@ void savePopulation(const LearningParameters& parameters,
 void saveNeuralNetwork(const LearningParameters& parameters,
         const Genome& genome);
 
-#endif // CREEP_GENETICPOPULATION_HPP
+#endif // TOOLS_GENETICLEARNING_GENETICPOPULATION_HPP
