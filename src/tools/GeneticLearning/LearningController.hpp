@@ -36,7 +36,7 @@ public:
     template<typename GameManagerFactory>
     void run(const GameManagerFactory& gameManagerFactory) {
         using GameManager = typename std::result_of<
-                GameManagerFactory(GameInfo)>::type;
+                typename std::decay<GameManagerFactory>::type(GameInfo)>::type;
         using PopulationRunner = ::PopulationRunner<GameManager>;
 
         std::vector<PopulationRunner> populations;

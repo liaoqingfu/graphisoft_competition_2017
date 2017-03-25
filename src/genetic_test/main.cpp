@@ -1,5 +1,6 @@
 #include "LearningController.hpp"
 #include "LearningParameters.hpp"
+#include "NeuralNetwork.hpp"
 
 #include <util/ThreadPool.hpp>
 #include <type_traits>
@@ -10,17 +11,13 @@ class GameManager {
 public:
     void init() {}
     void run() {}
-    float getFitness() { return 0; }
+    void setNeuralNetwork(const NeuralNetwork&) {}
+    float getFitness() const { return 0; }
+    std::string getDebugInfo() const { return ""; }
 };
 
 GameManager createGameManager(const GameInfo&) {
     return GameManager{};
-}
-
-template<typename T>
-void check(T) {
-    static_assert(std::is_same<GameManager,
-            typename std::result_of<T(GameInfo)>::type>::value,"");
 }
 
 int main() {
@@ -33,6 +30,5 @@ int main() {
     parameters.generationLimit = 10;
     LearningController<GameInfo> learningController{parameters, {GameInfo{}},
             threadPool.getIoService()};
-    // learningController.run(createGameManager);
-    check(createGameManager);
+    learningController.run(createGameManager);
 }
