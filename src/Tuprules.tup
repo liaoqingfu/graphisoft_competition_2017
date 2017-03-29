@@ -25,6 +25,8 @@ NEURAL_NETWORK_DIR = $(TOOLS_DIR)/NeuralNetwork
 NEURAL_NETWORK_LIB = $(NEURAL_NETWORK_DIR)/libNeuralNetwork.a
 GENETIC_LEARNING_DIR = $(TOOLS_DIR)/GeneticLearning
 GENETIC_LEARNING_LIB = $(GENETIC_LEARNING_DIR)/libGeneticLearning.a
+MATRIX_DIR = $(TOOLS_DIR)/Matrix
+MATRIX_LIB = $(MATRIX_DIR)/libMatrix.a
 
 CXX = clang++
 LD = $(CXX)

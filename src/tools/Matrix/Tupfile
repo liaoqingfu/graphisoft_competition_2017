@@ -1,0 +1,9 @@
+include_rules
+
+include $(COMPILE_TUP)
+
+: foreach *.cpp |> !cxx |>
+
+include $(ARCHIVE_TUP)
+
+: *.o |> !ar |> libMatrix.a
