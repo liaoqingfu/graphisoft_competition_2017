@@ -1,0 +1,11 @@
+include_rules
+
+INCLUDE_DIRS += -I$(MATRIX_DIR)
+
+include $(COMPILE_TUP)
+
+: foreach *.cpp |> !cxx |>
+
+include $(LINK_TUP)
+
+: *.o $(MATRIX_LIB) |> !linker |> labirinth
