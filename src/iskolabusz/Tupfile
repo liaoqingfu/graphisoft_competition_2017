@@ -11,4 +11,5 @@ LIBS += -lboost_unit_test_framework
 include $(LINK_TUP)
 
 #: *.o $(GENETIC_LEARNING_LIB) $(NEURAL_NETWORK_LIB) $(CPP_UTIL_LIB) |> !linker |> genetic_test
-: *.o |> !linker |> iskolabusz
+: main.o testMain.o |> !linker |> iskolabusz
+: program.o |> !linker |> program
