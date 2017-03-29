@@ -2,6 +2,8 @@
 #include "MatrixIO.hpp"
 
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/breadth_first_search.hpp>
+#include <boost/graph/visitors.hpp>
 #include <boost/range/iterator_range_core.hpp>
 
 #include <array>
@@ -97,6 +99,25 @@ public:
         addEscapePoints(Point{0, height - 1}, p10);
         addEscapePoints(Point{0, 0}, p01);
         addEscapePoints(Point{width - 1, 0}, p01);
+    }
+
+    void solve() {
+        std::size_t size = boost::num_vertices(graph);
+        std::vector<boost::graph_traits<Graph>::vertices_size_type> distances(
+                size);
+        boost::vector_property_map<boost::default_color_type> colors;
+        boost::breadth_first_search(graph, escapeVertex,
+                boost::visitor(boost::make_bfs_visitor(
+                        boost::record_distances(distances,
+                                boost::on_tree_edge())))
+                .vertex_color_map(colors));
+        auto maxDistance = *std::max_element(distances.begin(),
+                distances.end());
+        for (std::size_t i = 0; i < distances.size(); ++i) {
+            if (distances[i] == maxDistance) {
+                std::cout << graph[vertex(i, graph)].coordinate << "\n";
+            }
+        }
     }
 
     void printGraph() {
