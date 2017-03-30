@@ -30,6 +30,19 @@ struct Input {
     Matrix<Field> matrix;
 };
 
+void printInput(std::ostream& os, const Input& input) {
+    for (int y = 0; y < static_cast<int>(2*input.matrix.height()); ++y) {
+        for (int x = 0; x < static_cast<int>(input.matrix.width()); ++x) {
+            if (x % 2 == y % 2) {
+                os << to_string(input.matrix[Point{x, y / 2}]) << " ";
+            } else {
+                os << "  ";
+            }
+        }
+        os << "\n";
+    }
+}
+
 void readElement(std::istream& stream, Input& input, Point p) {
     Field& field = input.matrix[p];
     stream >> field;
@@ -188,7 +201,7 @@ private:
 
 int main() {
     auto input = readInput(std::cin);
-    std::cerr << input.matrix << "\n";
+    printInput(std::cerr, input);
     Solver solver{std::move(input)};
     solver.createGraph();
     // solver.printGraph();
