@@ -94,6 +94,12 @@ struct Node {
     Node(Point coordinate = Point{-1, -1}) : coordinate(coordinate) {}
 };
 
+struct Solution {
+    int distance;
+    int halfWidth;
+    std::vector<Point> coordinates;
+};
+
 template<typename DistanceMap>
 struct PrinterVisitor {
     using event_filter = boost::on_tree_edge;
@@ -147,7 +153,7 @@ public:
         addEscapePoints(Point{width - 1, 0}, p01);
     }
 
-    void solve() {
+    Solution solve() {
         std::size_t size = boost::num_vertices(graph);
         std::vector<boost::graph_traits<Graph>::vertices_size_type> distances(
                 size);
@@ -161,11 +167,16 @@ public:
                         makePrinterVisitor(distancesMap)))));
         auto maxDistance = *std::max_element(distances.begin(),
                 distances.end());
+        Solution solution;
+        solution.distance = maxDistance - 1;
+        solution.halfWidth = input.matrix.width() / 2;
         for (std::size_t i = 0; i < distances.size(); ++i) {
             if (distances[i] == maxDistance) {
-                std::cout << graph[vertex(i, graph)].coordinate << "\n";
+                solution.coordinates.push_back(
+                        graph[vertex(i, graph)].coordinate);
             }
         }
+        return solution;
     }
 
     void printGraph() {
@@ -187,7 +198,6 @@ private:
     }
 
     void addEdges(Point base) {
-        // std::cerr << "addEdges " << base << "\n";
         Vertex endpoint = getVertex(base);
         for (std::size_t direction = 0; direction < numNeighbors; ++direction) {
             for (Point p = base + getNeighbors(base)[direction];
@@ -237,11 +247,24 @@ private:
     Vertex escapeVertex;
 };
 
+void printSolution(std::ostream& os, const Solution& solution) {
+    os << solution.coordinates.size() << " " << solution.distance <<
+            "\n";
+    for (Point coordinate : solution.coordinates) {
+        int x = coordinate.x / 2 + 1;
+        if (coordinate.x % 2 != 0) {
+            x += solution.halfWidth;
+        }
+        os << coordinate.y + 1 << " " << x << "\n";
+    }
+}
+
 int main() {
     auto input = readInput(std::cin);
     printInput(std::cerr, input);
     Solver solver{std::move(input)};
     solver.createGraph();
     // solver.printGraph();
-    solver.solve();
+    Solution solution = solver.solve();
+    printSolution(std::cout, solution);
 }
