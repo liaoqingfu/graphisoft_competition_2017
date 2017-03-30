@@ -31,7 +31,17 @@ struct Input {
 };
 
 void printInput(std::ostream& os, const Input& input) {
+    os << "  ";
+    for (int x = 0; x < static_cast<int>(input.matrix.width()); ++x) {
+        os << x % 10 << " ";
+    }
+    os << "\n";
     for (int y = 0; y < static_cast<int>(2*input.matrix.height()); ++y) {
+        if (y % 2 == 0) {
+            os << (y / 2) % 10 << " ";
+        } else {
+            os << "  ";
+        }
         for (int x = 0; x < static_cast<int>(input.matrix.width()); ++x) {
             if (x % 2 == y % 2) {
                 os << to_string(input.matrix[Point{x, y / 2}]) << " ";
@@ -64,24 +74,18 @@ Input readInput(std::istream& stream) {
     return input;
 }
 
-using Neighbors = std::array<Point, 6>;
+
+constexpr std::size_t numNeighbors = 6;
+using Neighbors = std::array<Point, numNeighbors>;
 
 constexpr Neighbors oddNeighbors{
-        {-p10, -p01, p10, Point{-1, 1}, p01, p11}};
+        {-px, -p10, -p01, p10, p11, p01}};
 
 constexpr Neighbors evenNeighbors{
-        {-p11, -p01, Point{1, -1}, -p10, p01, p10}};
+        {-p10, -p11, -p01, px, p10, p01}};
 
-constexpr Neighbors getDirections(Point p) {
+constexpr const Neighbors& getNeighbors(Point p) {
     return p.x % 2 == 0 ? evenNeighbors : oddNeighbors;
-}
-
-Neighbors getNeighbors(Point p) {
-    Neighbors result;
-    for (std::size_t i = 0; i < 6; ++i) {
-        result[i] = p + getDirections(p)[i];
-    }
-    return result;
 }
 
 struct Node {
@@ -89,6 +93,32 @@ struct Node {
 
     Node(Point coordinate = Point{-1, -1}) : coordinate(coordinate) {}
 };
+
+template<typename DistanceMap>
+struct PrinterVisitor {
+    using event_filter = boost::on_tree_edge;
+
+    PrinterVisitor(const DistanceMap& distanceMap) : distanceMap(distanceMap) {
+    }
+
+    template<typename Edge, typename Graph>
+    void operator()(const Edge& edge, const Graph& graph) {
+        auto from = source(edge, graph);
+        auto to = target(edge, graph);
+        std::cerr << get(distanceMap, from) << " " << graph[from].coordinate
+                << " --> " << get(distanceMap, to) << " "
+                << graph[to].coordinate << "\n";
+
+    }
+
+private:
+    const DistanceMap& distanceMap;
+};
+
+template<typename DistanceMap>
+auto makePrinterVisitor(const DistanceMap& distanceMap) {
+    return PrinterVisitor<DistanceMap>{distanceMap};
+}
 
 class Solver {
 public:
@@ -101,7 +131,9 @@ public:
 
     void createGraph() {
         for (Point p : matrixRange(input.matrix)) {
-            if (input.matrix[p] != Field::wall) {
+            if (input.matrix[p] == Field::monitor ||
+                    (input.matrix[p] == Field::corridor
+                            && !isStraightCorridor(p))) {
                 addEdges(p);
             }
         }
@@ -123,9 +155,10 @@ public:
                 distances.begin(),
                 boost::get(boost::vertex_index_t{}, graph));
         boost::breadth_first_search(graph, escapeVertex,
-                boost::visitor(boost::make_bfs_visitor(
+                boost::visitor(boost::make_bfs_visitor(std::make_pair(
                         boost::record_distances(distancesMap,
-                                boost::on_tree_edge()))));
+                                boost::on_tree_edge()),
+                        makePrinterVisitor(distancesMap)))));
         auto maxDistance = *std::max_element(distances.begin(),
                 distances.end());
         for (std::size_t i = 0; i < distances.size(); ++i) {
@@ -154,35 +187,40 @@ private:
     }
 
     void addEdges(Point base) {
+        // std::cerr << "addEdges " << base << "\n";
         Vertex endpoint = getVertex(base);
-        for (const Point direction : getDirections(base)) {
-            for (Point p = base + direction;
+        for (std::size_t direction = 0; direction < numNeighbors; ++direction) {
+            for (Point p = base + getNeighbors(base)[direction];
                     matrixAt(input.matrix, p, Field::wall) != Field::wall;
-                    p += direction) {
+                    p += getNeighbors(p)[direction]) {
+                boost::add_edge(endpoint, getVertex(p), graph);
                 if (input.matrix[p] == Field::monitor) {
-                    boost::add_edge(getVertex(p), endpoint, graph);
                     break;
-                }
-                if (!isStraightCorridor(p, direction)) {
-                    boost::add_edge(getVertex(p), endpoint, graph);
                 }
             }
         }
     }
 
-    bool isStraightCorridor(Point p, Point direction) const {
-        Point pd = p + direction;
-        Point pmd = p - direction;
-        for (Point p2 : getNeighbors(p)) {
-            if (!isInsideMatrix(input.matrix, p2)) {
+    bool isStraightCorridor(Point p) const {
+        const auto& neighbors = getNeighbors(p);
+        int passableNeighbors[2] = {-1, -1};
+        std::size_t found = 0;
+        for (std::size_t direction = 0; direction < numNeighbors; ++direction) {
+            Point pp = p + neighbors[direction];
+            if (!isInsideMatrix(input.matrix, pp)) {
+                // We are at the edge.
                 return false;
             }
-            if (p2 != pd && p2 != pmd &&
-                    input.matrix[p2] != Field::wall) {
-                return false;
+            if (input.matrix[pp] != Field::wall) {
+                if (found == 2) {
+                    // There are more than 2 neighboring corridors.
+                    return false;
+                }
+                passableNeighbors[found++] = direction;
             }
         }
-        return input.matrix[pd] != Field::wall;
+        return found == 2 && passableNeighbors[1] - passableNeighbors[0] ==
+                numNeighbors / 2;
     }
 
     void addEscapePoints(Point start, Point direction) {
