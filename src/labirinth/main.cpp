@@ -4,6 +4,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/breadth_first_search.hpp>
 #include <boost/graph/visitors.hpp>
+#include <boost/property_map/property_map.hpp>
 #include <boost/range/iterator_range_core.hpp>
 
 #include <array>
@@ -21,10 +22,10 @@ std::istream& operator>>(std::istream& is, Field& f) {
     return is;
 }
 
-// std::string to_string(InputNode node) {
-//     return std::string{static_cast<char>(node)};
-// }
-//
+std::string to_string(Field node) {
+    return std::string{static_cast<char>(node)};
+}
+
 struct Input {
     Matrix<Field> matrix;
 };
@@ -105,12 +106,13 @@ public:
         std::size_t size = boost::num_vertices(graph);
         std::vector<boost::graph_traits<Graph>::vertices_size_type> distances(
                 size);
-        boost::vector_property_map<boost::default_color_type> colors;
+        auto distancesMap = boost::make_iterator_property_map(
+                distances.begin(),
+                boost::get(boost::vertex_index_t{}, graph));
         boost::breadth_first_search(graph, escapeVertex,
                 boost::visitor(boost::make_bfs_visitor(
-                        boost::record_distances(distances,
-                                boost::on_tree_edge())))
-                .vertex_color_map(colors));
+                        boost::record_distances(distancesMap,
+                                boost::on_tree_edge()))));
         auto maxDistance = *std::max_element(distances.begin(),
                 distances.end());
         for (std::size_t i = 0; i < distances.size(); ++i) {
@@ -185,7 +187,10 @@ private:
 };
 
 int main() {
-    Solver solver{readInput(std::cin)};
+    auto input = readInput(std::cin);
+    std::cerr << input.matrix << "\n";
+    Solver solver{std::move(input)};
     solver.createGraph();
-    solver.printGraph();
+    // solver.printGraph();
+    solver.solve();
 }
