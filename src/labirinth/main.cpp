@@ -1,5 +1,5 @@
+#include "Field.hpp"
 #include "HexMatrix.hpp"
-#include "MatrixIO.hpp"
 
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/breadth_first_search.hpp>
@@ -10,21 +10,6 @@
 #include <array>
 #include <iostream>
 #include <map>
-
-enum class Field : char {
-    wall = 'W', corridor = 'C', monitor = 'M'
-};
-
-std::istream& operator>>(std::istream& is, Field& f) {
-    char c;
-    is >> c;
-    f = static_cast<Field>(c);
-    return is;
-}
-
-std::string to_string(Field node) {
-    return std::string{static_cast<char>(node)};
-}
 
 struct Input {
     Matrix<Field> matrix;
@@ -148,7 +133,7 @@ private:
         for (std::size_t direction = 0; direction < hex::numNeighbors;
                 ++direction) {
             for (Point p = base + hex::getNeighbors(base)[direction];
-                    matrixAt(input.matrix, p, Field::wall) != Field::wall;
+                    isPassable(matrixAt(input.matrix, p, Field::wall));
                     p += hex::getNeighbors(p)[direction]) {
                 boost::add_edge(endpoint, getVertex(p), graph);
                 if (input.matrix[p] == Field::monitor) {
@@ -169,7 +154,7 @@ private:
                 // We are at the edge.
                 return false;
             }
-            if (input.matrix[pp] != Field::wall) {
+            if (isPassable(input.matrix[pp])) {
                 if (found == 2) {
                     // There are more than 2 neighboring corridors.
                     return false;
@@ -183,7 +168,7 @@ private:
 
     void addEscapePoints(Point start, Point direction) {
         for (Point p = start; isInsideMatrix(input.matrix, p); p += direction) {
-            if (input.matrix[p] != Field::wall) {
+            if (isPassable(input.matrix[p])) {
                 boost::add_edge(escapeVertex, getVertex(p), graph);
             }
         }
