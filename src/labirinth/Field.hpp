@@ -15,6 +15,10 @@ std::istream& operator>>(std::istream& is, Field& f) {
     return is;
 }
 
+std::ostream& operator<<(std::ostream& os, Field f) {
+    return os << static_cast<char>(f);
+}
+
 std::string to_string(Field node) {
     return std::string{static_cast<char>(node)};
 }

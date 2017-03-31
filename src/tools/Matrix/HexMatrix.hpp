@@ -81,6 +81,23 @@ Matrix<T> readEcosim(std::istream& stream) {
     return matrix;
 }
 
+template<typename T>
+void printEcosim(std::ostream& stream, const Matrix<T> matrix) {
+    int n = matrix.width() / 2;
+    int k = matrix.height();
+    stream << k << " " << n << "\n";
+
+    for (int y = 0; y < k; ++y) {
+        for (int x = 0; x < n; ++x) {
+            stream << matrix[Point{2*x, y}] << " ";
+        }
+        for (int x = 0; x < n; ++x) {
+            stream << matrix[Point{2*x + 1, y}] << " ";
+        }
+        stream << "\n";
+    }
+}
+
 }
 
 #endif // TOOLS_MATRIX_HEXMATRIX_HPP
