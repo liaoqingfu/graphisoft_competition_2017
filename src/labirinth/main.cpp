@@ -1,4 +1,4 @@
-#include "Matrix.hpp"
+#include "HexMatrix.hpp"
 #include "MatrixIO.hpp"
 
 #include <boost/graph/adjacency_list.hpp>
@@ -30,62 +30,8 @@ struct Input {
     Matrix<Field> matrix;
 };
 
-void printInput(std::ostream& os, const Input& input) {
-    os << "  ";
-    for (int x = 0; x < static_cast<int>(input.matrix.width()); ++x) {
-        os << x % 10 << " ";
-    }
-    os << "\n";
-    for (int y = 0; y < static_cast<int>(2*input.matrix.height()); ++y) {
-        if (y % 2 == 0) {
-            os << (y / 2) % 10 << " ";
-        } else {
-            os << "  ";
-        }
-        for (int x = 0; x < static_cast<int>(input.matrix.width()); ++x) {
-            if (x % 2 == y % 2) {
-                os << to_string(input.matrix[Point{x, y / 2}]) << " ";
-            } else {
-                os << "  ";
-            }
-        }
-        os << "\n";
-    }
-}
-
-void readElement(std::istream& stream, Input& input, Point p) {
-    Field& field = input.matrix[p];
-    stream >> field;
-}
-
 Input readInput(std::istream& stream) {
-    int k, n;
-    stream >> k >> n;
-    Input input;
-    input.matrix.reset(2*n, k);
-    for (int y = 0; y < k; ++y) {
-        for (int x = 0; x < n; ++x) {
-            readElement(stream, input, Point{2*x, y});
-        }
-        for (int x = 0; x < n; ++x) {
-            readElement(stream, input, Point{2*x + 1, y});
-        }
-    }
-    return input;
-}
-
-
-constexpr std::size_t numNeighbors = 6;
-using Neighbors = std::array<Point, numNeighbors>;
-
-constexpr Neighbors oddNeighbors{
-        {-px, -p10, -p01, p10, p11, p01}};
-
-constexpr Neighbors evenNeighbors{
-        {-p10, -p11, -p01, px, p10, p01}};
-
-constexpr const Neighbors& getNeighbors(Point p) {
-    return p.x % 2 == 0 ? evenNeighbors : oddNeighbors;
+    return Input{hex::readEcosim<Field>(stream)};
 }
 
 struct Node {
@@ -199,10 +145,11 @@ private:
 
     void addEdges(Point base) {
         Vertex endpoint = getVertex(base);
-        for (std::size_t direction = 0; direction < numNeighbors; ++direction) {
-            for (Point p = base + getNeighbors(base)[direction];
+        for (std::size_t direction = 0; direction < hex::numNeighbors;
+                ++direction) {
+            for (Point p = base + hex::getNeighbors(base)[direction];
                     matrixAt(input.matrix, p, Field::wall) != Field::wall;
-                    p += getNeighbors(p)[direction]) {
+                    p += hex::getNeighbors(p)[direction]) {
                 boost::add_edge(endpoint, getVertex(p), graph);
                 if (input.matrix[p] == Field::monitor) {
                     break;
@@ -212,10 +159,11 @@ private:
     }
 
     bool isStraightCorridor(Point p) const {
-        const auto& neighbors = getNeighbors(p);
+        const auto& neighbors = hex::getNeighbors(p);
         int passableNeighbors[2] = {-1, -1};
         std::size_t found = 0;
-        for (std::size_t direction = 0; direction < numNeighbors; ++direction) {
+        for (std::size_t direction = 0; direction < hex::numNeighbors;
+                ++direction) {
             Point pp = p + neighbors[direction];
             if (!isInsideMatrix(input.matrix, pp)) {
                 // We are at the edge.
@@ -230,7 +178,7 @@ private:
             }
         }
         return found == 2 && passableNeighbors[1] - passableNeighbors[0] ==
-                numNeighbors / 2;
+                hex::numNeighbors / 2;
     }
 
     void addEscapePoints(Point start, Point direction) {
@@ -251,17 +199,14 @@ void printSolution(std::ostream& os, const Solution& solution) {
     os << solution.coordinates.size() << " " << solution.distance <<
             "\n";
     for (Point coordinate : solution.coordinates) {
-        int x = coordinate.x / 2 + 1;
-        if (coordinate.x % 2 != 0) {
-            x += solution.halfWidth;
-        }
-        os << coordinate.y + 1 << " " << x << "\n";
+        Point ecosim = hex::local2ecosim(coordinate, solution.halfWidth);
+        os << ecosim.y << " " << ecosim.x << "\n";
     }
 }
 
 int main() {
     auto input = readInput(std::cin);
-    printInput(std::cerr, input);
+    hex::printMatrix(std::cerr, input.matrix);
     Solver solver{std::move(input)};
     solver.createGraph();
     // solver.printGraph();
