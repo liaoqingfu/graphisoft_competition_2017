@@ -40,9 +40,8 @@ public:
     void operator()(const Edge& edge, const Graph& graph) {
         auto from = source(edge, graph);
         auto to = target(edge, graph);
-        std::cerr << get(distanceMap, from) << " " << from
-                << " --> " << get(distanceMap, to) << " " << to << "\n";
-
+        std::cout << from << " --> " << to << " "
+                << get(distanceMap, to) << "\n";
     }
 
 private:
@@ -84,7 +83,7 @@ public:
     const Matrix<Field>& getMatrix() const { return matrix; }
 private:
     Edges calculateEdges(Point base) const {
-        if (isStraightCorridor(base)) {
+        if (matrix[base] == Field::corridor && isStraightCorridor(base)) {
             return {};
         }
 
