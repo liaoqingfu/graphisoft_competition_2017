@@ -12,20 +12,20 @@ template<typename T>
 void printMatrix(std::ostream& os, const Matrix<T>& matrix) {
     os << "  ";
     for (int x = 0; x < static_cast<int>(matrix.width()); ++x) {
-        os << x % 10 << " ";
+        os << std::setw(2) << x % 100 << " ";
     }
     os << "\n";
     for (int y = 0; y < static_cast<int>(2*matrix.height()); ++y) {
         if (y % 2 == 0) {
-            os << (y / 2) % 10 << " ";
+            os << std::setw(2) << (y / 2) % 100 << " ";
         } else {
-            os << "  ";
+            os << "   ";
         }
         for (int x = 0; x < static_cast<int>(matrix.width()); ++x) {
             if (x % 2 == y % 2) {
-                os << to_string(matrix[Point{x, y / 2}]) << " ";
+                os << to_string(matrix[Point{x, y / 2}]) << "  ";
             } else {
-                os << "  ";
+                os << "   ";
             }
         }
         os << "\n";
