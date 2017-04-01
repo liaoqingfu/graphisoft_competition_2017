@@ -1,5 +1,6 @@
 #include "Field.hpp"
 #include "HexMatrix.hpp"
+#include "MatrixPropertyMap.hpp"
 
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/breadth_first_search.hpp>
@@ -11,12 +12,8 @@
 #include <iostream>
 #include <map>
 
-struct Input {
-    Matrix<Field> matrix;
-};
-
-Input readInput(std::istream& stream) {
-    return Input{hex::readEcosim<Field>(stream)};
+Matrix<Field> readInput(std::istream& stream) {
+    return hex::readEcosim<Field>(stream);
 }
 
 struct Node {
@@ -32,7 +29,8 @@ struct Solution {
 };
 
 template<typename DistanceMap>
-struct PrinterVisitor {
+class PrinterVisitor {
+public:
     using event_filter = boost::on_tree_edge;
 
     PrinterVisitor(const DistanceMap& distanceMap) : distanceMap(distanceMap) {
@@ -42,9 +40,8 @@ struct PrinterVisitor {
     void operator()(const Edge& edge, const Graph& graph) {
         auto from = source(edge, graph);
         auto to = target(edge, graph);
-        std::cerr << get(distanceMap, from) << " " << graph[from].coordinate
-                << " --> " << get(distanceMap, to) << " "
-                << graph[to].coordinate << "\n";
+        std::cerr << get(distanceMap, from) << " " << from
+                << " --> " << get(distanceMap, to) << " " << to << "\n";
 
     }
 
@@ -57,91 +54,64 @@ auto makePrinterVisitor(const DistanceMap& distanceMap) {
     return PrinterVisitor<DistanceMap>{distanceMap};
 }
 
-class Solver {
+class Graph {
 public:
-    using Graph = boost::adjacency_list<boost::vecS, boost::vecS,
-            boost::directedS, Node>;
-    using Vertex = boost::graph_traits<Graph>::vertex_descriptor;
-    using Edge = boost::graph_traits<Graph>::edge_descriptor;
+    using Vertex = Point;
+    using Edge = std::pair<Point, Point>;
+    using Edges = std::vector<Edge>;
 
-    Solver(Input input) : input(std::move(input)) {}
-
-    void createGraph() {
-        for (Point p : matrixRange(input.matrix)) {
-            if (input.matrix[p] == Field::monitor ||
-                    (input.matrix[p] == Field::corridor
-                            && !isStraightCorridor(p))) {
-                addEdges(p);
-            }
-        }
-
-        escapeVertex = boost::add_vertex(graph);
-        int width = input.matrix.width();
-        int height = input.matrix.height();
+    Graph(const Matrix<Field>& matrix) :
+            matrix(std::move(matrix)),
+            edges{this->matrix.width(), this->matrix.height()} {
+        int width = this->matrix.width();
+        int height =this->matrix.height();
         addEscapePoints(Point{0, 0}, p10);
         addEscapePoints(Point{0, height - 1}, p10);
         addEscapePoints(Point{0, 0}, p01);
         addEscapePoints(Point{width - 1, 0}, p01);
     }
 
-    Solution solve() {
-        std::size_t size = boost::num_vertices(graph);
-        std::vector<boost::graph_traits<Graph>::vertices_size_type> distances(
-                size);
-        auto distancesMap = boost::make_iterator_property_map(
-                distances.begin(),
-                boost::get(boost::vertex_index_t{}, graph));
-        boost::breadth_first_search(graph, escapeVertex,
-                boost::visitor(boost::make_bfs_visitor(//std::make_pair(
-                        boost::record_distances(distancesMap,
-                                boost::on_tree_edge())
-                       // , makePrinterVisitor(distancesMap))
-                        )));
-        auto maxDistance = *std::max_element(distances.begin(),
-                distances.end());
-        Solution solution;
-        solution.distance = maxDistance - 1;
-        solution.halfWidth = input.matrix.width() / 2;
-        for (std::size_t i = 0; i < distances.size(); ++i) {
-            if (distances[i] == maxDistance) {
-                solution.coordinates.push_back(
-                        graph[vertex(i, graph)].coordinate);
-            }
+    const Edges& getEdges(Point p) const {
+        if (!isInsideMatrix(matrix, p)) {
+            return getEscapeEdges(p);
         }
-        return solution;
+        if (!edges[p]) {
+            edges[p] = calculateEdges(p);
+        }
+        return *edges[p];
     }
 
-    void printGraph() {
-        for (const Edge& edge :
-                boost::make_iterator_range(boost::edges(graph))) {
-            std::cerr << graph[source(edge, graph)].coordinate
-                    << " --> " << graph[target(edge, graph)].coordinate << "\n";
-        }
-    }
-
+    const Matrix<Field>& getMatrix() const { return matrix; }
 private:
-    Vertex getVertex(Point p) {
-        auto insertResult = vertices.emplace(p,
-                boost::graph_traits<Graph>::null_vertex());
-        if (insertResult.second) {
-            insertResult.first->second = boost::add_vertex(Node{p}, graph);
+    Edges calculateEdges(Point base) const {
+        if (isStraightCorridor(base)) {
+            return {};
         }
-        return insertResult.first->second;
-    }
 
-    void addEdges(Point base) {
-        Vertex endpoint = getVertex(base);
+        Edges result;
         for (std::size_t direction = 0; direction < hex::numNeighbors;
                 ++direction) {
             for (Point p = base + hex::getNeighbors(base)[direction];
-                    isPassable(matrixAt(input.matrix, p, Field::wall));
+                    isPassable(matrixAt(matrix, p, Field::wall));
                     p += hex::getNeighbors(p)[direction]) {
-                boost::add_edge(endpoint, getVertex(p), graph);
-                if (input.matrix[p] == Field::monitor) {
+                result.emplace_back(base, p);
+                if (matrix[p] == Field::monitor) {
                     break;
                 }
             }
         }
+        return result;
+    }
+
+    const Edges& getEscapeEdges(Point from) const {
+        auto emplaceResult = escapeEdges.emplace(from, Edges{});
+        Edges& result = emplaceResult.first->second;
+        if (emplaceResult.second) {
+            std::transform(escapePoints.begin(), escapePoints.end(),
+                    std::back_inserter(result),
+                    [from](Point to) { return std::make_pair(from, to); });
+        }
+        return result;
     }
 
     bool isStraightCorridor(Point p) const {
@@ -151,11 +121,11 @@ private:
         for (std::size_t direction = 0; direction < hex::numNeighbors;
                 ++direction) {
             Point pp = p + neighbors[direction];
-            if (!isInsideMatrix(input.matrix, pp)) {
+            if (!isInsideMatrix(matrix, pp)) {
                 // We are at the edge.
                 return false;
             }
-            if (isPassable(input.matrix[pp])) {
+            if (isPassable(matrix[pp])) {
                 if (found == 2) {
                     // There are more than 2 neighboring corridors.
                     return false;
@@ -167,19 +137,77 @@ private:
                 hex::numNeighbors / 2;
     }
 
-    void addEscapePoints(Point start, Point direction) {
-        for (Point p = start; isInsideMatrix(input.matrix, p); p += direction) {
-            if (isPassable(input.matrix[p])) {
-                boost::add_edge(escapeVertex, getVertex(p), graph);
+    void addEscapePoints(Point start, Point direction) const {
+        for (Point p = start; isInsideMatrix(matrix, p); p += direction) {
+            if (isPassable(matrix[p])) {
+                escapePoints.push_back(p);
             }
         }
     }
 
-    Input input;
-    Graph graph;
-    std::unordered_map<Point, Vertex> vertices;
-    Vertex escapeVertex;
+    Matrix<Field> matrix;
+    mutable Matrix<boost::optional<Edges>> edges;
+    mutable std::unordered_map<Point, Edges> escapeEdges;
+    mutable std::vector<Point> escapePoints;
 };
+
+Point source(const Graph::Edge& edge, const Graph&) {
+    return edge.first;
+}
+
+Point target(const Graph::Edge& edge, const Graph&) {
+    return edge.second;
+}
+
+std::size_t out_degree(Graph::Vertex vertex, const Graph& graph) {
+    return graph.getEdges(vertex).size();
+}
+
+std::pair<Graph::Edges::const_iterator, Graph::Edges::const_iterator>
+out_edges(Graph::Vertex vertex, const Graph& graph) {
+    const auto& edges = graph.getEdges(vertex);
+    return std::make_pair(edges.cbegin(), edges.cend());
+}
+
+namespace boost {
+
+template<>
+struct graph_traits<Graph> {
+    using vertex_descriptor = Graph::Vertex;
+    using edge_descriptor = Graph::Edge;
+    using directed_category = directed_tag;
+    using edge_parallel_category = disallow_parallel_edge_tag;
+    using traversal_category = incidence_graph_tag;
+    using out_edge_iterator = Graph::Edges::const_iterator;
+    using degree_size_type = std::size_t;
+};
+
+};
+
+Solution solve(const Graph& graph) {
+    Matrix<int> distances{graph.getMatrix().width() + 1,
+            graph.getMatrix().height(), 0};
+    Matrix<boost::default_color_type> colors{graph.getMatrix().width() + 1,
+            graph.getMatrix().height(), boost::white_color};
+    boost::breadth_first_visit(graph,
+            Point{static_cast<int>(graph.getMatrix().width()), 0},
+            boost::visitor(boost::make_bfs_visitor(//std::make_pair(
+                    boost::record_distances(matrixPropertyMap(distances),
+                            boost::on_tree_edge())
+                   // , makePrinterVisitor(matrixPropertyMap(distances)))
+                    )).color_map(matrixPropertyMap(colors)));
+    auto maxDistance = *std::max_element(distances.begin(),
+            distances.end());
+    Solution solution;
+    solution.distance = maxDistance - 1;
+    solution.halfWidth = graph.getMatrix().width() / 2;
+    for (Point p : matrixRange(graph.getMatrix())) {
+        if (distances[p] == maxDistance) {
+            solution.coordinates.push_back(p);
+        }
+    }
+    return solution;
+}
 
 void printSolution(std::ostream& os, const Solution& solution) {
     os << solution.coordinates.size() << " " << solution.distance <<
@@ -193,11 +221,8 @@ void printSolution(std::ostream& os, const Solution& solution) {
 int main() {
     auto input = readInput(std::cin);
 #ifndef NDEBUG
-    hex::printMatrix(std::cerr, input.matrix);
+    hex::printMatrix(std::cerr, input);
 #endif
-    Solver solver{std::move(input)};
-    solver.createGraph();
-    // solver.printGraph();
-    Solution solution = solver.solve();
+    Solution solution = solve(std::move(input));
     printSolution(std::cout, solution);
 }
