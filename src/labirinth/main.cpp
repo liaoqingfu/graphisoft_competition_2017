@@ -92,10 +92,11 @@ public:
                 distances.begin(),
                 boost::get(boost::vertex_index_t{}, graph));
         boost::breadth_first_search(graph, escapeVertex,
-                boost::visitor(boost::make_bfs_visitor(std::make_pair(
+                boost::visitor(boost::make_bfs_visitor(//std::make_pair(
                         boost::record_distances(distancesMap,
-                                boost::on_tree_edge()),
-                        makePrinterVisitor(distancesMap)))));
+                                boost::on_tree_edge())
+                       // , makePrinterVisitor(distancesMap))
+                        )));
         auto maxDistance = *std::max_element(distances.begin(),
                 distances.end());
         Solution solution;
