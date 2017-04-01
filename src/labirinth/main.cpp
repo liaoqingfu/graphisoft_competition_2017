@@ -192,7 +192,9 @@ void printSolution(std::ostream& os, const Solution& solution) {
 
 int main() {
     auto input = readInput(std::cin);
+#ifndef NDEBUG
     hex::printMatrix(std::cerr, input.matrix);
+#endif
     Solver solver{std::move(input)};
     solver.createGraph();
     // solver.printGraph();
