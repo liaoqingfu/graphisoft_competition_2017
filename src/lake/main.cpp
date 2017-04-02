@@ -59,15 +59,23 @@ class EdgeIterator : public boost::iterator_facade<
 private:
     using InnerIterator = std::vector<Ferry>::const_iterator;
 public:
-    EdgeIterator() = default;
+    EdgeIterator() {
+        // std::cerr << this << ": default construct\n";
+    }
 
     EdgeIterator(InnerIterator begin, InnerIterator iterator,
-            std::size_t vertex) :
-            begin(begin), iterator(iterator), vertex(vertex) {}
+            std::size_t vertex, std::size_t numVertices) :
+            begin(begin), iterator(iterator), vertex(vertex),
+            numVertices(numVertices) {
+        // std::cerr << this << ": construct: " << std::distance(begin, iterator)
+        //         << "\n";
+    }
 
     Edge dereference() const {
+        // std::cerr << this << ": dereference: " << std::distance(begin, iterator)
+        //         << "\n";
         if (isAtBeginning()) {
-            return {vertex, vertex + 1};
+            return {vertex, (vertex + 1) % numVertices};
         }
         return {iterator->from, iterator->to};
     }
@@ -76,10 +84,20 @@ public:
         return other.iterator == iterator;
     }
 
-    void increment() { ++iterator; }
-    void decrement() { --iterator; }
+    void increment() {
+        ++iterator;
+        // std::cerr << this << ": increment: " << std::distance(begin, iterator)
+        //         << "\n";
+    }
+    void decrement() {
+        --iterator;
+        // std::cerr << this << ": decrement: " << std::distance(begin, iterator)
+        //         << "\n";
+    }
     void advance(std::ptrdiff_t n) {
         iterator += n;
+        // std::cerr << this << ": advance " << n << ": "
+        //         << std::distance(begin, iterator) << "\n";
     }
 
     std::ptrdiff_t distance_to(const EdgeIterator& other) {
@@ -90,9 +108,10 @@ private:
     InnerIterator begin;
     InnerIterator iterator;
     std::size_t vertex;
+    std::size_t numVertices;
 
     bool isAtBeginning() const {
-        return iterator < begin;
+        return std::distance(begin, iterator) < 0;
     }
 };
 
@@ -127,8 +146,10 @@ auto out_edges(std::size_t vertex, const Problem& problem) {
     auto range = std::equal_range(problem.ferries.begin(),
             problem.ferries.end(), vertex, EdgeComparator{});
     return std::make_pair(
-            EdgeIterator{range.first, range.first - 1, vertex},
-            EdgeIterator{range.first, range.second, vertex});
+            EdgeIterator{range.first, range.first - 1, vertex,
+                    num_vertices(problem)},
+            EdgeIterator{range.first, range.second, vertex,
+                    num_vertices(problem)});
 }
 
 std::size_t out_degree(std::size_t vertex, const Problem& problem) {
@@ -168,6 +189,54 @@ auto get(boost::edge_weight_t, const Problem& problem) {
                 return getFerry(edge, problem).time;
             });
 }
+
+struct DebugVisitor {
+    template<typename U, typename G>
+    void initialize_vertex(U u, const G& g) {
+        printVertex("Initialize", u, g);
+    }
+
+    template<typename U, typename G>
+    void examine_vertex(U u, const G& g) {
+        printVertex("Examine", u, g);
+    }
+
+    template<typename E, typename G>
+    void examine_edge(E e, const G& g) {
+        printEdge("Examine", e, g);
+    }
+
+    template<typename U, typename G>
+    void discover_vertex(U u, const G& g) {
+        printVertex("Discover", u, g);
+    }
+
+    template<typename E, typename G>
+    void edge_relaxed(E e, const G& g) {
+        printEdge("Relaxed", e, g);
+    }
+
+    template<typename E, typename G>
+    void edge_not_relaxed(E e, const G& g) {
+        printEdge("Not relaxed", e, g);
+    }
+
+    template<typename U, typename G>
+    void finish_vertex(U u, const G& g) {
+        printVertex("Finish", u, g);
+    }
+
+    template<typename U, typename G>
+    void printVertex(const char* label, U u, const G&) {
+        std::cerr << label << ": " << u << "\n";
+    }
+
+    template<typename E, typename G>
+    void printEdge(const char* label, E e, const G& g) {
+        std::cerr << label << ": " << e.first << "->" << e.second
+                << " w=" << get(get(boost::edge_weight, g), e) << "\n";
+    }
+};
 
 namespace boost {
 
@@ -218,6 +287,7 @@ Problem readInput(std::istream& stream) {
     }
 
     std::size_t numFerries = 0;
+    stream >> numFerries;
     for (std::size_t i = 0; i < numFerries; ++i) {
         std::string from, to;
         int time = 0;
@@ -245,6 +315,20 @@ public:
     }
 
     void solve() {
+        // std::cerr << "Ferries:\n";
+        // for (const Ferry& ferry : problem.ferries) {
+        //     std::cerr << ferry.from << "->" << ferry.to << " t=" << ferry.time
+        //             << " bt=" << ferry.skippedBikeTime << "\n";
+        // }
+        // std::cerr << "Graph:\n";
+        // for (auto vertex : boost::make_iterator_range(vertices(problem))) {
+        //     std::cerr << "Vertex: " << vertex << "\n";
+        //     for (auto edge : boost::make_iterator_range(
+        //             out_edges(vertex, problem))) {
+        //         std::cerr << "  Edge: " << edge.first << "->" << edge.second
+        //                 << "\n";
+        //     }
+        // }
         findShortestPath();
         while (removeFerry()) {}
     }
@@ -270,8 +354,9 @@ private:
         std::vector<std::size_t> predecessors(problem.bikePaths.size());
         std::vector<int> distances(problem.bikePaths.size());
         boost::dijkstra_shortest_paths(problem, 0,
-                boost::predecessor_map(&predecessors[0]).
-                distance_map(&distances[0]));
+                boost::predecessor_map(&predecessors[0])
+                .distance_map(&distances[0])
+                /* .visitor(DebugVisitor{}) */);
         totalTime = distances.back() + problem.bikePaths.back();
         bikeTime = distances.back();
         for (std::size_t vertex = problem.bikePaths.size() - 1;
@@ -342,7 +427,7 @@ int main() {
     Solver solver{readInput(std::cin)};
     solver.solve();
     auto solution = solver.getResult();
-    std::cout << solution.size();
+    std::cout << solution.size() << "\n";
     for (const auto& ferry : solution) {
         std::cout << ferry.first << " " << ferry.second << "\n";
     }
