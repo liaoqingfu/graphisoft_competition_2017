@@ -320,15 +320,16 @@ public:
         //     std::cerr << ferry.from << "->" << ferry.to << " t=" << ferry.time
         //             << " bt=" << ferry.skippedBikeTime << "\n";
         // }
-        // std::cerr << "Graph:\n";
-        // for (auto vertex : boost::make_iterator_range(vertices(problem))) {
-        //     std::cerr << "Vertex: " << vertex << "\n";
-        //     for (auto edge : boost::make_iterator_range(
-        //             out_edges(vertex, problem))) {
-        //         std::cerr << "  Edge: " << edge.first << "->" << edge.second
-        //                 << "\n";
-        //     }
-        // }
+        std::cerr << "Graph:\n";
+        for (auto vertex : boost::make_iterator_range(vertices(problem))) {
+            std::cerr << "Vertex: " << vertex << "\n";
+            for (auto edge : boost::make_iterator_range(
+                    out_edges(vertex, problem))) {
+                std::cerr << "  Edge: " << edge.first << "->" << edge.second
+                        << " " << get(get(boost::edge_weight, problem), edge)
+                        << "\n";
+            }
+        }
         findShortestPath();
         while (removeFerry()) {}
     }
@@ -358,14 +359,21 @@ private:
                 .distance_map(&distances[0])
                 /* .visitor(DebugVisitor{}) */);
         totalTime = distances.back() + problem.bikePaths.back();
-        bikeTime = distances.back();
+        bikeTime = problem.bikePaths.back();
+        DebugVisitor v;
         for (std::size_t vertex = problem.bikePaths.size() - 1;
                 vertex != 0; vertex = predecessors[vertex]) {
             auto edge = std::make_pair(predecessors[vertex], vertex);
             if (isBikePath(edge, problem)) {
-                bikeTime += problem.bikePaths[predecessors[vertex]];
+                // v.printEdge("Not using ferry", edge, problem);
+                int weight = get(get(boost::edge_weight, problem), edge);
+                // std::cerr << "  Bike time: " << bikeTime << "->";
+                bikeTime += weight;
+                // std::cerr << bikeTime << "\n";
             } else {
-                usedFerries.insert(&getFerry(edge, problem));
+                const Ferry& ferry = getFerry(edge, problem);
+                v.printEdge("Using ferry", edge, problem);
+                usedFerries.insert(&ferry);
             }
         }
     }
