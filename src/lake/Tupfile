@@ -9,3 +9,4 @@ include $(COMPILE_TUP)
 include $(LINK_TUP)
 
 : generator.o |> !linker |> generator
+: main.o |> !linker |> lake
