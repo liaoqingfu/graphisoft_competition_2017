@@ -211,6 +211,7 @@ Solution solve(const Graph& graph) {
 void printSolution(std::ostream& os, const Solution& solution) {
     os << solution.coordinates.size() << " " << solution.distance <<
             "\n";
+    // TODO sorting!!
     for (Point coordinate : solution.coordinates) {
         Point ecosim = hex::local2ecosim(coordinate, solution.halfWidth);
         os << ecosim.y << " " << ecosim.x << "\n";
