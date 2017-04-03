@@ -1,8 +1,136 @@
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <iostream>
-#include <set>
+#include <map>
 #include <vector>
+
+//============================================================================//
+
+// Number of rotation matrices: 24
+using RotationMatrix = std::array<std::array<int, 3>, 3>;
+const std::vector<RotationMatrix> rotations = {
+    {{
+        {{-1, 0, 0}},
+        {{0, -1, 0}},
+        {{0, 0, 1}},
+    }},
+    {{
+        {{-1, 0, 0}},
+        {{0, 0, -1}},
+        {{0, -1, 0}},
+    }},
+    {{
+        {{-1, 0, 0}},
+        {{0, 0, 1}},
+        {{0, 1, 0}},
+    }},
+    {{
+        {{-1, 0, 0}},
+        {{0, 1, 0}},
+        {{0, 0, -1}},
+    }},
+    {{
+        {{0, -1, 0}},
+        {{-1, 0, 0}},
+        {{0, 0, -1}},
+    }},
+    {{
+        {{0, -1, 0}},
+        {{0, 0, -1}},
+        {{1, 0, 0}},
+    }},
+    {{
+        {{0, -1, 0}},
+        {{0, 0, 1}},
+        {{-1, 0, 0}},
+    }},
+    {{
+        {{0, -1, 0}},
+        {{1, 0, 0}},
+        {{0, 0, 1}},
+    }},
+    {{
+        {{0, 0, -1}},
+        {{-1, 0, 0}},
+        {{0, 1, 0}},
+    }},
+    {{
+        {{0, 0, -1}},
+        {{0, -1, 0}},
+        {{-1, 0, 0}},
+    }},
+    {{
+        {{0, 0, -1}},
+        {{0, 1, 0}},
+        {{1, 0, 0}},
+    }},
+    {{
+        {{0, 0, -1}},
+        {{1, 0, 0}},
+        {{0, -1, 0}},
+    }},
+    {{
+        {{0, 0, 1}},
+        {{-1, 0, 0}},
+        {{0, -1, 0}},
+    }},
+    {{
+        {{0, 0, 1}},
+        {{0, -1, 0}},
+        {{1, 0, 0}},
+    }},
+    {{
+        {{0, 0, 1}},
+        {{0, 1, 0}},
+        {{-1, 0, 0}},
+    }},
+    {{
+        {{0, 0, 1}},
+        {{1, 0, 0}},
+        {{0, 1, 0}},
+    }},
+    {{
+        {{0, 1, 0}},
+        {{-1, 0, 0}},
+        {{0, 0, 1}},
+    }},
+    {{
+        {{0, 1, 0}},
+        {{0, 0, -1}},
+        {{-1, 0, 0}},
+    }},
+    {{
+        {{0, 1, 0}},
+        {{0, 0, 1}},
+        {{1, 0, 0}},
+    }},
+    {{
+        {{0, 1, 0}},
+        {{1, 0, 0}},
+        {{0, 0, -1}},
+    }},
+    {{
+        {{1, 0, 0}},
+        {{0, -1, 0}},
+        {{0, 0, -1}},
+    }},
+    {{
+        {{1, 0, 0}},
+        {{0, 0, -1}},
+        {{0, 1, 0}},
+    }},
+    {{
+        {{1, 0, 0}},
+        {{0, 0, 1}},
+        {{0, -1, 0}},
+    }},
+    {{
+        {{1, 0, 0}},
+        {{0, 1, 0}},
+        {{0, 0, 1}},
+    }},
+};
 
 //============================================================================//
 
@@ -201,10 +329,71 @@ private:
         isSorted = true;
     }
 
+    void copy(const Building& other) {
+        if (this == &other) {
+            return;
+        }
+        assert(vertices.empty());
+        assert(edges.empty());
+        assert(sides.empty());
+        std::map<const Vertex*, Vertex*> vTranslationTable;
+        for (const Vertex* const& v : other.vertices) {
+            Vertex* vertex = new Vertex(v->x, v->y, v->z);
+            vertices.push_back(vertex);
+            vTranslationTable[v] = vertex;
+        }
+        std::map<const Edge*, Edge*> eTranslationTable;
+        for (const Edge* const& e : other.edges) {
+            Edge* edge = new Edge(vTranslationTable[e->v1],
+                    vTranslationTable[e->v2]);
+            edges.push_back(edge);
+            eTranslationTable[e] = edge;
+        }
+        for (const Side& s : other.sides) {
+            Side side;
+            for (const Edge* e : s.edges) {
+                side.edges.push_back(eTranslationTable[e]);
+            }
+            for (const Side& h : s.holes) {
+                Side hole;
+                for (const Edge* he : h.edges) {
+                    hole.edges.push_back(eTranslationTable[he]);
+                }
+                side.holes.push_back(hole);
+            }
+            sides.push_back(side);
+        }
+    }
+
 public:
-    Vertex calculateOffset(const Building& rhs) {
+    Building() = default;
+
+    Building(const Building& other) {
+        copy(other);
+    }
+
+    Building(Building&&) = delete;
+
+    Building& operator=(const Building& other) {
+        copy(other);
+        return *this;
+    }
+
+    Building& operator=(Building&&) = delete;
+
+    ~Building() {
+        for (Vertex*& v : vertices) {
+            delete v;
+        }
+        for (Edge*& e : edges) {
+            delete e;
+        }
+    }
+
+    Vertex calculateOffset(const Building& rhs) const {
         return *rhs.vertices[0] - *vertices[0];
     }
+
 
     void shift(const Vertex& offset) {
         //std::cout << "shifting with: " << offset << std::endl;
@@ -213,31 +402,17 @@ public:
         }
     }
 
-    void rotateX() {
+    void rotate(const RotationMatrix& r) {
         for (Vertex*& v : vertices) {
-            int y = v->y;
-            v->y = -v->z;
-            v->z = y;
+            Vertex o = *v;
+            v->x = r[0][0] * o.x + r[0][1] * o.y + r[0][2] * o.z;
+            v->y = r[1][0] * o.x + r[1][1] * o.y + r[1][2] * o.z;
+            v->z = r[2][0] * o.x + r[2][1] * o.y + r[2][2] * o.z;
         }
+        sort();
     }
 
-    void rotateY() {
-        for (Vertex*& v : vertices) {
-            int z = v->z;
-            v->z = -v->x;
-            v->x = z;
-        }
-    }
-
-    void rotateZ() {
-        for (Vertex*& v : vertices) {
-            int x = v->x;
-            v->x = -v->y;
-            v->y = x;
-        }
-    }
-
-    bool operator==(const Building& rhs) {
+    bool operator==(const Building& rhs) const {
         assert(isSorted);
         bool verticesEqual = vertices.size() == rhs.vertices.size() &&
                 std::equal(vertices.begin(), vertices.end(),
@@ -324,24 +499,23 @@ public:
 
 //============================================================================//
 
+bool check(const Building& b1, Building b2, RotationMatrix r) {
+    b2.rotate(r);
+    Vertex offset = b1.calculateOffset(b2);
+    //std::cout << offset << std::endl;
+    b2.shift(offset);
+    //std::cout << b1 << std::endl << b2 << std::endl;
+    return b1 == b2;
+}
+
 int main() {
     Building b1, b2;
     std::cin >> b1 >> b2;
-    std::cout << b1 << std::endl << b2 << std::endl;
-    Vertex offset = b1.calculateOffset(b2);
-    b2.shift(offset);
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            for (int k = 0; k < 4; ++k) {
-                if (b1 == b2) {
-                    std::cout << "TRUE" << std::endl;
-                    return 0;
-                }
-                b2.rotateZ();
-            }
-            b2.rotateY();
+    for (const auto& r : rotations) {
+        if (check(b1, b2, r)) {
+            std::cout << "TRUE" << std::endl;
+            return 0;
         }
-        b2.rotateX();
     }
     std::cout << "FALSE" << std::endl;
 }
