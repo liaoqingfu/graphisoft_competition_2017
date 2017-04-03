@@ -445,8 +445,8 @@ private:
             }
         }
 
-        std::cerr << "Removing ferry from " << problem.cityNames[ferry->from]
-                << " to " << problem.cityNames[ferry->to] << "\n";
+        // std::cerr << "Removing ferry from " << problem.cityNames[ferry->from]
+        //         << " to " << problem.cityNames[ferry->to] << "\n";
         usedFerries.erase(iterator);
         bikeTime += ferry->skippedBikeTime;
         totalTime = newTotalTime;
@@ -459,8 +459,8 @@ private:
                     return 1.0 / (ferry->skippedBikeTime - ferry->time);
                 });
         const Ferry* ferry = *iterator;
-        std::cerr << "Adding ferry from " << problem.cityNames[ferry->from]
-                << " to " << problem.cityNames[ferry->to] << "\n";
+        // std::cerr << "Adding ferry from " << problem.cityNames[ferry->from]
+        //         << " to " << problem.cityNames[ferry->to] << "\n";
         usedFerries.insert(ferry);
         bikeTime -= ferry->skippedBikeTime;
         totalTime -= ferry->skippedBikeTime - ferry->time;
