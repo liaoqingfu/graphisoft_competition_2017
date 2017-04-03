@@ -316,16 +316,16 @@ public:
         //     std::cerr << ferry.from << "->" << ferry.to << " t=" << ferry.time
         //             << " bt=" << ferry.skippedBikeTime << "\n";
         // }
-        std::cerr << "Graph:\n";
-        for (auto vertex : boost::make_iterator_range(vertices(problem))) {
-            std::cerr << "Vertex: " << vertex << "\n";
-            for (auto edge : boost::make_iterator_range(
-                    out_edges(vertex, problem))) {
-                std::cerr << "  Edge: " << edge.first << "->"
-                        << target(edge, problem) << " "
-                        << get(get(boost::edge_weight, problem), edge) << "\n";
-            }
-        }
+        // std::cerr << "Graph:\n";
+        // for (auto vertex : boost::make_iterator_range(vertices(problem))) {
+        //     std::cerr << "Vertex: " << vertex << "\n";
+        //     for (auto edge : boost::make_iterator_range(
+        //             out_edges(vertex, problem))) {
+        //         std::cerr << "  Edge: " << edge.first << "->"
+        //                 << target(edge, problem) << " "
+        //                 << get(get(boost::edge_weight, problem), edge) << "\n";
+        //     }
+        // }
         findShortestPath();
         while (removeFerry()) {}
     }
