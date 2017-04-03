@@ -1,5 +1,5 @@
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <boost/graph/dag_shortest_paths.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/property_map/function_property_map.hpp>
 
@@ -115,21 +115,21 @@ private:
     }
 };
 
-auto vertices(const Problem& graph) {
-    return std::make_pair(VertexIterator{0},
-            VertexIterator{graph.bikePaths.size()});
+std::size_t num_vertices(const Problem& graph) {
+    return graph.bikePaths.size() + 1;
 }
 
-std::size_t num_vertices(const Problem& graph) {
-    return graph.bikePaths.size();
+auto vertices(const Problem& graph) {
+    return std::make_pair(VertexIterator{0},
+            VertexIterator{num_vertices(graph)});
 }
 
 std::size_t source(const Edge& edge, const Problem&) {
     return edge.first;
 }
 
-std::size_t target(const Edge& edge, const Problem&) {
-    return edge.second;
+std::size_t target(const Edge& edge, const Problem& graph) {
+    return edge.second != 0 ? edge.second : num_vertices(graph) - 1;
 }
 
 struct EdgeComparator {
@@ -145,8 +145,9 @@ struct EdgeComparator {
 auto out_edges(std::size_t vertex, const Problem& problem) {
     auto range = std::equal_range(problem.ferries.begin(),
             problem.ferries.end(), vertex, EdgeComparator{});
+    int offset = (vertex == num_vertices(problem) - 1) ? 0 : -1;
     return std::make_pair(
-            EdgeIterator{range.first, range.first - 1, vertex,
+            EdgeIterator{range.first, range.first + offset, vertex,
                     num_vertices(problem)},
             EdgeIterator{range.first, range.second, vertex,
                     num_vertices(problem)});
@@ -162,18 +163,13 @@ boost::identity_property_map get(boost::vertex_index_t, const Problem&) {
     return {};
 }
 
-int positiveModulo(int a, int b)  {
-    return ((a % b) + b) % b;
-}
-
 bool isBikePath(const Edge& edge, const Problem& problem) {
-    return positiveModulo(edge.second - edge.first,
-        problem.bikePaths.size()) == 1;
+    return target(edge, problem) - source(edge, problem) == 1;
 }
 
 const Ferry& getFerry(const Edge& edge, const Problem& problem) {
     auto range = std::equal_range(problem.ferries.begin(),
-            problem.ferries.end(), edge.first, EdgeComparator{});
+            problem.ferries.end(), source(edge, problem), EdgeComparator{});
     return *std::find_if(range.first, range.second,
             [&edge](const Ferry& ferry) {
                 return ferry.to == edge.second;
@@ -233,7 +229,7 @@ struct DebugVisitor {
 
     template<typename E, typename G>
     void printEdge(const char* label, E e, const G& g) {
-        std::cerr << label << ": " << e.first << "->" << e.second
+        std::cerr << label << ": " << source(e, g) << "->" << target(e, g)
                 << " w=" << get(get(boost::edge_weight, g), e) << "\n";
     }
 };
@@ -325,9 +321,9 @@ public:
             std::cerr << "Vertex: " << vertex << "\n";
             for (auto edge : boost::make_iterator_range(
                     out_edges(vertex, problem))) {
-                std::cerr << "  Edge: " << edge.first << "->" << edge.second
-                        << " " << get(get(boost::edge_weight, problem), edge)
-                        << "\n";
+                std::cerr << "  Edge: " << edge.first << "->"
+                        << target(edge, problem) << " "
+                        << get(get(boost::edge_weight, problem), edge) << "\n";
             }
         }
         findShortestPath();
@@ -352,27 +348,28 @@ public:
 
 private:
     void findShortestPath() {
-        std::vector<std::size_t> predecessors(problem.bikePaths.size());
-        std::vector<int> distances(problem.bikePaths.size());
-        boost::dijkstra_shortest_paths(problem, 0,
+        std::vector<std::size_t> predecessors(num_vertices(problem));
+        std::vector<int> distances(num_vertices(problem));
+        boost::dag_shortest_paths(problem, 0,
                 boost::predecessor_map(&predecessors[0])
                 .distance_map(&distances[0])
                 /* .visitor(DebugVisitor{}) */);
-        totalTime = distances.back() + problem.bikePaths.back();
-        bikeTime = problem.bikePaths.back();
-        DebugVisitor v;
-        for (std::size_t vertex = problem.bikePaths.size() - 1;
+        totalTime = distances.back();
+        bikeTime = 0;
+        for (std::size_t vertex = num_vertices(problem) - 1;
                 vertex != 0; vertex = predecessors[vertex]) {
             auto edge = std::make_pair(predecessors[vertex], vertex);
             if (isBikePath(edge, problem)) {
-                // v.printEdge("Not using ferry", edge, problem);
                 int weight = get(get(boost::edge_weight, problem), edge);
                 // std::cerr << "  Bike time: " << bikeTime << "->";
                 bikeTime += weight;
                 // std::cerr << bikeTime << "\n";
             } else {
                 const Ferry& ferry = getFerry(edge, problem);
-                v.printEdge("Using ferry", edge, problem);
+                std::cerr << "Using ferry: " << problem.cityNames[ferry.from]
+                        << " -> " << problem.cityNames[ferry.to]
+                        << " t=" << ferry.time
+                        << " bt=" << ferry.skippedBikeTime << "\n";
                 usedFerries.insert(&ferry);
             }
         }
