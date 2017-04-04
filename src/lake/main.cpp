@@ -12,6 +12,13 @@
 #include <random>
 #include <vector>
 
+template<typename Ptr>
+struct PointerComparator {
+    bool operator()(Ptr lhs, Ptr rhs) const {
+        return *lhs < *rhs;
+    }
+};
+
 struct Ferry {
     std::size_t from;
     std::size_t to;
@@ -27,6 +34,14 @@ struct Problem {
 
     std::vector<Ferry> ferries;
 };
+
+bool isFerryBlockingAnother(const Ferry& main, const Ferry& other) {
+    return (other.from < main.to && other.to > main.from);
+}
+
+bool operator<(const Ferry& lhs, const Ferry& rhs) {
+    return lhs.from < rhs.from || (lhs.from == rhs.from && lhs.to < rhs.to);
+}
 
 class VertexIterator : public boost::iterator_facade<
         VertexIterator, std::size_t, boost::random_access_traversal_tag,
@@ -136,7 +151,7 @@ std::size_t target(const Edge& edge, const Problem& graph) {
     return edge.second != 0 ? edge.second : num_vertices(graph) - 1;
 }
 
-struct EdgeComparator {
+struct FerryBeginningComparator {
     bool operator()(const Ferry& ferry, std::size_t vertex) {
         return ferry.from < vertex;
     }
@@ -148,7 +163,7 @@ struct EdgeComparator {
 
 auto out_edges(std::size_t vertex, const Problem& problem) {
     auto range = std::equal_range(problem.ferries.begin(),
-            problem.ferries.end(), vertex, EdgeComparator{});
+            problem.ferries.end(), vertex, FerryBeginningComparator{});
     int offset = (vertex == num_vertices(problem) - 1) ? 0 : -1;
     return std::make_pair(
             EdgeIterator{range.first, range.first + offset, vertex,
@@ -159,7 +174,7 @@ auto out_edges(std::size_t vertex, const Problem& problem) {
 
 std::size_t out_degree(std::size_t vertex, const Problem& problem) {
     auto range = std::equal_range(problem.ferries.begin(),
-            problem.ferries.end(), vertex, EdgeComparator{});
+            problem.ferries.end(), vertex, FerryBeginningComparator{});
     return std::distance(range.first, range.second) + 1;
 }
 
@@ -173,7 +188,8 @@ bool isBikePath(const Edge& edge, const Problem& problem) {
 
 const Ferry& getFerry(const Edge& edge, const Problem& problem) {
     auto range = std::equal_range(problem.ferries.begin(),
-            problem.ferries.end(), source(edge, problem), EdgeComparator{});
+            problem.ferries.end(), source(edge, problem),
+            FerryBeginningComparator{});
     return *std::find_if(range.first, range.second,
             [&edge](const Ferry& ferry) {
                 return ferry.to == edge.second;
@@ -299,10 +315,7 @@ Problem readInput(std::istream& stream) {
                         problem.bikePaths.begin() + fromIndex,
                         problem.bikePaths.begin() + toIndex, 0)});
     }
-    std::sort(problem.ferries.begin(), problem.ferries.end(),
-            [](const Ferry& lhs, const Ferry& rhs) {
-                return lhs.from < rhs.from;
-            });
+    std::sort(problem.ferries.begin(), problem.ferries.end());
 
     stream >> problem.timeLimit;
     return problem;
@@ -343,10 +356,11 @@ public:
         bestBikeTime = 0;
         // TODO: Use time limit.
         for (int i = 0; i < 100; ++i) {
-            while (totalTime <= problem.timeLimit) {
+            while (totalTime <= problem.timeLimit
+                    || usableFerries.size() == 0) {
                 removeFerry();
             }
-            while (totalTime > problem.timeLimit) {
+            while (totalTime > problem.timeLimit && usableFerries.size() != 0) {
                 addFerry();
             }
         }
@@ -366,12 +380,13 @@ public:
         int time = 0;
         int bikeTime = 0;
         std::size_t position = 0;
+        bool result = true;
         for (const Ferry* ferry : bestSolution) {
             if (ferry->from < position) {
                 std::cerr << "Wrong ferry chosen: "
                         << problem.cityNames[ferry->from] << " -> "
                         << problem.cityNames[ferry->to] << "\n";
-                return false;
+                result = false;
             }
             for (; position < ferry->from; ++position) {
                 time += problem.bikePaths[position];
@@ -388,17 +403,18 @@ public:
                 << bikeTime << "\n";
         if (time > problem.timeLimit) {
             std::cerr << "Path too long.\n";
-            return false;
+            result = false;
         }
         if (bikeTime != bestBikeTime) {
             std::cerr << "Bike time mismatch.\n";
-            return false;
+            result = false;
         }
-        return true;
+        return result;
     }
 
 private:
-    using FerrySet = boost::container::flat_set<const Ferry*>;
+    using FerrySet = boost::container::flat_set<const Ferry*,
+            PointerComparator<const Ferry*>>;
 
     void findShortestPath() {
         std::vector<std::size_t> predecessors(num_vertices(problem));
@@ -409,10 +425,12 @@ private:
                 /* .visitor(DebugVisitor{}) */);
         totalTime = distances.back();
         bikeTime = 0;
+        for (const Ferry& ferry : problem.ferries) {
+            usableFerries.insert(&ferry);
+        }
         for (std::size_t vertex = num_vertices(problem) - 1;
                 vertex != 0; vertex = predecessors[vertex]) {
             auto edge = std::make_pair(predecessors[vertex], vertex);
-            const Ferry* exclude = nullptr;
             if (isBikePath(edge, problem)) {
                 int weight = get(get(boost::edge_weight, problem), edge);
                 bikeTime += weight;
@@ -422,46 +440,59 @@ private:
                         << " -> " << problem.cityNames[ferry.to]
                         << " t=" << ferry.time
                         << " bt=" << ferry.skippedBikeTime << "\n";
-                usedFerries.insert(&ferry);
-                exclude = &ferry;
+                auto iterator = usableFerries.lower_bound(&ferry);
+                assert(*iterator == &ferry);
+                addFerryManageSets(iterator);
             }
 
-            auto begin = std::lower_bound(problem.ferries.begin(),
-                    problem.ferries.end(), predecessors[vertex],
-                    EdgeComparator{});
-            auto end = std::lower_bound(problem.ferries.begin(),
-                    problem.ferries.end(), vertex, EdgeComparator{});
-            for (auto iterator = begin; iterator != end; ++iterator) {
-                const Ferry* ferry = &*iterator;
-                if (ferry != exclude) {
-                    usableFerries.insert(ferry);
-                }
+        }
+    }
+
+    void removeFerryManageSets(FerrySet::iterator removedIterator) {
+        auto nextIterator = removedIterator + 1;
+        auto begin = (removedIterator == usedFerries.begin())
+                ? problem.ferries.begin()
+                : std::lower_bound(problem.ferries.begin(),
+                        problem.ferries.end(), (*(removedIterator - 1))->to,
+                        FerryBeginningComparator{});
+        auto end = (nextIterator == usedFerries.end())
+                ? problem.ferries.end()
+                : std::upper_bound(problem.ferries.begin(),
+                        problem.ferries.end(), (*nextIterator)->from,
+                        FerryBeginningComparator{});
+        const Ferry* next = nextIterator == usedFerries.end()
+                ? nullptr : *nextIterator;
+
+        usedFerries.erase(removedIterator);
+        for (auto iterator = begin; iterator < end; ++iterator) {
+            if (!next || !isFerryBlockingAnother(*next, *iterator)) {
+                usableFerries.insert(&*iterator);
+                // std::cerr << "Ferry now usable: "
+                //         << problem.cityNames[iterator->from] << " -> "
+                //         << problem.cityNames[iterator->to] << "\n";
             }
         }
     }
 
-    void addUsableFerries(std::size_t begin, std::size_t end) {
-        for (const Ferry& ferry : problem.ferries) {
-            if ((ferry.from > begin && ferry.from < end)
-                    || (ferry.to > begin && ferry.to < end)) {
-                usableFerries.insert(&ferry);
-            }
-        }
-    }
-
-    void removeUsableFerries(std::size_t begin, std::size_t end) {
+    void addFerryManageSets(FerrySet::iterator iterator) {
+        const Ferry* addedFerry = *iterator;
+        usableFerries.erase(iterator);
+        usedFerries.insert(addedFerry);
         std::vector<const Ferry*> currentFerries(usableFerries.size());
         std::copy(usableFerries.begin(), usableFerries.end(),
                 currentFerries.begin());
         for (const Ferry* ferry : currentFerries) {
-            if ((ferry->from > begin && ferry->from < end)
-                    || (ferry->to > begin && ferry->to < end)) {
+            if (isFerryBlockingAnother(*addedFerry, *ferry)) {
+                // std::cerr << "Ferry now unusable: "
+                //         << problem.cityNames[ferry->from] << " -> "
+                //         << problem.cityNames[ferry->to] << "\n";
                 usableFerries.erase(ferry);
             }
         }
     }
 
     void removeFerry() {
+        assert(usedFerries.size() != 0);
         auto iterator = getRandomElement(usedFerries, rng,
                 [](const Ferry* ferry) {
                     return ferry->skippedBikeTime - ferry->time;
@@ -469,7 +500,8 @@ private:
         const Ferry* ferry = *iterator;
 
         int newTotalTime = totalTime + ferry->skippedBikeTime - ferry->time;
-        if (newTotalTime > problem.timeLimit) {
+        if (totalTime <= problem.timeLimit
+                && newTotalTime > problem.timeLimit) {
             if (bikeTime > bestBikeTime) {
                 std::cerr << "New best solution: bike time = " << bikeTime
                         << " total time = " << totalTime << "\n";
@@ -480,26 +512,28 @@ private:
             }
         }
 
-        // std::cerr << "Removing ferry from " << problem.cityNames[ferry->from]
-        //         << " to " << problem.cityNames[ferry->to] << "\n";
-        usedFerries.erase(iterator);
         bikeTime += ferry->skippedBikeTime;
         totalTime = newTotalTime;
-        addUsableFerries(ferry->from, ferry->to);
+        // std::cerr << "Removing ferry from " << problem.cityNames[ferry->from]
+        //         << " to " << problem.cityNames[ferry->to]
+        //         << " t=" << totalTime << " bt=" << bikeTime << "\n";
+        removeFerryManageSets(iterator);
     }
 
     void addFerry() {
+        assert(usableFerries.size() != 0);
         auto iterator = getRandomElement(usableFerries, rng,
                 [](const Ferry* ferry) {
                     return 1.0 / (ferry->skippedBikeTime - ferry->time);
                 });
         const Ferry* ferry = *iterator;
-        // std::cerr << "Adding ferry from " << problem.cityNames[ferry->from]
-        //         << " to " << problem.cityNames[ferry->to] << "\n";
-        usedFerries.insert(ferry);
         bikeTime -= ferry->skippedBikeTime;
-        totalTime -= ferry->skippedBikeTime - ferry->time;
-        removeUsableFerries(ferry->from, ferry->to);
+        totalTime -= ferry->skippedBikeTime;
+        totalTime += ferry->time;
+        // std::cerr << "Adding ferry from " << problem.cityNames[ferry->from]
+        //         << " to " << problem.cityNames[ferry->to]
+        //         << " t=" << totalTime << " bt=" << bikeTime << "\n";
+        addFerryManageSets(iterator);
     }
 
     Problem problem;
@@ -510,20 +544,17 @@ private:
     int bikeTime;
     int totalTime;
     std::mt19937 rng{std::random_device{}()};
+    // std::mt19937 rng{123123};
 };
 
 int main() {
     Solver solver{readInput(std::cin)};
     solver.solve();
     auto solution = solver.getResult();
-    if (!solver.checkResult()) {
-        return 1;
-    }
     std::cout << solution.size() << "\n";
     for (const auto& ferry : solution) {
         std::cout << ferry.first << " " << ferry.second << "\n";
     }
-    return 0;
+    // TODO this is not needed for production
+    return solver.checkResult() ? 0 : 1;
 }
-// TODO: Check for really disjunct ferries. Use graph to represent ferry
-// relations.
