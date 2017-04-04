@@ -355,7 +355,7 @@ public:
         findShortestPath();
         bestBikeTime = 0;
         // TODO: Use time limit.
-        for (int i = 0; i < 100; ++i) {
+        for (iteration = 0; iteration < 100; ++iteration) {
             while (totalTime <= problem.timeLimit
                     || usableFerries.size() == 0) {
                 removeFerry();
@@ -503,7 +503,8 @@ private:
         if (totalTime <= problem.timeLimit
                 && newTotalTime > problem.timeLimit) {
             if (bikeTime > bestBikeTime) {
-                std::cerr << "New best solution: bike time = " << bikeTime
+                std::cerr << "Iteration #" << iteration
+                        << ": new best solution: bike time = " << bikeTime
                         << " total time = " << totalTime << "\n";
                 bestSolution.resize(usedFerries.size());
                 std::copy(usedFerries.begin(), usedFerries.end(),
@@ -543,6 +544,7 @@ private:
     int bestBikeTime;
     int bikeTime;
     int totalTime;
+    int iteration = 0;
     std::mt19937 rng{std::random_device{}()};
     // std::mt19937 rng{123123};
 };
