@@ -486,3 +486,6 @@ int main() {
         std::cout << ferry.first << " " << ferry.second << "\n";
     }
 }
+// TODO: Check for really disjunct ferries. Use graph to represent ferry
+// relations.
+// TODO: Check output correctness.
