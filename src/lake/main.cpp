@@ -362,6 +362,41 @@ public:
         return result;
     }
 
+    bool checkResult() const {
+        int time = 0;
+        int bikeTime = 0;
+        std::size_t position = 0;
+        for (const Ferry* ferry : bestSolution) {
+            if (ferry->from < position) {
+                std::cerr << "Wrong ferry chosen: "
+                        << problem.cityNames[ferry->from] << " -> "
+                        << problem.cityNames[ferry->to] << "\n";
+                return false;
+            }
+            for (; position < ferry->from; ++position) {
+                time += problem.bikePaths[position];
+                bikeTime += problem.bikePaths[position];
+            }
+            position = ferry->to;
+            time += ferry->time;
+        }
+        for (; position < problem.bikePaths.size(); ++position) {
+            time += problem.bikePaths[position];
+            bikeTime += problem.bikePaths[position];
+        }
+        std::cerr << "Calculated time: " << time << " calculated bike time: "
+                << bikeTime << "\n";
+        if (time > problem.timeLimit) {
+            std::cerr << "Path too long.\n";
+            return false;
+        }
+        if (bikeTime != bestBikeTime) {
+            std::cerr << "Bike time mismatch.\n";
+            return false;
+        }
+        return true;
+    }
+
 private:
     using FerrySet = boost::container::flat_set<const Ferry*>;
 
@@ -481,11 +516,14 @@ int main() {
     Solver solver{readInput(std::cin)};
     solver.solve();
     auto solution = solver.getResult();
+    if (!solver.checkResult()) {
+        return 1;
+    }
     std::cout << solution.size() << "\n";
     for (const auto& ferry : solution) {
         std::cout << ferry.first << " " << ferry.second << "\n";
     }
+    return 0;
 }
 // TODO: Check for really disjunct ferries. Use graph to represent ferry
 // relations.
-// TODO: Check output correctness.
