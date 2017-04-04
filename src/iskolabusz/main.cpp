@@ -34,9 +34,29 @@ int recur(int N) {
     return recur(N / 2) * 2;
 }
 
+//http://stackoverflow.com/questions/53161/find-the-highest-order-bit-in-c
+//http://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
+int xx(int n) {
+    return (n & (n - 1)) ? (n - (1<<(fls(n)-1))) * 2 : n;
+}
+
+
+
 #include <boost/test/unit_test.hpp>
 #include <random>
 BOOST_AUTO_TEST_SUITE( iskolabusz )
+
+BOOST_AUTO_TEST_CASE(X) {
+    BOOST_CHECK_EQUAL(xx(2), 2);
+    BOOST_CHECK_EQUAL(xx(3), 2);
+    BOOST_CHECK_EQUAL(xx(4), 4);
+    BOOST_CHECK_EQUAL(xx(5), 2);
+    BOOST_CHECK_EQUAL(xx(6), 4);
+    BOOST_CHECK_EQUAL(xx(7), 6);
+    BOOST_CHECK_EQUAL(xx(8), 8);
+    BOOST_CHECK_EQUAL(xx(9), 2);
+    BOOST_CHECK_EQUAL(xx(10), 4);
+}
 
 BOOST_AUTO_TEST_CASE(Brute) {
     BOOST_CHECK_EQUAL(brute(1), 1);
