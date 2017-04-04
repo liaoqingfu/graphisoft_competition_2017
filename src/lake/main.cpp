@@ -495,7 +495,7 @@ private:
         assert(usedFerries.size() != 0);
         auto iterator = getRandomElement(usedFerries, rng,
                 [](const Ferry* ferry) {
-                    return ferry->skippedBikeTime - ferry->time;
+                    return ferry->skippedBikeTime;
                 });
         const Ferry* ferry = *iterator;
 
@@ -524,7 +524,7 @@ private:
         assert(usableFerries.size() != 0);
         auto iterator = getRandomElement(usableFerries, rng,
                 [](const Ferry* ferry) {
-                    return 1.0 / (ferry->skippedBikeTime - ferry->time);
+                    return 1.0 / (ferry->skippedBikeTime);
                 });
         const Ferry* ferry = *iterator;
         bikeTime -= ferry->skippedBikeTime;
