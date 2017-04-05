@@ -354,15 +354,37 @@ public:
         // }
         findShortestPath();
         bestBikeTime = 0;
+        bestTotalTime = 0;
         // TODO: Use time limit.
-        for (iteration = 0; iteration < 100; ++iteration) {
-            while (totalTime <= problem.timeLimit
-                    || usableFerries.size() == 0) {
-                removeFerry();
+        for (int i = 0; i < 20; ++i) {
+            std::cerr << "--- iteratrion #" << i << "\n";
+            // for (const Ferry* ferry : usedFerries) {
+            //     std::cerr << "Used: " << ferry->from << "->"
+            //             << ferry->to << "\n";
+            // }
+            // for (const Ferry* ferry : usableFerries) {
+            //     std::cerr << "Usable: " << ferry->from << "->"
+            //             << ferry->to << "\n";
+            // }
+            for (int j = 0; j < 10; ++j) {
+                iteration = std::to_string(i) + "." + std::to_string(j);
+                while (totalTime <= problem.timeLimit
+                        || usableFerries.size() == 0) {
+                    removeFerry();
+                }
+                while (totalTime > problem.timeLimit &&
+                        usableFerries.size() != 0) {
+                    addFerry();
+                }
             }
-            while (totalTime > problem.timeLimit && usableFerries.size() != 0) {
-                addFerry();
+            clearUsedFerries();
+            usedFerries.insert(boost::container::ordered_unique_range,
+                    bestSolution.begin(), bestSolution.end());
+            for (const Ferry* ferry : usedFerries) {
+                removeBlockingFerries(ferry);
             }
+            bikeTime = bestBikeTime;
+            totalTime = bestTotalTime;
         }
     }
 
@@ -401,8 +423,8 @@ public:
         }
         std::cerr << "Calculated time: " << time << " calculated bike time: "
                 << bikeTime << "\n";
-        if (time > problem.timeLimit) {
-            std::cerr << "Path too long.\n";
+        if (time != bestTotalTime) {
+            std::cerr << "Total time mismatch.\n";
             result = false;
         }
         if (bikeTime != bestBikeTime) {
@@ -416,6 +438,15 @@ private:
     using FerrySet = boost::container::flat_set<const Ferry*,
             PointerComparator<const Ferry*>>;
 
+    void clearUsedFerries() {
+        usedFerries.clear();
+        usableFerries.clear();
+        usableFerries.reserve(problem.ferries.size());
+        for (const Ferry& ferry : problem.ferries) {
+            usableFerries.insert(&ferry);
+        }
+    }
+
     void findShortestPath() {
         std::vector<std::size_t> predecessors(num_vertices(problem));
         std::vector<int> distances(num_vertices(problem));
@@ -425,9 +456,7 @@ private:
                 /* .visitor(DebugVisitor{}) */);
         totalTime = distances.back();
         bikeTime = 0;
-        for (const Ferry& ferry : problem.ferries) {
-            usableFerries.insert(&ferry);
-        }
+        clearUsedFerries();
         for (std::size_t vertex = num_vertices(problem) - 1;
                 vertex != 0; vertex = predecessors[vertex]) {
             auto edge = std::make_pair(predecessors[vertex], vertex);
@@ -478,6 +507,10 @@ private:
         const Ferry* addedFerry = *iterator;
         usableFerries.erase(iterator);
         usedFerries.insert(addedFerry);
+        removeBlockingFerries(addedFerry);
+    }
+
+    void removeBlockingFerries(const Ferry* addedFerry) {
         std::vector<const Ferry*> currentFerries(usableFerries.size());
         std::copy(usableFerries.begin(), usableFerries.end(),
                 currentFerries.begin());
@@ -510,6 +543,7 @@ private:
                 std::copy(usedFerries.begin(), usedFerries.end(),
                         bestSolution.begin());
                 bestBikeTime = bikeTime;
+                bestTotalTime = totalTime;
             }
         }
 
@@ -542,14 +576,15 @@ private:
     FerrySet usableFerries;
     std::vector<const Ferry*> bestSolution;
     int bestBikeTime;
+    int bestTotalTime;
     int bikeTime;
     int totalTime;
-    int iteration = 0;
+    std::string iteration;
     std::mt19937 rng{std::random_device{}()};
     // std::mt19937 rng{123123};
 };
-
 int main() {
+
     Solver solver{readInput(std::cin)};
     solver.solve();
     auto solution = solver.getResult();
