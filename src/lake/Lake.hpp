@@ -369,7 +369,9 @@ public:
             //     std::cerr << "Usable: " << ferry->from << "->"
             //             << ferry->to << "\n";
             // }
-            for (int j = 0; j < 10; ++j) {
+            int notChanged = 0;
+            for (int j = 0; j < 1000 && notChanged < 10; ++j) {
+                int currentBest = bestBikeTime;
                 iteration = std::to_string(i) + "." + std::to_string(j);
                 while (totalTime <= problem.timeLimit
                         || usableFerries.size() == 0) {
@@ -378,6 +380,11 @@ public:
                 while (totalTime > problem.timeLimit &&
                         usableFerries.size() != 0) {
                     addFerry();
+                }
+                if (currentBest != bestBikeTime) {
+                    notChanged = 0;
+                } else {
+                    ++notChanged;
                 }
             }
             clearUsedFerries();
