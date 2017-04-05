@@ -61,16 +61,6 @@ Weights NeuralNetwork::evaluateInput(Weights input) {
     return output;
 }
 
-NeuralNetwork loadNeuralNetworkFromFile(const std::string& fileName) {
-    NeuralNetwork result;
-
-    std::ifstream ifs(fileName);
-    boost::archive::text_iarchive ia(ifs);
-    ia >> result;
-
-    return result;
-}
-
 std::string NeuralNetwork::getExternalParameter(const std::string& key) const {
     auto it = externalParameters.find(key);
     return it == externalParameters.end() ? "" : it->second;

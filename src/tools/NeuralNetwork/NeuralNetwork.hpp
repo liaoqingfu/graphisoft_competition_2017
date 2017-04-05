@@ -100,7 +100,17 @@ T sigmoidApproximation(T x) {
     return x / (1 + std::abs(x));
 }
 
-NeuralNetwork loadNeuralNetworkFromFile(const std::string& fileName);
+template<typename NeuralNetwork>
+NeuralNetwork loadNeuralNetworkFromFile(const std::string& fileName) {
+    NeuralNetwork result;
+
+    std::ifstream ifs(fileName);
+    boost::archive::text_iarchive ia(ifs);
+    ia >> result;
+
+    return result;
+}
+
 
 BOOST_CLASS_VERSION(NeuralNetwork, 2)
 

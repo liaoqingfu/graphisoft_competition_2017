@@ -33,13 +33,13 @@ public:
     {}
 
 
-    template<typename GameManagerFactory>
+    template<typename NeuralNetwork, typename GameManagerFactory>
     void run(const GameManagerFactory& gameManagerFactory) {
         using GameManager = typename std::result_of<
                 typename std::decay<GameManagerFactory>::type(GameInfo)>::type;
         using PopulationRunner = ::PopulationRunner<GameManager>;
 
-        std::vector<PopulationRunner> populations;
+        std::vector<PopulationRunner, NeuralNetwork> populations;
         populations.reserve(parameters.startingPopulations);
 
         for (std::size_t i = 0; i < parameters.startingPopulations; ++i) {

@@ -4,7 +4,6 @@
 #include "LearningParameters.hpp"
 #include "GeneticPopulation.hpp"
 #include "Genome.hpp"
-#include "NeuralNetwork.hpp"
 
 #include <boost/asio/io_service.hpp>
 
@@ -13,7 +12,7 @@
 #include <mutex>
 #include <vector>
 
-template<typename GameManager>
+template<typename GameManager, typename NeuralNetwork>
 class PopulationRunner {
 public:
     template<typename GameManagerFactory, typename GameInfo>
