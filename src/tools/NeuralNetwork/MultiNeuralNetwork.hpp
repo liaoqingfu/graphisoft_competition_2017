@@ -3,24 +3,57 @@
 
 #include "NeuralNetwork.hpp"
 
-#include <vector>
+#include <array>
 
+template<std::size_t N>
 class MultiNeuralNetwork {
 public:
-    NeuralNetwork(
+    MultiNeuralNetwork() = default;
+
+    MultiNeuralNetwork(
             unsigned hiddenLayerCount,
             unsigned hiddenLayerNeuronCount,
             unsigned inputNeuronCount,
-            unsigned outputNeuronCount);
+            unsigned outputNeuronCount) {
+        for (NeuralNetwork& network : neuralNetworks) {
+            network = NeuralNetwork{
+                    hiddenLayerCount,
+                    hiddenLayerNeuronCount,
+                    inputNeuronCount,
+                    outputNeuronCount};
+        }
+    }
 
     static unsigned getWeightCountForNetwork(
             unsigned hiddenLayerCount,
             unsigned hiddenLayerNeuronCount,
             unsigned inputNeuronCount,
-            unsigned outputNeuronCount);
+            unsigned outputNeuronCount) {
+        return N * NeuralNetwork::getWeightCountForNetwork(
+                hiddenLayerCount,
+                hiddenLayerNeuronCount,
+                inputNeuronCount,
+                outputNeuronCount);
+    }
+
+    NeuralNetwork& get(std::size_t i) {
+        return neuralNetworks[i];
+    }
+
+    void setWeights(const Weights& weights) {
+        auto begin = weights.begin();
+        for (NeuralNetwork& network : neuralNetworks) {
+            auto size = network.getWeightCount();
+            Weights w(size);
+            auto end = begin + size;
+            std::copy(begin, end, w.begin());
+            network.setWeights(std::move(w));
+            begin = end;
+        }
+    }
 
 private:
-    std::vector<NeuralNetworrk> neuralNetworks;
+    std::array<NeuralNetwork, N> neuralNetworks;
 };
 
 

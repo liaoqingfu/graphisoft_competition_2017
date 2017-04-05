@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <numeric>
 #include <iostream>
-#include <random>
 #include <vector>
 
 template<typename Ptr>
@@ -327,9 +326,10 @@ Problem readInput(std::istream& stream) {
 template<typename FerryChooser>
 class Solver {
 public:
-    Solver(Problem problem, FerryChooser ferryChooser) :
-            problem(std::move(problem)), ferryChooser(std::move(ferryChooser)),
+    Solver(Problem problem, FerryChooser& ferryChooser) :
+            problem(std::move(problem)), ferryChooser(&ferryChooser),
             bikeTime(0), totalTime(0) {
+        ferryChooser.initialize(*this);
     }
 
     void findShortestPath() {
@@ -510,7 +510,7 @@ private:
     void removeFerry() {
         assert(usedFerries.size() != 0);
         auto iterator = usedFerries.begin()
-                + ferryChooser.chooseFerryToRemove(
+                + ferryChooser->chooseFerryToRemove(
                         usedFerries, usableFerries, bikeTime, totalTime);
         const Ferry* ferry = *iterator;
 
@@ -540,7 +540,7 @@ private:
     void addFerry() {
         assert(usableFerries.size() != 0);
         auto iterator = usableFerries.begin()
-                + ferryChooser.chooseFerryToAdd(
+                + ferryChooser->chooseFerryToAdd(
                         usedFerries, usableFerries, bikeTime, totalTime);
         const Ferry* ferry = *iterator;
         bikeTime -= ferry->skippedBikeTime;
@@ -553,7 +553,7 @@ private:
     }
 
     Problem problem;
-    FerryChooser ferryChooser;
+    FerryChooser* ferryChooser;
     FerrySet usedFerries;
     FerrySet usableFerries;
     std::vector<const Ferry*> bestSolution;

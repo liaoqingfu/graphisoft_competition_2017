@@ -44,7 +44,3 @@ CPP_FLAGS += $EXTRA_CPP_FLAGS
 CPP_FLAGS += -isystem $BOOST_LIB/../include
 
 LD_FLAGS += $EXTRA_LD_FLAGS
-
-!cxx = |> ^ CXX %f^ $(CXX) $(CPP_FLAGS) $(INCLUDE_DIRS) -c %f -o %o |> %B.o
-!linker = |> ^ LD %o^ $(LD) $(LD_FLAGS) %f $(LIBS) -o %o |>
-!unitTest = |> ^ UT %f^ ./%f && touch %o |> %b.output

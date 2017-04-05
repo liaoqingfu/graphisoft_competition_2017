@@ -37,9 +37,9 @@ public:
     void run(const GameManagerFactory& gameManagerFactory) {
         using GameManager = typename std::result_of<
                 typename std::decay<GameManagerFactory>::type(GameInfo)>::type;
-        using PopulationRunner = ::PopulationRunner<GameManager>;
+        using PopulationRunner = ::PopulationRunner<GameManager, NeuralNetwork>;
 
-        std::vector<PopulationRunner, NeuralNetwork> populations;
+        std::vector<PopulationRunner> populations;
         populations.reserve(parameters.startingPopulations);
 
         for (std::size_t i = 0; i < parameters.startingPopulations; ++i) {

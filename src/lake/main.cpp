@@ -1,6 +1,7 @@
 #include "Lake.hpp"
 
 #include <iostream>
+#include <random>
 
 template<typename Container, typename Function, typename RNG>
 typename Container::const_iterator getRandomElement(const Container& elements,
@@ -35,14 +36,15 @@ public:
         return std::distance(usedFerries.begin(), iterator);
     }
 
+    void initialize(const Solver<RandomFerryChooser>&) {}
 private:
     std::mt19937 rng{std::random_device{}()};
     // std::mt19937 rng{123123};
 };
 
 int main() {
-    Solver<RandomFerryChooser> solver{readInput(std::cin),
-            RandomFerryChooser{}};
+    RandomFerryChooser ferryChooser;
+    Solver<RandomFerryChooser> solver{readInput(std::cin), ferryChooser};
     solver.findShortestPath();
     solver.solve();
     auto solution = solver.getResult();

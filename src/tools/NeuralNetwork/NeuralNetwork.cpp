@@ -2,8 +2,6 @@
 #include "NeuralNetwork.hpp"
 #include <cassert>
 #include <cmath>
-#include <fstream>
-#include <boost/archive/text_iarchive.hpp>
 
 NeuralNetwork::NeuralNetwork(
         unsigned hiddenLayerCount,
