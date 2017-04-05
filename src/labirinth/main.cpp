@@ -1,3 +1,7 @@
+#pragma GCC optimize ("O3")
+
+#define NDEBUG
+
 #include "Field.hpp"
 #include "HexMatrix.hpp"
 #include "MatrixPropertyMap.hpp"

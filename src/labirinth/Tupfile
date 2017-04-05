@@ -9,6 +9,6 @@ include $(COMPILE_TUP)
 
 include $(LINK_TUP)
 
-: main.o $(MATRIX_LIB) |> !linker |> labirinth
-: generator.o $(MATRIX_LIB) |> !linker |> generator
-: print.o $(MATRIX_LIB) |> !linker |> print
+: main.o |> !linker |> labirinth
+: generator.o |> !linker |> generator
+: print.o |> !linker |> print
