@@ -37,7 +37,8 @@ int recur(int N) {
 //http://stackoverflow.com/questions/53161/find-the-highest-order-bit-in-c
 //http://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
 int xx(int n) {
-    return (n & (n - 1)) ? (n - (1<<(fls(n)-1))) * 2 : n;
+    //return (n & (n - 1)) ? (n - (1<<(fls(n)-1))) * 2 : n;
+    return ((n & (n - 1)) ? (n * 2 - (1<<fls(n))) : n);
 }
 
 
