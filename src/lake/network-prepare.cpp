@@ -6,7 +6,7 @@
 #include <iomanip>
 
 int main(int argc, char* argv[]) {
-    assert(argc == 2);
+    assert(argc == 3);
     MultiNeuralNetwork<2> network;
     {
         std::ifstream input(argv[1]);
@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
 
     const NeuralNetwork& network0 = network.get(0);
     const NeuralNetwork& network1 = network.get(1);
-    std::ofstream output{"NeuralNetworkData.hpp"};
+    std::ofstream output{argv[2]};
     output << R"(
 #ifndef NEURAL_NETWORK_DATA_HPP
 #define NEURAL_NETWORK_DATA_HPP
