@@ -1,5 +1,4 @@
 #include "GeneticPopulation.hpp"
-#include "LearningParameters.hpp"
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -175,20 +174,4 @@ void savePopulation(const LearningParameters& parameters,
         boost::archive::text_oarchive oa(ofs);
         oa << population.getPopulation();
     }
-}
-
-void saveNeuralNetwork(const LearningParameters& parameters,
-        const Genome& genome) {
-    //TODO we are reconstucting the same network as above
-    NeuralNetwork network(parameters.hiddenLayerCount,
-            parameters.neuronPerHiddenLayer,
-            parameters.inputNeuronCount,
-            parameters.outputNeuronCount);
-    // setNeuralNetworkExternalParameters(parameters.commonParameters, network);
-
-    network.setWeights(genome.weights);
-
-    std::ofstream ofs(parameters.bestAIFile);
-    boost::archive::text_oarchive oa(ofs);
-    oa << network;
 }

@@ -3,6 +3,9 @@
 
 #include "NeuralNetwork.hpp"
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/array.hpp>
+
 #include <array>
 
 template<std::size_t N>
@@ -54,6 +57,13 @@ public:
 
 private:
     std::array<NeuralNetwork, N> neuralNetworks;
+
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int /*version*/){
+        ar & neuralNetworks;
+    }
 };
 
 

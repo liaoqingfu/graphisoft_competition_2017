@@ -64,7 +64,8 @@ public:
             savePopulation(parameters, bestPopulation.getPopulation());
             if (bestPopulation.getBestFitness() > bestFitness) {
                 bestFitness = bestPopulation.getBestFitness();
-                saveNeuralNetwork(parameters, bestPopulation.getBestGenome());
+                saveNeuralNetwork<NeuralNetwork>(parameters, 
+                        bestPopulation.getBestGenome());
             }
 
             if (populations.size() > 1 &&

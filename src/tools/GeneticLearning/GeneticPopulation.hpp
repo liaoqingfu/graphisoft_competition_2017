@@ -1,10 +1,14 @@
 #ifndef TOOLS_GENETICLEARNING_GENETICPOPULATION_HPP
 #define TOOLS_GENETICLEARNING_GENETICPOPULATION_HPP
 
-#include <vector>
-
+#include "LearningParameters.hpp"
 #include "NeuralNetwork.hpp"
 #include "Genome.hpp"
+
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
+#include <vector>
 
 //This class implements Genetic algorithms to mutate its population
 class GeneticPopulation {
@@ -58,7 +62,22 @@ void loadPopulation(const LearningParameters& parameters,
         GeneticPopulation& population);
 void savePopulation(const LearningParameters& parameters,
         const GeneticPopulation& population);
+
+template<typename NeuralNetwork>
 void saveNeuralNetwork(const LearningParameters& parameters,
-        const Genome& genome);
+        const Genome& genome) {
+    //TODO we are reconstucting the same network as above
+    NeuralNetwork network(parameters.hiddenLayerCount,
+            parameters.neuronPerHiddenLayer,
+            parameters.inputNeuronCount,
+            parameters.outputNeuronCount);
+    // setNeuralNetworkExternalParameters(parameters.commonParameters, network);
+
+    network.setWeights(genome.weights);
+
+    std::ofstream ofs(parameters.bestAIFile);
+    boost::archive::text_oarchive oa(ofs);
+    oa << network;
+}
 
 #endif // TOOLS_GENETICLEARNING_GENETICPOPULATION_HPP
