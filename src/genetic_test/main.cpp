@@ -1,17 +1,19 @@
 #include "LearningController.hpp"
 #include "LearningParameters.hpp"
-#include "NeuralNetwork.hpp"
+#include "MultiNeuralNetwork.hpp"
 
 #include <util/ThreadPool.hpp>
 #include <type_traits>
 
 struct GameInfo {};
 
+using Network = MultiNeuralNetwork<3>;
+
 class GameManager {
 public:
     void init() {}
     void run() {}
-    void setNeuralNetwork(const NeuralNetwork&) {}
+    void setNeuralNetwork(const Network&) {}
     float getFitness() const { return 0; }
     std::string getDebugInfo() const { return ""; }
 };
@@ -30,5 +32,5 @@ int main() {
     parameters.generationLimit = 10;
     LearningController<GameInfo> learningController{parameters, {GameInfo{}},
             threadPool.getIoService()};
-    learningController.run(createGameManager);
+    learningController.run<Network>(createGameManager);
 }

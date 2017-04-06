@@ -1,6 +1,7 @@
 include_rules
 
-LD_FLAGS += -lboost_program_options
+INCLUDE_DIRS += -I$(NEURAL_NETWORK_DIR) -I$(GENETIC_LEARNING_DIR) \
+        -I$(CPP_UTIL_DIR)/include
 
 include $(COMPILE_TUP)
 
@@ -8,5 +9,14 @@ include $(COMPILE_TUP)
 
 include $(LINK_TUP)
 
-: generator.o |> !linker |> generator
 : main.o |> !linker |> lake
+
+LD_FLAGS += -lboost_program_options 
+
+: generator.o |> !linker |> generator
+
+LD_FLAGS += -lboost_system -lboost_thread -lboost_serialization \
+        -lboost_filesystem -lpthread
+
+: learn.o $(NEURAL_NETWORK_LIB) $(GENETIC_LEARNING_LIB) $(CPP_UTIL_LIB) \
+        |> !linker |> learn

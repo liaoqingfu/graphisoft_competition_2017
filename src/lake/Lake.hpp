@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <numeric>
 #include <iostream>
-#include <random>
 #include <vector>
 
 template<typename Ptr>
@@ -324,51 +323,51 @@ Problem readInput(std::istream& stream) {
     return problem;
 }
 
-template<typename Container, typename Function, typename RNG>
-typename Container::iterator getRandomElement(Container& elements, RNG& rng,
-        const Function& weightFunction) {
-    auto range = elements | boost::adaptors::transformed(weightFunction);
-    std::discrete_distribution<std::size_t> distribution{
-            range.begin(), range.end()};
-    return elements.begin() + distribution(rng);
-}
-
+template<typename FerryChooser>
 class Solver {
 public:
-    Solver(Problem problem) :
-            problem(std::move(problem)), bikeTime(0), totalTime(0) {
+    Solver(Problem problem, FerryChooser& ferryChooser) :
+            problem(std::move(problem)), ferryChooser(&ferryChooser),
+            bikeTime(0), totalTime(0) {
+        ferryChooser.initialize(*this);
+    }
+
+    void findShortestPath() {
+        std::vector<std::size_t> predecessors(num_vertices(problem));
+        std::vector<int> distances(num_vertices(problem));
+        boost::dag_shortest_paths(problem, 0,
+                boost::predecessor_map(&predecessors[0])
+                .distance_map(&distances[0])
+                /* .visitor(DebugVisitor{}) */);
+        totalTime = distances.back();
+        bikeTime = 0;
+        clearUsedFerries();
+        for (std::size_t vertex = num_vertices(problem) - 1;
+                vertex != 0; vertex = predecessors[vertex]) {
+            auto edge = std::make_pair(predecessors[vertex], vertex);
+            if (isBikePath(edge, problem)) {
+                int weight = get(get(boost::edge_weight, problem), edge);
+                bikeTime += weight;
+            } else {
+                const Ferry& ferry = getFerry(edge, problem);
+                // std::cerr << "Using ferry: " << problem.cityNames[ferry.from]
+                //         << " -> " << problem.cityNames[ferry.to]
+                //         << " t=" << ferry.time
+                //         << " bt=" << ferry.skippedBikeTime << "\n";
+                auto iterator = usableFerries.lower_bound(&ferry);
+                assert(*iterator == &ferry);
+                addFerryManageSets(iterator);
+            }
+
+        }
     }
 
     void solve() {
-        // std::cerr << "Ferries:\n";
-        // for (const Ferry& ferry : problem.ferries) {
-        //     std::cerr << ferry.from << "->" << ferry.to << " t=" << ferry.time
-        //             << " bt=" << ferry.skippedBikeTime << "\n";
-        // }
-        // std::cerr << "Graph:\n";
-        // for (auto vertex : boost::make_iterator_range(vertices(problem))) {
-        //     std::cerr << "Vertex: " << vertex << "\n";
-        //     for (auto edge : boost::make_iterator_range(
-        //             out_edges(vertex, problem))) {
-        //         std::cerr << "  Edge: " << edge.first << "->"
-        //                 << target(edge, problem) << " "
-        //                 << get(get(boost::edge_weight, problem), edge) << "\n";
-        //     }
-        // }
-        findShortestPath();
         bestBikeTime = 0;
         bestTotalTime = 0;
         // TODO: Use time limit.
         for (int i = 0; i < 20; ++i) {
-            std::cerr << "--- iteratrion #" << i << "\n";
-            // for (const Ferry* ferry : usedFerries) {
-            //     std::cerr << "Used: " << ferry->from << "->"
-            //             << ferry->to << "\n";
-            // }
-            // for (const Ferry* ferry : usableFerries) {
-            //     std::cerr << "Usable: " << ferry->from << "->"
-            //             << ferry->to << "\n";
-            // }
+            // std::cerr << "--- iteratrion #" << i << "\n";
             int notChanged = 0;
             for (int j = 0; j < 1000 && notChanged < 10; ++j) {
                 int currentBest = bestBikeTime;
@@ -444,6 +443,10 @@ public:
         return result;
     }
 
+    const Problem& getProblem() const { return problem; }
+    int getBestBikeTime() const { return bestBikeTime; }
+    int getBestTotalTime() const { return bestTotalTime; }
+
 private:
     using FerrySet = boost::container::flat_set<const Ferry*,
             PointerComparator<const Ferry*>>;
@@ -454,36 +457,6 @@ private:
         usableFerries.reserve(problem.ferries.size());
         for (const Ferry& ferry : problem.ferries) {
             usableFerries.insert(&ferry);
-        }
-    }
-
-    void findShortestPath() {
-        std::vector<std::size_t> predecessors(num_vertices(problem));
-        std::vector<int> distances(num_vertices(problem));
-        boost::dag_shortest_paths(problem, 0,
-                boost::predecessor_map(&predecessors[0])
-                .distance_map(&distances[0])
-                /* .visitor(DebugVisitor{}) */);
-        totalTime = distances.back();
-        bikeTime = 0;
-        clearUsedFerries();
-        for (std::size_t vertex = num_vertices(problem) - 1;
-                vertex != 0; vertex = predecessors[vertex]) {
-            auto edge = std::make_pair(predecessors[vertex], vertex);
-            if (isBikePath(edge, problem)) {
-                int weight = get(get(boost::edge_weight, problem), edge);
-                bikeTime += weight;
-            } else {
-                const Ferry& ferry = getFerry(edge, problem);
-                std::cerr << "Using ferry: " << problem.cityNames[ferry.from]
-                        << " -> " << problem.cityNames[ferry.to]
-                        << " t=" << ferry.time
-                        << " bt=" << ferry.skippedBikeTime << "\n";
-                auto iterator = usableFerries.lower_bound(&ferry);
-                assert(*iterator == &ferry);
-                addFerryManageSets(iterator);
-            }
-
         }
     }
 
@@ -536,19 +509,18 @@ private:
 
     void removeFerry() {
         assert(usedFerries.size() != 0);
-        auto iterator = getRandomElement(usedFerries, rng,
-                [](const Ferry* ferry) {
-                    return ferry->skippedBikeTime;
-                });
+        auto iterator = usedFerries.begin()
+                + ferryChooser->chooseFerryToRemove(
+                        usedFerries, usableFerries, bikeTime, totalTime);
         const Ferry* ferry = *iterator;
 
         int newTotalTime = totalTime + ferry->skippedBikeTime - ferry->time;
         if (totalTime <= problem.timeLimit
                 && newTotalTime > problem.timeLimit) {
             if (bikeTime > bestBikeTime) {
-                std::cerr << "Iteration #" << iteration
-                        << ": new best solution: bike time = " << bikeTime
-                        << " total time = " << totalTime << "\n";
+                // std::cerr << "Iteration #" << iteration
+                //         << ": new best solution: bike time = " << bikeTime
+                //         << " total time = " << totalTime << "\n";
                 bestSolution.resize(usedFerries.size());
                 std::copy(usedFerries.begin(), usedFerries.end(),
                         bestSolution.begin());
@@ -567,10 +539,9 @@ private:
 
     void addFerry() {
         assert(usableFerries.size() != 0);
-        auto iterator = getRandomElement(usableFerries, rng,
-                [](const Ferry* ferry) {
-                    return 1.0 / (ferry->skippedBikeTime);
-                });
+        auto iterator = usableFerries.begin()
+                + ferryChooser->chooseFerryToAdd(
+                        usedFerries, usableFerries, bikeTime, totalTime);
         const Ferry* ferry = *iterator;
         bikeTime -= ferry->skippedBikeTime;
         totalTime -= ferry->skippedBikeTime;
@@ -582,6 +553,7 @@ private:
     }
 
     Problem problem;
+    FerryChooser* ferryChooser;
     FerrySet usedFerries;
     FerrySet usableFerries;
     std::vector<const Ferry*> bestSolution;
@@ -590,8 +562,6 @@ private:
     int bikeTime;
     int totalTime;
     std::string iteration;
-    std::mt19937 rng{std::random_device{}()};
-    // std::mt19937 rng{123123};
 };
 
 

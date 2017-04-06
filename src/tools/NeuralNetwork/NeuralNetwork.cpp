@@ -2,8 +2,6 @@
 #include "NeuralNetwork.hpp"
 #include <cassert>
 #include <cmath>
-#include <fstream>
-#include <boost/archive/text_iarchive.hpp>
 
 NeuralNetwork::NeuralNetwork(
         unsigned hiddenLayerCount,
@@ -59,16 +57,6 @@ Weights NeuralNetwork::evaluateInput(Weights input) {
         input = output; //we could move here probably
     }
     return output;
-}
-
-NeuralNetwork loadNeuralNetworkFromFile(const std::string& fileName) {
-    NeuralNetwork result;
-
-    std::ifstream ifs(fileName);
-    boost::archive::text_iarchive ia(ifs);
-    ia >> result;
-
-    return result;
 }
 
 std::string NeuralNetwork::getExternalParameter(const std::string& key) const {
