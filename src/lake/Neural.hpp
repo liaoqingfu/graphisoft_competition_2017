@@ -16,8 +16,20 @@ class NeuralFerryChooser {
 public:
     NeuralFerryChooser(
             const LearningParameters& parameters) :
-            parameters(parameters) {
+            parameters(parameters),
+            networks{
+                    parameters.hiddenLayerCount,
+                    parameters.neuronPerHiddenLayer,
+                    parameters.inputNeuronCount,
+                    parameters.outputNeuronCount} {
+        assert(parameters.inputNeuronCount == inputNeuronCount);
+        assert(parameters.outputNeuronCount == outputNeuronCount);
     }
+
+    NeuralFerryChooser(const NeuralFerryChooser&) = default;
+    NeuralFerryChooser(NeuralFerryChooser&&) = default;
+    NeuralFerryChooser& operator=(const NeuralFerryChooser&) = default;
+    NeuralFerryChooser& operator=(NeuralFerryChooser&&) = default;
 
     void setNeuralNetwork(Network network) {
         this->networks = std::move(network);
@@ -54,6 +66,9 @@ public:
         ferryNumberFactor = scaleFactor / problem.ferries.size();
         cityNumberFactor = scaleFactor / problem.bikePaths.size();
     }
+
+    static constexpr unsigned inputNeuronCount = 22;
+    static constexpr unsigned outputNeuronCount = 1;
 
 private:
     template<typename FerrySet>
@@ -105,7 +120,7 @@ private:
                 std::uniform_real_distribution<float>(
                         -scaleFactor, scaleFactor)(rng)
         };
-        assert(inputs.size() == parameters.inputNeuronCount);
+        assert(inputs.size() == inputNeuronCount);
         return network.evaluateInput(inputs)[0];
     }
 

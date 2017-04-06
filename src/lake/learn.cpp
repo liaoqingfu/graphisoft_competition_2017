@@ -21,13 +21,19 @@ public:
 
     GameManager(LearningParameters parameters, Problem problem) :
             parameters(std::move(parameters)),
-            ferryChooser(this->parameters),
-            solverTemplate(std::move(problem), ferryChooser) {
+            ferryChooser(std::make_unique<NeuralFerryChooser>(
+                    this->parameters)),
+            solverTemplate(std::move(problem), *ferryChooser) {
         solverTemplate.findShortestPath();
     }
 
+    GameManager(const GameManager&) = delete;
+    GameManager(GameManager&&) = default;
+    GameManager& operator=(const GameManager&) = delete;
+    GameManager& operator=(GameManager&&) = default;
+
     void setNeuralNetwork(Network network) {
-        ferryChooser.setNeuralNetwork(std::move(network));
+        ferryChooser->setNeuralNetwork(std::move(network));
     }
 
     void init() {
@@ -51,7 +57,7 @@ public:
 
 private:
     LearningParameters parameters;
-    NeuralFerryChooser ferryChooser;
+    std::unique_ptr<NeuralFerryChooser> ferryChooser;
     Solver solverTemplate;
     std::unique_ptr<Solver> solver;
 };
@@ -70,8 +76,13 @@ boost::program_options::typed_value<T>* defaultValue(T& value) {
 Options parseOptions(int argc, const char* argv[]) {
     namespace po = boost::program_options;
     Options result;
+    result.learningParameters.inputNeuronCount =
+            NeuralFerryChooser::inputNeuronCount;
+    result.learningParameters.outputNeuronCount =
+            NeuralFerryChooser::outputNeuronCount;
     po::options_description optionsDescription;
     optionsDescription.add_options()
+            ("help,h", "Show help.")
             ("hidden-layer-count",
              defaultValue(result.learningParameters.hiddenLayerCount),
              "Hidden layer count")
@@ -98,11 +109,13 @@ Options parseOptions(int argc, const char* argv[]) {
              "The file to save the best neural network")
             ("starting-populations",
              defaultValue(result.learningParameters.startingPopulations),
-             "The number of independent populations to start the learning with.")
+             "The number of independent populations to start the learning "
+             "with.")
             ("population-cutoff",
              defaultValue(result.learningParameters.populationCutoff),
-             "The number of generations after the worst population is dropped (if there are more than one).")
-            ("input-files,i",
+             "The number of generations after the worst population is dropped "
+             "(if there are more than one).")
+            ("input-files,I",
              po::value(&result.inputFileName)->multitoken(),
              "The input problems.")
             ("threads,j",
