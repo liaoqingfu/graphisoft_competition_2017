@@ -45,6 +45,8 @@ public:
 
     unsigned getInputNeuronCount() const { return inputNeuronCount; }
     unsigned getOutputNeuronCount() const { return outputNeuronCount; }
+    unsigned getHiddenLayerCount() const { return hiddenLayerCount; }
+    unsigned getHiddenLayerNeuronCount() const { return hiddenLayerNeuronCount; }
 
     Weights evaluateInput(Weights input);
 

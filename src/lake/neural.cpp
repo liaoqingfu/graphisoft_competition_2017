@@ -10,7 +10,7 @@ int main() {
     parameters.inputNeuronCount = NeuralFerryChooser::inputNeuronCount;
     parameters.outputNeuronCount = NeuralFerryChooser::outputNeuronCount;
     NeuralFerryChooser ferryChooser{parameters};
-    ferryChooser.setNeuralNetwork(getNeuralNetworkData());
+    ferryChooser.setNeuralNetwork(getNeuralNetwork());
 
     Solver<NeuralFerryChooser> solver{readInput(std::cin), ferryChooser};
     solver.findShortestPath();
@@ -20,4 +20,5 @@ int main() {
     for (const auto& ferry : solution) {
         std::cout << ferry.first << " " << ferry.second << "\n";
     }
+    solver.checkResult();
 }

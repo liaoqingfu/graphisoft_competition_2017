@@ -10,6 +10,7 @@ include $(COMPILE_TUP)
 include $(LINK_TUP)
 
 : main.o |> !linker |> lake
+: neural.o $(NEURAL_NETWORK_LIB) |> !linker |> neural
 
 LD_FLAGS += -lboost_program_options 
 
@@ -18,5 +19,6 @@ LD_FLAGS += -lboost_program_options
 LD_FLAGS += -lboost_system -lboost_thread -lboost_serialization \
         -lboost_filesystem -lpthread
 
+: network-prepare.o $(NEURAL_NETWORK_LIB) |> !linker |> network-prepare
 : learn.o $(NEURAL_NETWORK_LIB) $(GENETIC_LEARNING_LIB) $(CPP_UTIL_LIB) \
         |> !linker |> learn
