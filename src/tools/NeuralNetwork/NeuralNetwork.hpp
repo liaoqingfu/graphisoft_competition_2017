@@ -48,7 +48,7 @@ public:
     unsigned getHiddenLayerCount() const { return hiddenLayerCount; }
     unsigned getHiddenLayerNeuronCount() const { return hiddenLayerNeuronCount; }
 
-    Weights evaluateInput(Weights input);
+    Weights evaluateInput(Weights input, std::ostream& os);
 
     std::string getExternalParameter(const std::string& key) const;
     void setExternalParameter(std::string key, std::string value);

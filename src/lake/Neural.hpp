@@ -5,6 +5,8 @@
 #include "MultiNeuralNetwork.hpp"
 #include "LearningParameters.hpp"
 
+#include <iomanip>
+#include <ostream>
 #include <random>
 
 constexpr float scaleFactor = 10.0;
@@ -15,8 +17,10 @@ using Network = MultiNeuralNetwork<2>;
 class NeuralFerryChooser {
 public:
     NeuralFerryChooser(
-            const LearningParameters& parameters) :
+            const LearningParameters& parameters,
+            std::ostream& debug) :
             parameters(parameters),
+            debug(debug),
             networks{
                     parameters.hiddenLayerCount,
                     parameters.neuronPerHiddenLayer,
@@ -43,6 +47,7 @@ public:
     std::size_t chooseFerryToAdd(
             const FerrySet& usedFerries, const FerrySet& usableFerries,
             int bikeTime, int totalTime) {
+        debug << "Choosing ferry to add\n";
         return chooseFerry(networks.get(0), usableFerries,
                 usedFerries.size(), usableFerries.size(), bikeTime, totalTime,
                 -1);
@@ -52,6 +57,7 @@ public:
     std::size_t chooseFerryToRemove(
             const FerrySet& usedFerries, const FerrySet& usableFerries,
             int bikeTime, int totalTime) {
+        debug << "Choosing ferry to remove\n";
         return chooseFerry(networks.get(1), usedFerries,
                 usedFerries.size(), usableFerries.size(), bikeTime, totalTime,
                 1);
@@ -83,9 +89,13 @@ private:
         std::vector<float> values(ferries.size());
         std::transform(ferries.begin(), ferries.end(), values.begin(),
                 [&](const Ferry* ferry) {
-                    return callNeuralNetwork(network, *ferry, usedFerryCount,
+                    float result = callNeuralNetwork(network, *ferry,
+                            usedFerryCount,
                             usableFerryCount, bikeTime, totalTime,
                             bikeTimeMultiplier);
+                    debug << "  " << ferry->from << "->" << ferry->to << ": "
+                            << result << "\n";
+                    return result;
                 });
         return std::distance(values.begin(),
                 std::max_element(values.begin(), values.end()));
@@ -125,11 +135,18 @@ private:
                 //         -scaleFactor, scaleFactor)(rng)
         };
         assert(inputs.size() == inputNeuronCount);
-        return network.evaluateInput(inputs)[0];
+        debug << std::setprecision(8);
+        debug << "    inputs: ";
+        for (float input : inputs) {
+            debug << input << " ";
+        }
+        debug << "\n";
+        return network.evaluateInput(inputs, debug)[0];
     }
 
     const Solver<NeuralFerryChooser>* solver;
     LearningParameters parameters;
+    std::ostream& debug;
     Network networks;
     float totalTimeFactor;
     float totalTimeShortFactor;

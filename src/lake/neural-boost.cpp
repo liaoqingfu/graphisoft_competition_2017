@@ -3,6 +3,7 @@
 #include "Neural.hpp"
 
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -12,7 +13,7 @@ int main(int argc, char* argv[]) {
     LearningParameters parameters;
     parameters.inputNeuronCount = NeuralFerryChooser::inputNeuronCount;
     parameters.outputNeuronCount = NeuralFerryChooser::outputNeuronCount;
-    NeuralFerryChooser ferryChooser{parameters};
+    NeuralFerryChooser ferryChooser{parameters, std::cerr};
     {
         MultiNeuralNetwork<2> network;
         std::ifstream input(argv[1]);
@@ -20,6 +21,12 @@ int main(int argc, char* argv[]) {
         ar >> network;
         ferryChooser.setNeuralNetwork(std::move(network));
     }
+
+    {
+        boost::archive::text_oarchive ar{std::cerr};
+        ar << ferryChooser.getNeuralNetwork();
+    }
+    std::cerr << "\n";
 
     Solver<NeuralFerryChooser> solver{readInput(std::cin), ferryChooser,
             std::cerr};

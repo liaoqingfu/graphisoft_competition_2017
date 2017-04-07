@@ -2,6 +2,7 @@
 #include "NeuralNetwork.hpp"
 #include <cassert>
 #include <cmath>
+#include <iomanip>
 
 NeuralNetwork::NeuralNetwork(
         unsigned hiddenLayerCount,
@@ -29,13 +30,14 @@ unsigned NeuralNetwork::getWeightCountForNetwork(
                     (hiddenLayerCount * hiddenLayerNeuronCount + outputNeuronCount));
 }
 
-Weights NeuralNetwork::evaluateInput(Weights input) {
+Weights NeuralNetwork::evaluateInput(Weights input, std::ostream& /*os*/) {
     assert(input.size() == inputNeuronCount);
 
     Weights output;
 
     unsigned weightIndex = 0;
     for (unsigned layer = 0; layer <= hiddenLayerCount; ++layer) {
+        // os << "  layer " << layer << "\n";
         unsigned neuronCount = (layer == hiddenLayerCount) ?
                 outputNeuronCount :
                 hiddenLayerNeuronCount;
@@ -43,14 +45,19 @@ Weights NeuralNetwork::evaluateInput(Weights input) {
         output.clear();
         output.reserve(neuronCount);
         for (unsigned neuron = 0; neuron < neuronCount; ++neuron) {
+            // os << "    neuron " << neuron << "\n      ";
             Weight netInput = 0;
 
             for (auto value: input) {
-                netInput += weights[weightIndex++]*value;
+                Weight w = weights[weightIndex++];
+                // os << std::setw(10) << value << "*" << std::setw(10) << w << " + ";
+                netInput += w*value;
             }
-            netInput += -1.f * weights[weightIndex++];
+            Weight w = weights[weightIndex++];
+            netInput += -1.f * w;
 
             Weight sigmoid = sigmoidApproximation(netInput);
+            // os << "-1*" << std::setw(10) << w << " = " << netInput << " [" << sigmoid << "]\n";
             output.push_back(sigmoid);
 
         }

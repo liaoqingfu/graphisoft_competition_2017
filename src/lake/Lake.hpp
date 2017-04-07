@@ -209,6 +209,10 @@ auto get(boost::edge_weight_t, const Problem& problem) {
 }
 
 struct DebugVisitor {
+    DebugVisitor(std::ostream& stream) : stream(&stream) {}
+
+    std::ostream* stream;
+
     template<typename U, typename G>
     void initialize_vertex(U u, const G& g) {
         printVertex("Initialize", u, g);
@@ -246,12 +250,12 @@ struct DebugVisitor {
 
     template<typename U, typename G>
     void printVertex(const char* label, U u, const G&) {
-        std::cerr << label << ": " << u << "\n";
+        *stream << label << ": " << u << "\n";
     }
 
     template<typename E, typename G>
     void printEdge(const char* label, E e, const G& g) {
-        std::cerr << label << ": " << source(e, g) << "->" << target(e, g)
+        *stream << label << ": " << source(e, g) << "->" << target(e, g)
                 << " w=" << get(get(boost::edge_weight, g), e) << "\n";
     }
 };
@@ -338,7 +342,7 @@ public:
         boost::dag_shortest_paths(problem, 0,
                 boost::predecessor_map(&predecessors[0])
                 .distance_map(&distances[0])
-                /* .visitor(DebugVisitor{}) */);
+                .visitor(DebugVisitor{debug}));
         totalTime = distances.back();
         bikeTime = 0;
         clearUsedFerries();
@@ -366,7 +370,7 @@ public:
         bestBikeTime = 0;
         bestTotalTime = 0;
         // TODO: Use time limit.
-        for (int i = 0; i < 20; ++i) {
+        for (int i = 0; i < 2; ++i) {
             debug << "--- iteratrion #" << i << "\n";
             int notChanged = 0;
             for (int j = 0; j < 1000 && notChanged < 10; ++j) {
