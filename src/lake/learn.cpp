@@ -38,6 +38,7 @@ public:
 
     void init() {
         solver = std::make_unique<Solver>(solverTemplate);
+        ferryChooser->initialize(*solver);
     }
 
     void run() {
