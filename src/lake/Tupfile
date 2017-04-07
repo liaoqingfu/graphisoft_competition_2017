@@ -22,3 +22,4 @@ LD_FLAGS += -lboost_system -lboost_thread -lboost_serialization \
 : network-prepare.o $(NEURAL_NETWORK_LIB) |> !linker |> network-prepare
 : learn.o $(NEURAL_NETWORK_LIB) $(GENETIC_LEARNING_LIB) $(CPP_UTIL_LIB) \
         |> !linker |> learn
+: neural-boost.o $(NEURAL_NETWORK_LIB) |> !linker |> neural-boost
