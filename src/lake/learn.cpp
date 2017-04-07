@@ -24,7 +24,6 @@ public:
             ferryChooser(std::make_unique<NeuralFerryChooser>(
                     this->parameters)),
             solverTemplate(std::move(problem), *ferryChooser) {
-        solverTemplate.findShortestPath();
     }
 
     GameManager(const GameManager&) = delete;
@@ -37,6 +36,9 @@ public:
     }
 
     void init() {
+        if (!solver) {
+            solverTemplate.findShortestPath();
+        }
         solver = std::make_unique<Solver>(solverTemplate);
         ferryChooser->initialize(*solver);
     }
