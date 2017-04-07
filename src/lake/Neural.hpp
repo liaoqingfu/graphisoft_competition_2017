@@ -75,6 +75,12 @@ public:
         bikeTimeShortFactor = shortScaleFactor / maximumBikeTime;
         ferryNumberFactor = scaleFactor / problem.ferries.size();
         cityNumberFactor = scaleFactor / problem.bikePaths.size();
+        debug << "Total time factor = " << totalTimeFactor << "\n";
+        debug << "Total time short factor = " << totalTimeShortFactor << "\n";
+        debug << "Bike time factor = " << bikeTimeFactor << "\n";
+        debug << "Bike time short factor = " << bikeTimeShortFactor << "\n";
+        debug << "Ferry number factor = " << ferryNumberFactor << "\n";
+        debug << "City number factor = " << cityNumberFactor << "\n";
     }
 
     static constexpr unsigned inputNeuronCount = 21;
