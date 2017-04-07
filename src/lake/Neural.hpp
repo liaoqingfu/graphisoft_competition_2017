@@ -38,19 +38,19 @@ public:
     template<typename FerrySet>
     std::size_t chooseFerryToAdd(
             const FerrySet& usedFerries, const FerrySet& usableFerries,
-            int bikeTime, int totalTime) {
+            int bikeTime, int totalTime, float hash) {
         return chooseFerry(networks.get(0), usableFerries,
                 usedFerries.size(), usableFerries.size(), bikeTime, totalTime,
-                -1);
+                hash, -1);
     }
 
     template<typename FerrySet>
     std::size_t chooseFerryToRemove(
             const FerrySet& usedFerries, const FerrySet& usableFerries,
-            int bikeTime, int totalTime) {
+            int bikeTime, int totalTime, float hash) {
         return chooseFerry(networks.get(1), usedFerries,
                 usedFerries.size(), usableFerries.size(), bikeTime, totalTime,
-                1);
+                hash, 1);
     }
 
     void initialize(const Solver<NeuralFerryChooser>& solver) {
@@ -75,12 +75,12 @@ private:
     std::size_t chooseFerry(NeuralNetwork& network,
             const FerrySet& ferries, std::size_t usedFerryCount,
             std::size_t usableFerryCount, int bikeTime, int totalTime,
-            int bikeTimeMultiplier) {
+            float hash, int bikeTimeMultiplier) {
         std::vector<float> values(ferries.size());
         std::transform(ferries.begin(), ferries.end(), values.begin(),
                 [&](const Ferry* ferry) {
                     return callNeuralNetwork(network, *ferry, usedFerryCount,
-                            usableFerryCount, bikeTime, totalTime,
+                            usableFerryCount, bikeTime, totalTime, hash,
                             bikeTimeMultiplier);
                 });
         return std::distance(values.begin(),
@@ -90,7 +90,7 @@ private:
     float callNeuralNetwork(NeuralNetwork& network,
             const Ferry& ferry, std::size_t usedFerryCount,
             std::size_t usableFerryCount, int bikeTime, int totalTime,
-            int bikeTimeMultiplier) {
+            float hash, int bikeTimeMultiplier) {
         const Problem& problem = solver->getProblem();
         Weights inputs{
                 ferry.time * totalTimeFactor,
@@ -117,8 +117,7 @@ private:
                 solver->getBestTotalTime() * totalTimeShortFactor,
                 usedFerryCount * ferryNumberFactor,
                 usableFerryCount * ferryNumberFactor,
-                std::uniform_real_distribution<float>(
-                        -scaleFactor, scaleFactor)(rng)
+                hash * scaleFactor
         };
         assert(inputs.size() == inputNeuronCount);
         return network.evaluateInput(inputs)[0];
@@ -133,8 +132,6 @@ private:
     float bikeTimeShortFactor;
     float ferryNumberFactor;
     float cityNumberFactor;
-    std::mt19937 rng{std::random_device{}()};
-    // std::mt19937 rng{3245346};
 };
 
 #endif // LAKE_NEURAL_HPP

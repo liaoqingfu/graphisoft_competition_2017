@@ -17,7 +17,7 @@ public:
     template<typename FerrySet>
     std::size_t chooseFerryToAdd(
             const FerrySet& /*usedFerries*/, const FerrySet& usableFerries,
-            int /*bikeTime*/, int /*totalTime*/) {
+            int /*bikeTime*/, int /*totalTime*/, std::size_t /*hash*/) {
         auto iterator = getRandomElement(usableFerries, rng,
                 [](const Ferry* ferry) {
                     return 1.0 / (ferry->skippedBikeTime);
@@ -28,7 +28,7 @@ public:
     template<typename FerrySet>
     std::size_t chooseFerryToRemove(
             const FerrySet& usedFerries, const FerrySet& /*usableFerries*/,
-            int /*bikeTime*/, int /*totalTime*/) {
+            int /*bikeTime*/, int /*totalTime*/, std::size_t /*hash*/) {
         auto iterator = getRandomElement(usedFerries, rng,
                 [](const Ferry* ferry) {
                     return ferry->skippedBikeTime;

@@ -366,10 +366,10 @@ public:
         bestBikeTime = 0;
         bestTotalTime = 0;
         // TODO: Use time limit.
-        for (int i = 0; i < 20; ++i) {
+        for (int i = 0; i < 5; ++i) {
             // std::cerr << "--- iteratrion #" << i << "\n";
             int notChanged = 0;
-            for (int j = 0; j < 1000 && notChanged < 10; ++j) {
+            for (int j = 0; j < 1000 && notChanged < 6; ++j) {
                 int currentBest = bestBikeTime;
                 iteration = std::to_string(i) + "." + std::to_string(j);
                 while (totalTime <= problem.timeLimit
@@ -451,6 +451,12 @@ private:
     using FerrySet = boost::container::flat_set<const Ferry*,
             PointerComparator<const Ferry*>>;
 
+    float getHash() const {
+        constexpr int hashSize = 10000000;
+        return static_cast<float>(
+                std::hash<std::string>{}(iteration) % hashSize) / hashSize;
+    }
+
     void clearUsedFerries() {
         usedFerries.clear();
         usableFerries.clear();
@@ -511,7 +517,8 @@ private:
         assert(usedFerries.size() != 0);
         auto iterator = usedFerries.begin()
                 + ferryChooser->chooseFerryToRemove(
-                        usedFerries, usableFerries, bikeTime, totalTime);
+                        usedFerries, usableFerries, bikeTime, totalTime,
+                        getHash());
         const Ferry* ferry = *iterator;
 
         int newTotalTime = totalTime + ferry->skippedBikeTime - ferry->time;
@@ -541,7 +548,8 @@ private:
         assert(usableFerries.size() != 0);
         auto iterator = usableFerries.begin()
                 + ferryChooser->chooseFerryToAdd(
-                        usedFerries, usableFerries, bikeTime, totalTime);
+                        usedFerries, usableFerries, bikeTime, totalTime,
+                        getHash());
         const Ferry* ferry = *iterator;
         bikeTime -= ferry->skippedBikeTime;
         totalTime -= ferry->skippedBikeTime;
