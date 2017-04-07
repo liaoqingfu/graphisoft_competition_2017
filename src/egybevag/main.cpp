@@ -509,15 +509,20 @@ bool check(const Building& b1, Building b2, RotationMatrix r) {
 }
 
 int main() {
-    Building b1, b2;
-    std::cin >> b1 >> b2;
-    for (const auto& r : rotations) {
-        if (check(b1, b2, r)) {
-            std::cout << "TRUE" << std::endl;
-            return 0;
+    int numberOfBuildings = 0;
+    std::cin >> numberOfBuildings;
+    Building b1;
+    std::cin >> b1;
+    for (int i = 2; i <= numberOfBuildings; ++i) {
+        Building b2;
+        std::cin >> b2;
+        for (const auto& r : rotations) {
+            if (check(b1, b2, r)) {
+                std::cout << i << " " << std::endl;
+                break;
+            }
         }
     }
-    std::cout << "FALSE" << std::endl;
 }
 
 //============================================================================//
