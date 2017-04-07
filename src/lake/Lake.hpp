@@ -342,7 +342,7 @@ public:
         boost::dag_shortest_paths(problem, 0,
                 boost::predecessor_map(&predecessors[0])
                 .distance_map(&distances[0])
-                .visitor(DebugVisitor{debug}));
+                /*.visitor(DebugVisitor{debug})*/);
         totalTime = distances.back();
         bikeTime = 0;
         clearUsedFerries();

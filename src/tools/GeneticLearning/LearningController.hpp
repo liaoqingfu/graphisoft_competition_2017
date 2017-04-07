@@ -64,7 +64,7 @@ public:
             savePopulation(parameters, bestPopulation.getPopulation());
             if (bestPopulation.getBestFitness() > bestFitness) {
                 bestFitness = bestPopulation.getBestFitness();
-                std::cerr << "Saving network with fitness " << bestFitness << "\n";
+                // std::cerr << "Saving network with fitness " << bestFitness << "\n";
                 saveNeuralNetwork<NeuralNetwork>(parameters,
                         bestPopulation.getBestGenome());
             }

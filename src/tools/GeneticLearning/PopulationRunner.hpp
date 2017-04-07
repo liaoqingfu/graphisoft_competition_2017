@@ -136,7 +136,7 @@ private:
         for (Genome& genome : population.getPopulation()) {
             fitnessSum += genome.fitness;
             if (genome.fitness > bestFitness) {
-                std::cerr << "New best fitness: " << bestFitness << "\n";
+                // std::cerr << "New best fitness: " << bestFitness << "\n";
                 bestFitness = genome.fitness;
                 bestGenome = genome;
             }
