@@ -45,7 +45,8 @@ public:
     }
 
     float getFitness() const {
-        return solver->getBestBikeTime();
+        return static_cast<float>(solver->getBestBikeTime())
+            / solver->getProblem().timeLimit;
     }
 
     std::string getDebugInfo() const {
