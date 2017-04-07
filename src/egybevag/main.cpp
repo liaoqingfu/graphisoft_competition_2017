@@ -199,6 +199,10 @@ std::istream& operator>>(std::istream& in, Vertex& v) {
 
 struct Edge {
     Edge(Vertex* v1, Vertex* v2) : v1(v1), v2(v2) {
+        sort();
+    }
+
+    void sort() {
         if (*v2 < *v1) {
             std::swap(this->v1, this->v2);
         }
@@ -319,16 +323,6 @@ private:
         sides.push_back(std::move(s));
     }
 
-    void sort() {
-        std::sort(vertices.begin(), vertices.end(), lessThanByValue<Vertex>);
-        std::sort(edges.begin(), edges.end(), lessThanByValue<Edge>);
-        for (auto& side : sides) {
-            side.sort();
-        }
-        std::sort(sides.begin(), sides.end());
-        isSorted = true;
-    }
-
     void copy(const Building& other) {
         if (this == &other) {
             return;
@@ -390,6 +384,19 @@ public:
         }
     }
 
+    void sort() {
+        std::sort(vertices.begin(), vertices.end(), lessThanByValue<Vertex>);
+        std::sort(edges.begin(), edges.end(), lessThanByValue<Edge>);
+        for (auto& edge : edges) {
+            edge->sort();
+        }
+        for (auto& side : sides) {
+            side.sort();
+        }
+        std::sort(sides.begin(), sides.end());
+        isSorted = true;
+    }
+
     Vertex calculateOffset(const Building& rhs) const {
         return *rhs.vertices[0] - *vertices[0];
     }
@@ -409,7 +416,7 @@ public:
             v->y = r[1][0] * o.x + r[1][1] * o.y + r[1][2] * o.z;
             v->z = r[2][0] * o.x + r[2][1] * o.y + r[2][2] * o.z;
         }
-        sort();
+        //sort();
     }
 
     bool operator==(const Building& rhs) const {
@@ -476,7 +483,7 @@ public:
             }
             b.addSide(side);
         }
-        b.sort();
+        //b.sort();
         return in;
     }
 
@@ -504,6 +511,7 @@ bool check(const Building& b1, Building b2, RotationMatrix r) {
     Vertex offset = b1.calculateOffset(b2);
     //std::cout << offset << std::endl;
     b2.shift(offset);
+    b2.sort();
     //std::cout << b1 << std::endl << b2 << std::endl;
     return b1 == b2;
 }
@@ -513,16 +521,18 @@ int main() {
     std::cin >> numberOfBuildings;
     Building b1;
     std::cin >> b1;
+    b1.sort();
     for (int i = 2; i <= numberOfBuildings; ++i) {
         Building b2;
         std::cin >> b2;
         for (const auto& r : rotations) {
             if (check(b1, b2, r)) {
-                std::cout << i << " " << std::endl;
+                std::cout << i << " ";
                 break;
             }
         }
     }
+    std::cout << std::endl;
 }
 
 //============================================================================//
