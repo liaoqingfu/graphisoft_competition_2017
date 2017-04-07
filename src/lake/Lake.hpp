@@ -326,9 +326,9 @@ Problem readInput(std::istream& stream) {
 template<typename FerryChooser>
 class Solver {
 public:
-    Solver(Problem problem, FerryChooser& ferryChooser) :
+    Solver(Problem problem, FerryChooser& ferryChooser, std::ostream& debug) :
             problem(std::move(problem)), ferryChooser(&ferryChooser),
-            bikeTime(0), totalTime(0) {
+            debug(debug), bikeTime(0), totalTime(0) {
         ferryChooser.initialize(*this);
     }
 
@@ -367,7 +367,7 @@ public:
         bestTotalTime = 0;
         // TODO: Use time limit.
         for (int i = 0; i < 20; ++i) {
-            // std::cerr << "--- iteratrion #" << i << "\n";
+            debug << "--- iteratrion #" << i << "\n";
             int notChanged = 0;
             for (int j = 0; j < 1000 && notChanged < 10; ++j) {
                 int currentBest = bestBikeTime;
@@ -518,9 +518,9 @@ private:
         if (totalTime <= problem.timeLimit
                 && newTotalTime > problem.timeLimit) {
             if (bikeTime > bestBikeTime) {
-                // std::cerr << "Iteration #" << iteration
-                //         << ": new best solution: bike time = " << bikeTime
-                //         << " total time = " << totalTime << "\n";
+                debug << "Iteration #" << iteration
+                        << ": new best solution: bike time = " << bikeTime
+                        << " total time = " << totalTime << "\n";
                 bestSolution.resize(usedFerries.size());
                 std::copy(usedFerries.begin(), usedFerries.end(),
                         bestSolution.begin());
@@ -531,9 +531,9 @@ private:
 
         bikeTime += ferry->skippedBikeTime;
         totalTime = newTotalTime;
-        // std::cerr << "Removing ferry from " << problem.cityNames[ferry->from]
-        //         << " to " << problem.cityNames[ferry->to]
-        //         << " t=" << totalTime << " bt=" << bikeTime << "\n";
+        debug << "Removing ferry from " << problem.cityNames[ferry->from]
+                << " to " << problem.cityNames[ferry->to]
+                << " t=" << totalTime << " bt=" << bikeTime << "\n";
         removeFerryManageSets(iterator);
     }
 
@@ -546,14 +546,15 @@ private:
         bikeTime -= ferry->skippedBikeTime;
         totalTime -= ferry->skippedBikeTime;
         totalTime += ferry->time;
-        // std::cerr << "Adding ferry from " << problem.cityNames[ferry->from]
-        //         << " to " << problem.cityNames[ferry->to]
-        //         << " t=" << totalTime << " bt=" << bikeTime << "\n";
+        debug << "Adding ferry from " << problem.cityNames[ferry->from]
+                << " to " << problem.cityNames[ferry->to]
+                << " t=" << totalTime << " bt=" << bikeTime << "\n";
         addFerryManageSets(iterator);
     }
 
     Problem problem;
     FerryChooser* ferryChooser;
+    std::ostream& debug;
     FerrySet usedFerries;
     FerrySet usableFerries;
     std::vector<const Ferry*> bestSolution;

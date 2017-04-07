@@ -6,6 +6,7 @@
 
 #include "util/ThreadPool.hpp"
 
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/program_options.hpp>
 
 #include <algorithm>
@@ -23,7 +24,9 @@ public:
             parameters(std::move(parameters)),
             ferryChooser(std::make_unique<NeuralFerryChooser>(
                     this->parameters)),
-            solverTemplate(std::move(problem), *ferryChooser) {
+            debugStream(std::make_unique<std::ostringstream>()),
+            solverTemplate(std::move(problem), *ferryChooser,
+                    *debugStream) {
         solverTemplate.findShortestPath();
     }
 
@@ -37,6 +40,21 @@ public:
     }
 
     void init() {
+        if (!firstRun) {
+            std::ostringstream filename;
+            filename << "debug_" << id << "_" << solver->getBestBikeTime() <<
+                    ".log";
+            std::ofstream fs{filename.str()};
+
+            {
+                boost::archive::text_oarchive ar{fs};
+                ar << ferryChooser->getNeuralNetwork();
+            }
+
+            fs << "\n" << debugStream->str();
+            debugStream->str("");
+        }
+        firstRun = false;
         solver = std::make_unique<Solver>(solverTemplate);
     }
 
@@ -57,11 +75,17 @@ public:
     }
 
 private:
+    static int maxId;
+    int id{maxId++};
+    bool firstRun = true;
     LearningParameters parameters;
     std::unique_ptr<NeuralFerryChooser> ferryChooser;
+    std::unique_ptr<std::ostringstream> debugStream;
     Solver solverTemplate;
     std::unique_ptr<Solver> solver;
 };
+
+int GameManager::maxId = 0;
 
 struct Options {
     std::vector<std::string> inputFileName;

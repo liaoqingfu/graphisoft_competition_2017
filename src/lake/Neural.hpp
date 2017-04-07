@@ -35,6 +35,10 @@ public:
         this->networks = std::move(network);
     }
 
+    const Network& getNeuralNetwork() const {
+        return networks;
+    }
+
     template<typename FerrySet>
     std::size_t chooseFerryToAdd(
             const FerrySet& usedFerries, const FerrySet& usableFerries,
@@ -67,7 +71,7 @@ public:
         cityNumberFactor = scaleFactor / problem.bikePaths.size();
     }
 
-    static constexpr unsigned inputNeuronCount = 22;
+    static constexpr unsigned inputNeuronCount = 21;
     static constexpr unsigned outputNeuronCount = 1;
 
 private:
@@ -117,8 +121,8 @@ private:
                 solver->getBestTotalTime() * totalTimeShortFactor,
                 usedFerryCount * ferryNumberFactor,
                 usableFerryCount * ferryNumberFactor,
-                std::uniform_real_distribution<float>(
-                        -scaleFactor, scaleFactor)(rng)
+                // std::uniform_real_distribution<float>(
+                //         -scaleFactor, scaleFactor)(rng)
         };
         assert(inputs.size() == inputNeuronCount);
         return network.evaluateInput(inputs)[0];

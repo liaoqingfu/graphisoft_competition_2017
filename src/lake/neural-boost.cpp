@@ -21,7 +21,8 @@ int main(int argc, char* argv[]) {
         ferryChooser.setNeuralNetwork(std::move(network));
     }
 
-    Solver<NeuralFerryChooser> solver{readInput(std::cin), ferryChooser};
+    Solver<NeuralFerryChooser> solver{readInput(std::cin), ferryChooser,
+            std::cerr};
     solver.findShortestPath();
     solver.solve();
     auto solution = solver.getResult();
