@@ -37,7 +37,7 @@ public:
     }
 
     void init() {
-        if (!solver) {
+        if (!solverTemplate.isInitialized()) {
             solverTemplate.findShortestPath();
         }
         solver = std::make_unique<Solver>(solverTemplate);
@@ -46,17 +46,19 @@ public:
 
     void run() {
         solver->solve();
+        bestBikeTime = solver->getBestBikeTime();
+        bestTotalTime = solver->getBestTotalTime();
+        solver.reset();
     }
 
     float getFitness() const {
-        return static_cast<float>(solver->getBestBikeTime())
-            / solver->getProblem().timeLimit;
+        return static_cast<float>(bestBikeTime)
+                / solverTemplate.getProblem().timeLimit;
     }
 
     std::string getDebugInfo() const {
         std::ostringstream ss;
-        ss << "time=" << solver->getBestTotalTime()
-                << " bike time=" << solver->getBestBikeTime();
+        ss << "time=" << bestTotalTime << " bike time=" << bestBikeTime;
         return ss.str();
     }
 
@@ -65,6 +67,8 @@ private:
     std::unique_ptr<NeuralFerryChooser> ferryChooser;
     Solver solverTemplate;
     std::unique_ptr<Solver> solver;
+    int bestBikeTime = 0;
+    int bestTotalTime = 0;
 };
 
 struct Options {

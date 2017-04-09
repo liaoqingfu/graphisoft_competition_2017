@@ -373,8 +373,12 @@ public:
         }
     }
 
+    bool isInitialized() const {
+        return bestBikeTime != 0;
+    }
+
     void findShortestPath() {
-        if (bestBikeTime != 0 && bestSolution.empty()) {
+        if (isInitialized() && bestSolution.empty()) {
             std::cerr << "Not finding path: already have a solution.\n";
             return;
         }
@@ -411,7 +415,7 @@ public:
     }
 
     void solve() {
-        if (bestBikeTime != 0 && bestSolution.empty()) {
+        if (isInitialized() && bestSolution.empty()) {
             std::cerr << "Not solving: already have a trivial solution.\n";
             return;
         }
