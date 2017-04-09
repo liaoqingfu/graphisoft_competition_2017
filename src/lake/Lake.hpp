@@ -37,6 +37,26 @@ struct Problem {
     std::vector<Ferry> ferries;
 };
 
+
+std::ostream& operator<<(std::ostream& os, const Problem& p) {
+    os << p.cityNames.size() << std::endl;
+    for (const auto& city : p.cityNames) {
+        os << city << std::endl;
+    }
+    //os << p.bikePaths.size() << std::endl;
+    for (const auto& bikePath : p.bikePaths) {
+        os << bikePath << ' ';
+    }
+    os << std::endl;
+    os << p.ferries.size() << std::endl;
+    for (const auto& ferry : p.ferries) {
+        os << p.cityNames[ferry.from] << ' ' << p.cityNames[ferry.to]
+           << ' ' << ferry.time << std::endl;
+    }
+    os << p.timeLimit;
+    return os;
+}
+
 bool isFerryBlockingAnother(const Ferry& main, const Ferry& other) {
     return (other.from < main.to && other.to > main.from);
 }
@@ -320,6 +340,7 @@ Problem readInput(std::istream& stream) {
     std::sort(problem.ferries.begin(), problem.ferries.end());
 
     stream >> problem.timeLimit;
+    //std::cerr << problem << std::endl << std::endl;
     return problem;
 }
 
@@ -328,7 +349,7 @@ class Solver {
 public:
     Solver(Problem problem, FerryChooser& ferryChooser) :
             problem(std::move(problem)), ferryChooser(&ferryChooser),
-            bikeTime(0), totalTime(0) {
+            bestBikeTime(0), bestTotalTime(0), bikeTime(0), totalTime(0) {
         ferryChooser.initialize(*this);
     }
 
@@ -360,11 +381,12 @@ public:
             }
 
         }
+        // Shortest path is guarantee to be a solution
+        // (assuming at least one solution exists)
+        checkNewPath();
     }
 
     void solve() {
-        bestBikeTime = 0;
-        bestTotalTime = 0;
         // TODO: Use time limit.
         for (int i = 0; i < 5; ++i) {
             // std::cerr << "--- iteratrion #" << i << "\n";
@@ -522,19 +544,19 @@ private:
         const Ferry* ferry = *iterator;
 
         int newTotalTime = totalTime + ferry->skippedBikeTime - ferry->time;
-        if (totalTime <= problem.timeLimit
-                && newTotalTime > problem.timeLimit) {
-            if (bikeTime > bestBikeTime) {
-                // std::cerr << "Iteration #" << iteration
-                //         << ": new best solution: bike time = " << bikeTime
-                //         << " total time = " << totalTime << "\n";
-                bestSolution.resize(usedFerries.size());
-                std::copy(usedFerries.begin(), usedFerries.end(),
-                        bestSolution.begin());
-                bestBikeTime = bikeTime;
-                bestTotalTime = totalTime;
-            }
-        }
+        //if (totalTime <= problem.timeLimit
+        //        && newTotalTime > problem.timeLimit) {
+        //    if (bikeTime > bestBikeTime) {
+        //        // std::cerr << "Iteration #" << iteration
+        //        //         << ": new best solution: bike time = " << bikeTime
+        //        //         << " total time = " << totalTime << "\n";
+        //        bestSolution.resize(usedFerries.size());
+        //        std::copy(usedFerries.begin(), usedFerries.end(),
+        //                bestSolution.begin());
+        //        bestBikeTime = bikeTime;
+        //        bestTotalTime = totalTime;
+        //    }
+        //}
 
         bikeTime += ferry->skippedBikeTime;
         totalTime = newTotalTime;
@@ -542,6 +564,7 @@ private:
         //         << " to " << problem.cityNames[ferry->to]
         //         << " t=" << totalTime << " bt=" << bikeTime << "\n";
         removeFerryManageSets(iterator);
+        checkNewPath();
     }
 
     void addFerry() {
@@ -558,6 +581,20 @@ private:
         //         << " to " << problem.cityNames[ferry->to]
         //         << " t=" << totalTime << " bt=" << bikeTime << "\n";
         addFerryManageSets(iterator);
+        checkNewPath();
+    }
+
+    void checkNewPath() {
+        //std::cerr << "checkNewPath(): tt: " << totalTime << " bt: "
+        //          << bikeTime << " bbt: " << bestBikeTime << std::endl;
+        if (totalTime <= problem.timeLimit &&
+                bikeTime > bestBikeTime) {
+            bestSolution.resize(usedFerries.size());
+            std::copy(usedFerries.begin(), usedFerries.end(),
+                    bestSolution.begin());
+            bestBikeTime = bikeTime;
+            bestTotalTime = totalTime;
+        }
     }
 
     Problem problem;
