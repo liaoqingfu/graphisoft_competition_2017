@@ -16,6 +16,8 @@ int main() {
     solver.findShortestPath();
     if (solver.getBestTotalTime() > solver.getProblem().timeLimit) {
         std::cout << "0" << std::endl;
+        std::cerr << "There is no solution.\n";
+        throwError(Error::NoSolution);
     } else {
         solver.solve();
         auto solution = solver.getResult();
@@ -23,6 +25,9 @@ int main() {
         for (const auto& ferry : solution) {
             std::cout << ferry.first << " " << ferry.second << "\n";
         }
-        solver.checkResult();
+        if (!solver.checkResult()) {
+            throwError(Error::WrongSolution);
+        }
     }
+    return 0;
 }

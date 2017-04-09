@@ -1,6 +1,8 @@
 #ifndef LAKE_LAKE_HPP
 #define LAKE_LAKE_HPP
 
+#include "Error.hpp"
+
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/dag_shortest_paths.hpp>
 #include <boost/iterator/iterator_facade.hpp>
@@ -554,7 +556,8 @@ private:
 
     void removeFerry() {
         if (usedFerries.size() == 0) {
-            return;
+            std::cerr << "Cannot remove ferry.\n";
+            throwError(Error::NoRemovebleFerries);
         }
         auto iterator = usedFerries.begin()
                 + ferryChooser->chooseFerryToRemove(
@@ -588,7 +591,8 @@ private:
 
     void addFerry() {
         if (usableFerries.size() == 0) {
-            return;
+            std::cerr << "Cannot add ferry.\n";
+            throwError(Error::NoAddableFerries);
         }
         auto iterator = usableFerries.begin()
                 + ferryChooser->chooseFerryToAdd(
