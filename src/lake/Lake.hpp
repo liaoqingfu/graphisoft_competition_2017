@@ -628,8 +628,8 @@ private:
         //          << bikeTime << " bbt: " << bestBikeTime << std::endl;
         if (totalTime <= problem.timeLimit &&
                 bikeTime > bestBikeTime) {
-            std::cerr << "Iteration #" << iteration << ": new best path: t="
-                    << totalTime << " bt=" << bikeTime << "\n";
+            // std::cerr << "Iteration #" << iteration << ": new best path: t="
+            //         << totalTime << " bt=" << bikeTime << "\n";
             bestSolution.resize(usedFerries.size());
             std::copy(usedFerries.begin(), usedFerries.end(),
                     bestSolution.begin());
