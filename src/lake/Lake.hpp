@@ -553,7 +553,9 @@ private:
     }
 
     void removeFerry() {
-        assert(usedFerries.size() != 0);
+        if (usedFerries.size() == 0) {
+            return;
+        }
         auto iterator = usedFerries.begin()
                 + ferryChooser->chooseFerryToRemove(
                         usedFerries, usableFerries, bikeTime, totalTime,
@@ -585,7 +587,9 @@ private:
     }
 
     void addFerry() {
-        assert(usableFerries.size() != 0);
+        if (usableFerries.size() == 0) {
+            return;
+        }
         auto iterator = usableFerries.begin()
                 + ferryChooser->chooseFerryToAdd(
                         usedFerries, usableFerries, bikeTime, totalTime,
