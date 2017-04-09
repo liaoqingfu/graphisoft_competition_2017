@@ -14,11 +14,15 @@ int main() {
 
     Solver<NeuralFerryChooser> solver{readInput(std::cin), ferryChooser};
     solver.findShortestPath();
-    solver.solve();
-    auto solution = solver.getResult();
-    std::cout << solution.size() << "\n";
-    for (const auto& ferry : solution) {
-        std::cout << ferry.first << " " << ferry.second << "\n";
+    if (solver.getBestTotalTime() > solver.getProblem().timeLimit) {
+        std::cout << "0" << std::endl;
+    } else {
+        solver.solve();
+        auto solution = solver.getResult();
+        std::cout << solution.size() << "\n";
+        for (const auto& ferry : solution) {
+            std::cout << ferry.first << " " << ferry.second << "\n";
+        }
+        solver.checkResult();
     }
-    solver.checkResult();
 }
