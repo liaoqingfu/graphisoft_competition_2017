@@ -412,7 +412,7 @@ public:
                 int currentBest = bestBikeTime;
                 iteration = std::to_string(i) + "." + std::to_string(j);
                 while (totalTime <= problem.timeLimit
-                        || usedFerries.size() == 0) {
+                        || usableFerries.size() == 0) {
                     removeFerry();
                 }
                 while (totalTime > problem.timeLimit &&
