@@ -19,11 +19,12 @@ class GameManager {
 public:
     using Solver = ::Solver<NeuralFerryChooser>;
 
-    GameManager(LearningParameters parameters, Problem problem) :
+    GameManager(LearningParameters parameters, Problem problem,
+            int iterationLimit) :
             parameters(std::move(parameters)),
             ferryChooser(std::make_unique<NeuralFerryChooser>(
                     this->parameters)),
-            solverTemplate(std::move(problem), *ferryChooser, 6) {
+            solverTemplate(std::move(problem), *ferryChooser, iterationLimit) {
     }
 
     GameManager(const GameManager&) = delete;
@@ -70,6 +71,7 @@ struct Options {
     std::vector<std::string> inputFileName;
     std::size_t numThreads = 1;
     LearningParameters learningParameters;
+    int iterationLimit = 4;
 };
 
 template<typename T>
@@ -122,6 +124,9 @@ Options parseOptions(int argc, const char* argv[]) {
             ("input-files,I",
              po::value(&result.inputFileName)->multitoken(),
              "The input problems.")
+            ("iteration-limit",
+             defaultValue(result.iterationLimit),
+             "The iteration limit for the solver.")
             ("threads,j",
              defaultValue(result.numThreads),
              "The number of threads to use.")
@@ -153,7 +158,8 @@ int main(int argc, const char* argv[]) {
             gameInfos, ioService};
     learningController.run<Network>(
             [&options](const Problem& problem) {
-                return GameManager(options.learningParameters, problem);
+                return GameManager(options.learningParameters, problem,
+                        options.iterationLimit);
             });
     threadPool.wait();
 }
