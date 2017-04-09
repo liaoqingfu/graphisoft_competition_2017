@@ -351,9 +351,22 @@ public:
             problem(std::move(problem)), ferryChooser(&ferryChooser),
             bestBikeTime(0), bestTotalTime(0), bikeTime(0), totalTime(0) {
         ferryChooser.initialize(*this);
+        int totalBikeTime = std::accumulate(this->problem.bikePaths.begin(),
+                this->problem.bikePaths.end(), 0);
+        // std::cerr << "Time of full bike path: " << totalBikeTime
+        //         << " time limit: " << problem.timeLimit << "\n";
+        if (totalBikeTime <= problem.timeLimit) {
+            bestBikeTime = totalBikeTime;
+            bestTotalTime = totalBikeTime;
+            bestSolution.clear();
+        }
     }
 
     void findShortestPath() {
+        if (bestBikeTime != 0 && bestSolution.empty()) {
+            std::cerr << "Not finding path: already have a solution.\n";
+            return;
+        }
         std::vector<std::size_t> predecessors(num_vertices(problem));
         std::vector<int> distances(num_vertices(problem));
         boost::dag_shortest_paths(problem, 0,
@@ -387,6 +400,10 @@ public:
     }
 
     void solve() {
+        if (bestBikeTime != 0 && bestSolution.empty()) {
+            std::cerr << "Not solving: already have a trivial solution.\n";
+            return;
+        }
         // TODO: Use time limit.
         for (int i = 0; i < 5; ++i) {
             // std::cerr << "--- iteratrion #" << i << "\n";
