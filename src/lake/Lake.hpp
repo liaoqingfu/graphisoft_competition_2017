@@ -10,6 +10,7 @@
 #include <boost/functional/hash.hpp>
 #include <boost/container/flat_set.hpp>
 #include <boost/range/adaptor/transformed.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <algorithm>
 #include <numeric>
@@ -350,9 +351,15 @@ template<typename FerryChooser>
 class Solver {
 public:
     Solver(Problem problem, FerryChooser& ferryChooser,
-            int iterationLimit) :
+            int iterationLimit,
+            boost::posix_time::time_duration timeLimit =
+                    boost::posix_time::not_a_date_time) :
             problem(std::move(problem)), ferryChooser(&ferryChooser),
             iterationLimit(iterationLimit),
+            finishTime(timeLimit == boost::posix_time::not_a_date_time
+                    ? boost::posix_time::not_a_date_time
+                    : boost::posix_time::microsec_clock::universal_time() +
+                            timeLimit),
             bestBikeTime(0), bestTotalTime(0), bikeTime(0), totalTime(0) {
         ferryChooser.initialize(*this);
         int totalBikeTime = std::accumulate(this->problem.bikePaths.begin(),
@@ -409,7 +416,7 @@ public:
             return;
         }
         // TODO: Use time limit.
-        for (int i = 0; i < iterationLimit; ++i) {
+        for (int i = 0; i < iterationLimit && !isTimeExpired(); ++i) {
             // std::cerr << "--- iteratrion #" << i << "\n";
             int notChanged = 0;
             for (int j = 0; j < 1000 && notChanged < 6; ++j) {
@@ -498,6 +505,11 @@ private:
         constexpr int hashSize = 10000000;
         return static_cast<float>(
                 std::hash<std::string>{}(iteration) % hashSize) / hashSize;
+    }
+
+    bool isTimeExpired() const {
+        return boost::posix_time::microsec_clock::universal_time() >
+                finishTime;
     }
 
     void clearUsedFerries() {
@@ -629,6 +641,7 @@ private:
     Problem problem;
     FerryChooser* ferryChooser;
     const int iterationLimit;
+    boost::posix_time::ptime finishTime;
     FerrySet usedFerries;
     FerrySet usableFerries;
     std::vector<const Ferry*> bestSolution;
