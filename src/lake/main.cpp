@@ -44,7 +44,7 @@ private:
 
 int main() {
     RandomFerryChooser ferryChooser;
-    Solver<RandomFerryChooser> solver{readInput(std::cin), ferryChooser};
+    Solver<RandomFerryChooser> solver{readInput(std::cin), ferryChooser, 100};
     solver.findShortestPath();
     solver.solve();
     auto solution = solver.getResult();
@@ -52,6 +52,5 @@ int main() {
     for (const auto& ferry : solution) {
         std::cout << ferry.first << " " << ferry.second << "\n";
     }
-    // TODO this is not needed for production
     return solver.checkResult() ? 0 : 1;
 }

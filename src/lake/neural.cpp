@@ -12,7 +12,7 @@ int main() {
     NeuralFerryChooser ferryChooser{parameters};
     ferryChooser.setNeuralNetwork(getNeuralNetwork());
 
-    Solver<NeuralFerryChooser> solver{readInput(std::cin), ferryChooser};
+    Solver<NeuralFerryChooser> solver{readInput(std::cin), ferryChooser, 20};
     solver.findShortestPath();
     if (solver.getBestTotalTime() > solver.getProblem().timeLimit) {
         std::cout << "0" << std::endl;

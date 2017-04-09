@@ -349,8 +349,10 @@ Problem readInput(std::istream& stream) {
 template<typename FerryChooser>
 class Solver {
 public:
-    Solver(Problem problem, FerryChooser& ferryChooser) :
+    Solver(Problem problem, FerryChooser& ferryChooser,
+            int iterationLimit) :
             problem(std::move(problem)), ferryChooser(&ferryChooser),
+            iterationLimit(iterationLimit),
             bestBikeTime(0), bestTotalTime(0), bikeTime(0), totalTime(0) {
         ferryChooser.initialize(*this);
         int totalBikeTime = std::accumulate(this->problem.bikePaths.begin(),
@@ -407,7 +409,7 @@ public:
             return;
         }
         // TODO: Use time limit.
-        for (int i = 0; i < 5; ++i) {
+        for (int i = 0; i < iterationLimit; ++i) {
             // std::cerr << "--- iteratrion #" << i << "\n";
             int notChanged = 0;
             for (int j = 0; j < 1000 && notChanged < 6; ++j) {
@@ -614,6 +616,8 @@ private:
         //          << bikeTime << " bbt: " << bestBikeTime << std::endl;
         if (totalTime <= problem.timeLimit &&
                 bikeTime > bestBikeTime) {
+            std::cerr << "Iteration #" << iteration << ": new best path: t="
+                    << totalTime << " bt=" << bikeTime << "\n";
             bestSolution.resize(usedFerries.size());
             std::copy(usedFerries.begin(), usedFerries.end(),
                     bestSolution.begin());
@@ -624,6 +628,7 @@ private:
 
     Problem problem;
     FerryChooser* ferryChooser;
+    const int iterationLimit;
     FerrySet usedFerries;
     FerrySet usableFerries;
     std::vector<const Ferry*> bestSolution;

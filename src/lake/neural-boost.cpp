@@ -3,12 +3,13 @@
 #include "Neural.hpp"
 
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <iostream>
 #include <fstream>
 
 int main(int argc, char* argv[]) {
-    assert(argc == 2);
+    assert(argc >= 2);
     LearningParameters parameters;
     parameters.inputNeuronCount = NeuralFerryChooser::inputNeuronCount;
     parameters.outputNeuronCount = NeuralFerryChooser::outputNeuronCount;
@@ -21,7 +22,12 @@ int main(int argc, char* argv[]) {
         ferryChooser.setNeuralNetwork(std::move(network));
     }
 
-    Solver<NeuralFerryChooser> solver{readInput(std::cin), ferryChooser};
+    int iterationLimit = 20;
+    if (argc > 2) {
+        iterationLimit = boost::lexical_cast<std::size_t>(argv[2]);
+    }
+    Solver<NeuralFerryChooser> solver{readInput(std::cin), ferryChooser,
+            iterationLimit};
     solver.findShortestPath();
     solver.solve();
     auto solution = solver.getResult();

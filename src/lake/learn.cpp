@@ -23,7 +23,7 @@ public:
             parameters(std::move(parameters)),
             ferryChooser(std::make_unique<NeuralFerryChooser>(
                     this->parameters)),
-            solverTemplate(std::move(problem), *ferryChooser) {
+            solverTemplate(std::move(problem), *ferryChooser, 6) {
     }
 
     GameManager(const GameManager&) = delete;
