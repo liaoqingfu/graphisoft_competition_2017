@@ -2,7 +2,7 @@
 #include <array>
 #include <cassert>
 #include <iostream>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 //============================================================================//
@@ -11,6 +11,11 @@
 using RotationMatrix = std::array<std::array<int, 3>, 3>;
 const std::vector<RotationMatrix> rotations = {
     {{
+        {{1, 0, 0}},
+        {{0, 1, 0}},
+        {{0, 0, 1}},
+    }},
+    {{
         {{-1, 0, 0}},
         {{0, -1, 0}},
         {{0, 0, 1}},
@@ -124,11 +129,6 @@ const std::vector<RotationMatrix> rotations = {
         {{1, 0, 0}},
         {{0, 0, 1}},
         {{0, -1, 0}},
-    }},
-    {{
-        {{1, 0, 0}},
-        {{0, 1, 0}},
-        {{0, 0, 1}},
     }},
 };
 
@@ -152,7 +152,13 @@ struct Vertex {
     Vertex(int x, int y, int z) : x(x), y(y), z(z) {
     }
 
-    int x = 0, y = 0, z = 0;
+    void shift(int offX, int offY, int offZ) {
+        this->x += offX;
+        this->y += offY;
+        this->z += offZ;
+    }
+
+    int x = 0, y = 0, z = 0, refs = 0;
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -160,6 +166,9 @@ struct Vertex {
 bool operator<(const Vertex& lhs, const Vertex& rhs) {
     if (lhs.x == rhs.x) {
         if (lhs.y == rhs.y) {
+            if (lhs.z == rhs.z) {
+                return lhs.refs < rhs.refs;
+            }
             return lhs.z < rhs.z;
         }
         return lhs.y < rhs.y;
@@ -170,23 +179,27 @@ bool operator<(const Vertex& lhs, const Vertex& rhs) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 bool operator==(const Vertex& lhs, const Vertex& rhs) {
-    return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
+    return lhs.refs == rhs.refs && lhs.x == rhs.x && lhs.y == rhs.y &&
+            lhs.z == rhs.z;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-Vertex operator-(const Vertex& lhs, const Vertex& rhs) {
-    return {rhs.x - lhs.x, rhs.y - lhs.y, rhs.z - lhs.z};
-}
-
-Vertex operator+(const Vertex& lhs, const Vertex& rhs) {
-    return {rhs.x + lhs.x, rhs.y + lhs.y, rhs.z + lhs.z};
-}
+//Vertex operator-(const Vertex& lhs, const Vertex& rhs) {
+//    lhs.offset(
+//    return lhs;
+//    //return {rhs.x - lhs.x, rhs.y - lhs.y, rhs.z - lhs.z};
+//}
+//
+//Vertex operator+(const Vertex& lhs, const Vertex& rhs) {
+//    //return {rhs.x + lhs.x, rhs.y + lhs.y, rhs.z + lhs.z, lhs.refs};
+//}
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 std::ostream& operator<<(std::ostream& out, const Vertex& v) {
-    return out << "v(" << v.x << ',' << v.y << ',' << v.z << ')';
+    return out << "v(" << v.x << ',' << v.y << ',' << v.z << '|' << v.refs
+               << ')';
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -197,8 +210,16 @@ std::istream& operator>>(std::istream& in, Vertex& v) {
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+bool equalsByRefs(Vertex* v1, Vertex* v2) {
+    return v1->refs == v2->refs;
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 struct Edge {
     Edge(Vertex* v1, Vertex* v2) : v1(v1), v2(v2) {
+        ++v1->refs;
+        ++v2->refs;
         sort();
     }
 
@@ -209,12 +230,16 @@ struct Edge {
     }
 
     Vertex* v1, * v2;
+    int refs = 0;
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 bool operator<(const Edge& lhs, const Edge& rhs) {
     if (*lhs.v1 == *rhs.v1) {
+        if (*lhs.v2 == *rhs.v2) {
+            return lhs.refs < rhs.refs;
+        }
         return *lhs.v2 < *rhs.v2;
     }
     return *lhs.v1 < *rhs.v1;
@@ -223,13 +248,13 @@ bool operator<(const Edge& lhs, const Edge& rhs) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 bool operator==(const Edge& lhs, const Edge& rhs) {
-    return *lhs.v1 == *rhs.v1 && *lhs.v2 == *rhs.v2;
+    return lhs.refs == rhs.refs && *lhs.v1 == *rhs.v1 && *lhs.v2 == *rhs.v2;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 std::ostream& operator<<(std::ostream& out, const Edge& e) {
-    return out << "e(" << *e.v1 << ',' << * e.v2 << ')';
+    return out << "e(" << *e.v1 << ',' << * e.v2 << '|' << e.refs << ')';
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -244,6 +269,11 @@ struct Side {
             hole.sort();
         }
         std::sort(holes.begin(), holes.end());
+    }
+
+    void addEdge(Edge* edge) {
+        edges.push_back(edge);
+        ++edge->refs;
     }
 };
 
@@ -330,33 +360,41 @@ private:
         assert(vertices.empty());
         assert(edges.empty());
         assert(sides.empty());
-        std::map<const Vertex*, Vertex*> vTranslationTable;
+        std::unordered_map<const Vertex*, Vertex*> vTranslationTable;
         for (const Vertex* const& v : other.vertices) {
             Vertex* vertex = new Vertex(v->x, v->y, v->z);
             vertices.push_back(vertex);
             vTranslationTable[v] = vertex;
         }
-        std::map<const Edge*, Edge*> eTranslationTable;
+        std::unordered_map<const Edge*, Edge*> eTranslationTable;
+        //std::cerr << "edges at copy: " << std::endl;
         for (const Edge* const& e : other.edges) {
             Edge* edge = new Edge(vTranslationTable[e->v1],
                     vTranslationTable[e->v2]);
             edges.push_back(edge);
+            //std::cerr << edge << ' ' <<  edge->v1->refs << ' ' << edge->v2->refs
+            //          << std::endl;
             eTranslationTable[e] = edge;
         }
         for (const Side& s : other.sides) {
             Side side;
             for (const Edge* e : s.edges) {
-                side.edges.push_back(eTranslationTable[e]);
+                side.addEdge(eTranslationTable[e]);
             }
             for (const Side& h : s.holes) {
                 Side hole;
                 for (const Edge* he : h.edges) {
-                    hole.edges.push_back(eTranslationTable[he]);
+                    hole.addEdge(eTranslationTable[he]);
                 }
                 side.holes.push_back(hole);
             }
             sides.push_back(side);
         }
+        //std::cerr << "edges after copy: " << std::endl;
+        //for (const auto& edge : edges) {
+        //    std::cerr << edge << ' ' <<  edge->v1->refs << ' ' << edge->v2->refs
+        //              << std::endl;
+        //}
     }
 
 public:
@@ -398,14 +436,16 @@ public:
     }
 
     Vertex calculateOffset(const Building& rhs) const {
-        return *rhs.vertices[0] - *vertices[0];
+        return {vertices[0]->x - rhs.vertices[0]->x,
+                    vertices[0]->y - rhs.vertices[0]->y,
+                    vertices[0]->z - rhs.vertices[0]->z};
     }
-
 
     void shift(const Vertex& offset) {
         //std::cout << "shifting with: " << offset << std::endl;
         for (Vertex*& v : vertices) {
-            *v = *v + offset;
+            //*v = *v + offset;
+            v->shift(offset.x, offset.y, offset.z);
         }
     }
 
@@ -425,14 +465,31 @@ public:
                 std::equal(vertices.begin(), vertices.end(),
                         rhs.vertices.begin(), rhs.vertices.end(),
                         equalsByValue<Vertex>);
+        if (!verticesEqual) {
+            return false;
+        }
+        bool verticeRefsEqual = vertices.size() == rhs.vertices.size() &&
+                std::equal(vertices.begin(), vertices.end(),
+                        rhs.vertices.begin(), rhs.vertices.end(),
+                        equalsByRefs);
+        if (!verticeRefsEqual) {
+            return false;
+        }
         bool edgesEqual = edges.size() == rhs.edges.size() &&
                 std::equal(edges.begin(), edges.end(),
                         rhs.edges.begin(), rhs.edges.end(),
                         equalsByValue<Edge>);
+        if (!edgesEqual) {
+            return false;
+        }
         bool sidesEqual = sides.size() == rhs.sides.size() &&
                 std::equal(sides.begin(), sides.end(),
                         rhs.sides.begin(), rhs.sides.end());
-        return verticesEqual && edgesEqual && sidesEqual;
+        if (!sidesEqual) {
+            return false;
+        }
+        return true;
+        //return verticesEqual && verticeRefsEqual && edgesEqual && sidesEqual;
     }
 
     friend std::istream& operator>>(std::istream& in, Building& b) {
@@ -464,7 +521,7 @@ public:
             while (numberOfSideEdges-- > 0) {
                 int edge = 0;
                 in >> edge;
-                side.edges.push_back(b.edges[edge - 1]); // 1-based
+                side.addEdge(b.edges[edge - 1]); // 1-based
             }
             // I assume there can be no side with 0 edges
             int numberOfHoles = 0;
@@ -477,7 +534,7 @@ public:
                 while (numberOfHoleEdges-- > 0) {
                     int edge = 0;
                     in >> edge;
-                    hole.edges.push_back(b.edges[edge - 1]); // 1-based
+                    hole.addEdge(b.edges[edge - 1]); // 1-based
                 }
                 side.holes.push_back(hole);
             }
@@ -508,11 +565,15 @@ public:
 
 bool check(const Building& b1, Building b2, RotationMatrix r) {
     b2.rotate(r);
+    //std::cerr << b2 << std::endl;
     Vertex offset = b1.calculateOffset(b2);
-    //std::cout << offset << std::endl;
+    std::cerr << offset << std::endl;
     b2.shift(offset);
+    //std::cerr << b2 << std::endl;
     b2.sort();
-    //std::cout << b1 << std::endl << b2 << std::endl;
+    //std::cerr << b2 << std::endl;
+    std::cerr << "b1: " << std::endl << b1 << std::endl << "b2: "
+              << std::endl << b2 << std::endl;
     return b1 == b2;
 }
 
