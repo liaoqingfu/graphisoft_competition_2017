@@ -183,6 +183,17 @@ struct graph_traits<Graph> {
 
 };
 
+void printDistances(const Graph& graph, const Matrix<int> distances) {
+    Matrix<std::string> result{graph.getMatrix().width(),
+            graph.getMatrix().height()};
+    for (Point p : matrixRange(graph.getMatrix())) {
+        using std::to_string;
+        result[p] = to_string(graph.getMatrix()[p]) + to_string(distances[p]);
+    }
+    hex::printMatrix(std::cerr, result);
+    std::cerr << "\n";
+}
+
 Solution solve(const Graph& graph) {
     Matrix<int> distances{graph.getMatrix().width() + 1,
             graph.getMatrix().height(), 0};
@@ -202,9 +213,11 @@ Solution solve(const Graph& graph) {
     solution.halfWidth = graph.getMatrix().width() / 2;
     for (Point p : matrixRange(graph.getMatrix())) {
         if (distances[p] == maxDistance) {
+            std::cerr << "-> " << p << "\n";
             solution.coordinates.push_back(p);
         }
     }
+    printDistances(graph, distances);
     return solution;
 }
 
@@ -221,6 +234,7 @@ void printSolution(std::ostream& os, const Solution& solution) {
 int main() {
     auto input = readInput(std::cin);
     hex::printMatrix(std::cerr, input);
+    std::cerr << "\n";
     Solution solution = solve(std::move(input));
     printSolution(std::cout, solution);
 }

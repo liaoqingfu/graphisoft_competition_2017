@@ -23,7 +23,7 @@ void printMatrix(std::ostream& os, const Matrix<T>& matrix) {
         }
         for (int x = 0; x < static_cast<int>(matrix.width()); ++x) {
             if (x % 2 == y % 2) {
-                os << std::setw(3) << to_string(matrix[Point{x, y / 2}]);
+                os << std::setw(3) << matrix[Point{x, y / 2}];
             } else {
                 os << "   ";
             }
