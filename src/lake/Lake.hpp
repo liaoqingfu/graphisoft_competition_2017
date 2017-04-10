@@ -65,7 +65,9 @@ bool isFerryBlockingAnother(const Ferry& main, const Ferry& other) {
 }
 
 bool operator<(const Ferry& lhs, const Ferry& rhs) {
-    return lhs.from < rhs.from || (lhs.from == rhs.from && lhs.to < rhs.to);
+    return lhs.from < rhs.from
+            || (lhs.from == rhs.from && (lhs.to < rhs.to
+            || (lhs.to == rhs.to && lhs.time < rhs.time)));
 }
 
 class VertexIterator : public boost::iterator_facade<
@@ -328,6 +330,7 @@ Problem readInput(std::istream& stream) {
     }
 
     std::size_t numFerries = 0;
+    std::vector<Ferry> ferries;
     stream >> numFerries;
     for (std::size_t i = 0; i < numFerries; ++i) {
         std::string from, to;
@@ -348,16 +351,30 @@ Problem readInput(std::istream& stream) {
         if (skippedBikeTime > time) {
             // std::cerr << fromIndex << " -> " << toIndex << ": t=" << time
             //         << " bt=" << skippedBikeTime << "\n";
-            problem.ferries.push_back(Ferry{fromIndex, toIndex, time,
+            ferries.push_back(Ferry{fromIndex, toIndex, time,
                     skippedBikeTime});
         } else {
             // std::cerr << "Skipped: " << fromIndex << " -> " << toIndex
             //         << ": t=" << time << " bt=" << skippedBikeTime << "\n";
         }
     }
-    std::sort(problem.ferries.begin(), problem.ferries.end());
+    std::sort(ferries.begin(), ferries.end());
+    const Ferry* previous = 0;
+    for (const Ferry& ferry : ferries) {
+        // std::cerr << "Ferry: " << ferry.from << " -> " << ferry.to
+        //         << " t=" << ferry.time << " bt=" << ferry.skippedBikeTime;
+        if (!previous || previous->from != ferry.from ||
+                previous->to != ferry.to) {
+            problem.ferries.push_back(ferry);
+        } else {
+           // std::cerr << " skipped";
+        }
+        // std::cerr << "\n";
+        previous = &ferry;
+    }
 
     stream >> problem.timeLimit;
+    std::cerr << "Number of usable ferries: " << problem.ferries.size() << "\n";
     //std::cerr << problem << std::endl << std::endl;
     return problem;
 }
