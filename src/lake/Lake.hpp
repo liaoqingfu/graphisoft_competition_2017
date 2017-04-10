@@ -216,7 +216,7 @@ const Ferry& getFerry(const Edge& edge, const Problem& problem) {
             problem.ferries.end(), source(edge, problem),
             FerryBeginningComparator{});
     return *std::find_if(range.first, range.second,
-            [&edge](const Ferry& ferry) {
+            [&edge, &problem](const Ferry& ferry) {
                 return ferry.to == edge.second;
             });
 }
@@ -335,10 +335,19 @@ Problem readInput(std::istream& stream) {
         stream >> from >> to >> time;
         std::size_t fromIndex = cityNames.at(from);
         std::size_t toIndex = cityNames.at(to);
-        problem.ferries.push_back(Ferry{fromIndex, toIndex, time,
-                std::accumulate(
-                        problem.bikePaths.begin() + fromIndex,
-                        problem.bikePaths.begin() + toIndex, 0)});
+        // std::cerr << fromIndex << " -> " << toIndex << "\n";
+        if (toIndex == 0) {
+            problem.ferries.push_back(Ferry{fromIndex, toIndex, time,
+                    std::accumulate(
+                            problem.bikePaths.begin() + fromIndex,
+                            problem.bikePaths.end(),
+                            problem.bikePaths.front())});
+        } else if (toIndex > fromIndex) {
+            problem.ferries.push_back(Ferry{fromIndex, toIndex, time,
+                    std::accumulate(
+                            problem.bikePaths.begin() + fromIndex,
+                            problem.bikePaths.begin() + toIndex, 0)});
+        }
     }
     std::sort(problem.ferries.begin(), problem.ferries.end());
 
@@ -393,14 +402,16 @@ public:
         clearUsedFerries();
         for (std::size_t vertex = num_vertices(problem) - 1;
                 vertex != 0; vertex = predecessors[vertex]) {
-            auto edge = std::make_pair(predecessors[vertex], vertex);
+            auto edge = std::make_pair(predecessors[vertex],
+                    vertex == problem.bikePaths.size() ? 0 : vertex);
+            // std::cerr << "Edge: " << edge.first << " -> " << edge.second << "\n";
             if (isBikePath(edge, problem)) {
                 int weight = get(get(boost::edge_weight, problem), edge);
                 bikeTime += weight;
             } else {
                 const Ferry& ferry = getFerry(edge, problem);
-                // std::cerr << "Using ferry: " << problem.cityNames[ferry.from]
-                //         << " -> " << problem.cityNames[ferry.to]
+                // std::cerr << "Using ferry: " << ferry.from
+                //         << " -> " << ferry.to
                 //         << " t=" << ferry.time
                 //         << " bt=" << ferry.skippedBikeTime << "\n";
                 auto iterator = usableFerries.lower_bound(&ferry);
