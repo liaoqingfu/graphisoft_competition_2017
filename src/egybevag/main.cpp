@@ -11,6 +11,9 @@
 
 // Number of rotation matrices: 24
 using RotationMatrix = std::array<std::array<int, 3>, 3>;
+
+const RotationMatrix identity = {{ {{ 1, 0, 0, }}, {{ 0, 1, 0 }}, {{ 0, 0, 1 }} }};
+
 const std::vector<RotationMatrix> rotations = {
     {{
         {{1, 0, 0}},
@@ -62,6 +65,7 @@ const std::vector<RotationMatrix> rotations = {
         {{-1, 0, 0}},
         {{0, 1, 0}},
     }},
+    // 11
     {{
         {{0, 0, -1}},
         {{0, -1, 0}},
@@ -134,7 +138,129 @@ const std::vector<RotationMatrix> rotations = {
     }},
 };
 
-std::array<RotationMatrix, 3> srotations;
+std::vector<RotationMatrix> localRotations = {{
+        {{
+            {{ 1,  0,  0}},
+            {{ 0,  1,  0}},
+            {{ 0,  0,  1}}
+        }},
+        {{
+            {{-1,  0,  0}},
+            {{ 0, -1,  0}},
+            {{ 0,  0,  1}}
+        }},
+        {{
+            {{ 1,  0,  0}},
+            {{ 0,  0,  1}},
+            {{ 0, -1,  0}}
+        }},
+        {{
+            {{ 1,  0,  0}},
+            {{ 0, -1,  0}},
+            {{ 0,  0, -1}}
+        }},
+        {{
+            {{ 1,  0,  0}},
+            {{ 0,  0, -1}},
+            {{ 0,  1,  0}}
+        }},
+        {{
+            {{ 0,  1,  0}},
+            {{-1,  0,  0}},
+            {{ 0,  0,  1}}
+        }},
+        {{
+            {{ 0,  0,  1}},
+            {{ 0,  1,  0}},
+            {{-1,  0,  0}}
+        }},
+        {{
+            {{-1,  0,  0}},
+            {{ 0,  1,  0}},
+            {{ 0,  0, -1}}
+        }},
+        {{
+            {{ 0,  0, -1}},
+            {{ 0,  1,  0}},
+            {{ 1,  0,  0}}
+        }},
+        {{
+            {{-1,  0,  0}},
+            {{ 0,  0,  1}},
+            {{ 0,  1,  0}}
+        }},
+        {{
+            {{ 0,  1,  0}},
+            {{-1,  0,  0}},
+            {{ 0,  0,  1}}
+        }},
+        {{
+            {{-1,  0,  0}},
+            {{ 0, -1,  0}},
+            {{ 0,  0,  1}}
+        }},
+        {{
+            {{ 0, -1,  0}},
+            {{ 1,  0,  0}},
+            {{ 0,  0,  1}}
+        }},
+        {{
+            {{-1,  0,  0}},
+            {{ 0,  1,  0}},
+            {{ 0,  0, -1}}
+        }},
+        {{
+            {{ 0,  1,  0}},
+            {{-1,  0,  0}},
+            {{ 0,  0,  1}}
+        }},
+        {{
+            {{-1,  0,  0}},
+            {{ 0, -1,  0}},
+            {{ 0,  0,  1}}
+        }},
+        {{
+            {{ 0, -1,  0}},
+            {{ 1,  0,  0}},
+            {{ 0,  0,  1}}
+        }},
+        {{
+            {{-1,  0,  0}},
+            {{ 0,  0,  1}},
+            {{ 0,  1,  0}}
+        }},
+        {{
+            {{ 0,  0,  1}},
+            {{ 0,  1,  0}},
+            {{-1,  0,  0}}
+        }},
+        {{
+            {{-1,  0,  0}},
+            {{ 0,  1,  0}},
+            {{ 0,  0, -1}}
+        }},
+        {{
+            {{ 0,  0, -1}},
+            {{ 0,  1,  0}},
+            {{ 1,  0,  0}}
+        }},
+        {{
+            {{ 0, -1,  0}},
+            {{ 1,  0,  0}},
+            {{ 0,  0,  1}}
+        }},
+        {{
+            {{ 1,  0,  0}},
+            {{ 0,  0,  1}},
+            {{ 0, -1,  0}}
+        }},
+        {{
+            {{ 1,  0,  0}},
+            {{ 0, -1,  0}},
+            {{ 0,  0, -1}}
+        }},
+}};
+
 
 //============================================================================//
 
@@ -497,18 +623,20 @@ private:
 public:
     Building() = default;
 
-    Building(const Building& other) {
-        //std::cout << "copycon" << std::endl;
-        copy(other);
-    }
+//     Building(const Building& other) {
+//         //std::cout << "copycon" << std::endl;
+//         copy(other);
+//     }
+    Building(const Building&) = delete;
 
     Building(Building&&) = delete;
 
-    Building& operator=(const Building& other) {
-        //std::cout << "opying" << std::endl;
-        copy(other);
-        return *this;
-    }
+//     Building& operator=(const Building& other) {
+//         //std::cout << "opying" << std::endl;
+//         copy(other);
+//         return *this;
+//     }
+    Building& operator=(const Building) = delete;
 
     Building& operator=(Building&&) = delete;
 
@@ -549,6 +677,9 @@ public:
     }
 
     void rotate(const RotationMatrix& r) {
+        if (r == identity) {
+            return;
+        }
         for (Vertex*& v : vertices) {
             Vertex o = *v;
             v->x = r[0][0] * o.x + r[0][1] * o.y + r[0][2] * o.z;
@@ -684,26 +815,20 @@ int main() {
     }
     //assert(rotations.size() == qrotations.size());
     std::vector<bool> matches(numberOfBuildings - 1, false);
-    for (std::size_t j = 0; j < rotations.size(); ++j) {
+    for (std::size_t j = 0; j < localRotations.size(); ++j) {
         if (std::all_of(matches.begin(), matches.end(),
                         [](bool b) { return b; })) {
             break;
         }
-        Building b = b1;
-        b.rotate(rotations[j]);
-        b.sort();
+        //Building b = b1;
+        b1.rotate(localRotations[j]);
+        b1.sort();
         for (std::size_t k = 0; k < buildings.size(); ++k) {
             if (matches[k]) {
                 continue; // already matched
             }
-            matches[k] = b == *buildings[k];
+            matches[k] = b1 == *buildings[k];
         }
-        //for (const auto& r : rotations) {
-        //    if (check(b1, b2, r)) {
-        //        std::cout << i << " ";
-        //        break;
-        //    }
-        //}
     }
 
     for (std::size_t i = 0; i < matches.size(); ++i) {
