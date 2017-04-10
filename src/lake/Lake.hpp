@@ -335,18 +335,24 @@ Problem readInput(std::istream& stream) {
         stream >> from >> to >> time;
         std::size_t fromIndex = cityNames.at(from);
         std::size_t toIndex = cityNames.at(to);
-        // std::cerr << fromIndex << " -> " << toIndex << "\n";
+        int skippedBikeTime = 0;
         if (toIndex == 0) {
-            problem.ferries.push_back(Ferry{fromIndex, toIndex, time,
-                    std::accumulate(
-                            problem.bikePaths.begin() + fromIndex,
-                            problem.bikePaths.end(),
-                            problem.bikePaths.front())});
+            skippedBikeTime = std::accumulate(
+                    problem.bikePaths.begin() + fromIndex,
+                    problem.bikePaths.end(), 0);
         } else if (toIndex > fromIndex) {
+            skippedBikeTime = std::accumulate(
+                    problem.bikePaths.begin() + fromIndex,
+                    problem.bikePaths.begin() + toIndex, 0);
+        }
+        if (skippedBikeTime > time) {
+            // std::cerr << fromIndex << " -> " << toIndex << ": t=" << time
+            //         << " bt=" << skippedBikeTime << "\n";
             problem.ferries.push_back(Ferry{fromIndex, toIndex, time,
-                    std::accumulate(
-                            problem.bikePaths.begin() + fromIndex,
-                            problem.bikePaths.begin() + toIndex, 0)});
+                    skippedBikeTime});
+        } else {
+            // std::cerr << "Skipped: " << fromIndex << " -> " << toIndex
+            //         << ": t=" << time << " bt=" << skippedBikeTime << "\n";
         }
     }
     std::sort(problem.ferries.begin(), problem.ferries.end());
@@ -418,11 +424,13 @@ public:
                 assert(*iterator == &ferry);
                 addFerryManageSets(iterator);
             }
-
         }
-        // Shortest path is guarantee to be a solution
-        // (assuming at least one solution exists)
-        checkNewPath();
+        // std::cerr << "Total time=" << totalTime << " bike time=" << bikeTime
+        //         << "\n";
+        if (totalTime > problem.timeLimit) {
+            throwError(Error::NoSolution);
+        }
+        updateBestPath();
     }
 
     void solve() {
@@ -651,14 +659,18 @@ private:
         //          << bikeTime << " bbt: " << bestBikeTime << std::endl;
         if (totalTime <= problem.timeLimit &&
                 bikeTime > bestBikeTime) {
-            // std::cerr << "Iteration #" << iteration << ": new best path: t="
-            //         << totalTime << " bt=" << bikeTime << "\n";
-            bestSolution.resize(usedFerries.size());
-            std::copy(usedFerries.begin(), usedFerries.end(),
-                    bestSolution.begin());
-            bestBikeTime = bikeTime;
-            bestTotalTime = totalTime;
+            updateBestPath();
         }
+    }
+
+    void updateBestPath() {
+        // std::cerr << "Iteration #" << iteration << ": new best path: t="
+        //         << totalTime << " bt=" << bikeTime << "\n";
+        bestSolution.resize(usedFerries.size());
+        std::copy(usedFerries.begin(), usedFerries.end(),
+                bestSolution.begin());
+        bestBikeTime = bikeTime;
+        bestTotalTime = totalTime;
     }
 
     Problem problem;

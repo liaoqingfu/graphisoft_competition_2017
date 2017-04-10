@@ -8,6 +8,7 @@ enum class Error {
     NoAddableFerries = 11,
     NoSolution = 12,
     WrongSolution = 13,
+    SolutionTooLong = 14,
 };
 
 void throwError(Error error) {

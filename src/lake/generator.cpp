@@ -17,6 +17,9 @@ struct Options {
     int minFerryTime = 10;
     int maxFerryTime = 30;
     int seed = 0;
+    bool allowDuplicate = false;
+    bool allowAbnormal = false;
+    bool duplicateFerries = false;
 };
 
 template <typename T>
@@ -38,6 +41,9 @@ Options parseOptions(int argc, char* argv[]) {
         ("min-ferry-time", defaultValue(options.minFerryTime))
         ("max-ferry-time", defaultValue(options.maxFerryTime))
         ("seed", defaultValue(options.seed))
+        ("allow-duplicate", po::bool_switch(&options.allowDuplicate))
+        ("allow-abnormal", po::bool_switch(&options.allowAbnormal))
+        ("duplicate-ferries", po::bool_switch(&options.duplicateFerries))
         ;
 
     po::variables_map vm;
@@ -78,13 +84,30 @@ public:
                 options.numCities,
                 [this]() { return cycleTimeDistribution(rng); });
 
-        result.ferries.reserve(options.numFerries);
-        std::generate_n(std::back_inserter(result.ferries), options.numFerries,
-                [this]() { return generateFerry(); });
+        if (options.duplicateFerries) {
+            result.ferries.reserve(options.numFerries * 2);
+        } else {
+            result.ferries.reserve(options.numFerries);
+        }
+        for (int i = 0; i < options.numFerries; ++i) {
+            Ferry ferry = generateFerry();
+            addFerry(ferry);
+            if (options.duplicateFerries) {
+                do {
+                    ferry.time = ferryTimeDistribution(rng);
+                } while (!isAcceptableFerry(ferry));
+                addFerry(ferry);
+            }
+        }
         return result;
     }
 
 private:
+    void addFerry(Ferry ferry) {
+        ferry.to %= options.numCities;
+        result.ferries.push_back(ferry);
+    }
+
     Ferry generateFerry() {
         Ferry ferry;
         do {
@@ -93,7 +116,7 @@ private:
             ferry.from = fromDistribution(rng);
 
             std::uniform_int_distribution<int> toDistribution{ferry.from + 1,
-                    options.numCities - 1};
+                    options.numCities};
             ferry.to = toDistribution(rng);
 
             ferry.time = ferryTimeDistribution(rng);
@@ -102,13 +125,18 @@ private:
     }
 
     bool isDuplicateFerry(const Ferry& ferry) {
-        return std::find_if(result.ferries.begin(), result.ferries.end(),
-                [this, ferry](const Ferry& other) {
-                    return ferry.from == other.from && ferry.to == other.to;
-                }) != result.ferries.end();
+        return !options.allowDuplicate
+                && std::find_if(result.ferries.begin(), result.ferries.end(),
+                        [this, ferry](const Ferry& other) {
+                            return ferry.from == other.from
+                                    && ferry.to == other.to;
+                        }) != result.ferries.end();
     }
 
     bool isAcceptableFerry(const Ferry& ferry) {
+        if (options.allowAbnormal) {
+            return true;
+        }
         auto begin = result.cycleTimes.begin();
         return std::accumulate(begin + ferry.from, begin + ferry.to, 0) >
                 ferry.time;

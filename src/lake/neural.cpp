@@ -16,9 +16,8 @@ int main() {
             100000, boost::posix_time::seconds(8)};
     solver.findShortestPath();
     if (solver.getBestTotalTime() > solver.getProblem().timeLimit) {
-        std::cout << "0" << std::endl;
-        std::cerr << "There is no solution.\n";
-        throwError(Error::NoSolution);
+        std::cerr << "Solution is too long.\n";
+        throwError(Error::SolutionTooLong);
     } else {
         solver.solve();
         auto solution = solver.getResult();
