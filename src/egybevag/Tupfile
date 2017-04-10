@@ -7,3 +7,5 @@ include $(COMPILE_TUP)
 include $(LINK_TUP)
 
 : main.o |> !linker |> egybevag
+: rotationmatrices.o |> !linker |> rotationmatrices
+: generator.o |> !linker |> generator
