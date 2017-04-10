@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -264,8 +265,8 @@ struct EqualsByValue<Vertex> {
     }
 
     bool operator()(Vertex* lhs, Vertex* rhs) {
-        std::cerr << "comparing " << *lhs << " with " << *rhs
-                  << " using offset " << offset << std::endl;
+        //std::cerr << "comparing " << *lhs << " with " << *rhs
+        //          << " using offset " << offset << std::endl;
         return lhs->x - offset.x == rhs->x &&
                lhs->y - offset.y == rhs->y &&
                lhs->z - offset.z == rhs->z &&
@@ -497,12 +498,14 @@ public:
     Building() = default;
 
     Building(const Building& other) {
+        //std::cout << "copycon" << std::endl;
         copy(other);
     }
 
     Building(Building&&) = delete;
 
     Building& operator=(const Building& other) {
+        //std::cout << "opying" << std::endl;
         copy(other);
         return *this;
     }
@@ -568,12 +571,12 @@ public:
         Vertex offset = {0, 0, 0};
         if (vertices.size() > 0 && rhs.vertices.size() > 0) {
             offset = calculateOffset(rhs);
-            // bool verticesEqual = std::equal(vertices.begin(), vertices.end(),
-            //         rhs.vertices.begin(), rhs.vertices.end(),
-            //         EqualsByValue<Vertex>(offset));
-            // if (!verticesEqual) {
-            //     return false;
-            // }
+            bool verticesEqual = std::equal(vertices.begin(), vertices.end(),
+                    rhs.vertices.begin(), rhs.vertices.end(),
+                    EqualsByValue<Vertex>(offset));
+            if (!verticesEqual) {
+                return false;
+            }
             // bool verticeRefsEqual = std::equal(vertices.begin(), vertices.end(),
             //         rhs.vertices.begin(), rhs.vertices.end(),
             //         equalsByRefs);
@@ -581,12 +584,12 @@ public:
             //     return false;
             // }
         }
-        // bool edgesEqual = std::equal(edges.begin(), edges.end(),
-        //         rhs.edges.begin(), rhs.edges.end(),
-        //         EqualsByValue<Edge>(offset));
-        // if (!edgesEqual) {
-        //     return false;
-        // }
+        bool edgesEqual = std::equal(edges.begin(), edges.end(),
+                rhs.edges.begin(), rhs.edges.end(),
+                EqualsByValue<Edge>(offset));
+        if (!edgesEqual) {
+            return false;
+        }
         bool sidesEqual = std::equal(sides.begin(), sides.end(),
                 rhs.sides.begin(), rhs.sides.end(), SideEquals(offset));
         if (!sidesEqual) {
@@ -666,36 +669,34 @@ public:
 
 //============================================================================//
 
-bool check(const Building& b1, Building b2, RotationMatrix r) {
-    b2.rotate(r);
-    //std::cerr << b2 << std::endl;
-    //Vertex offset = b1.calculateOffset(b2);
-    //std::cerr << offset << std::endl;
-    //b2.shift(offset);
-    //std::cerr << b2 << std::endl;
-    //b2.sort();
-    //std::cerr << b2 << std::endl;
-    //std::cerr << "b1: " << std::endl << b1 << std::endl << "b2: "
-    //          << std::endl << b2 << std::endl;
-    b2.sort();
-    return b1 == b2;
-}
-
 int main() {
     int numberOfBuildings = 0;
     std::cin >> numberOfBuildings;
     Building b1;
     std::cin >> b1;
     b1.sort();
+    std::vector<std::shared_ptr<Building>> buildings;
     for (int i = 2; i <= numberOfBuildings; ++i) {
-        Building b2;
-        std::cin >> b2;
-        //assert(rotations.size() == qrotations.size());
-        for (int j = 0; j < rotations.size(); ++j) {
-            if (check(b1, b2, rotations[j])) {
-                std::cout << i << " ";
-                break;
+        std::shared_ptr<Building> b2 = std::make_shared<Building>();
+        std::cin >> *b2;
+        b2->sort();
+        buildings.push_back(b2);
+    }
+    //assert(rotations.size() == qrotations.size());
+    std::vector<bool> matches(numberOfBuildings - 1, false);
+    for (std::size_t j = 0; j < rotations.size(); ++j) {
+        if (std::all_of(matches.begin(), matches.end(),
+                        [](bool b) { return b; })) {
+            break;
+        }
+        Building b = b1;
+        b.rotate(rotations[j]);
+        b.sort();
+        for (std::size_t k = 0; k < buildings.size(); ++k) {
+            if (matches[k]) {
+                continue; // already matched
             }
+            matches[k] = b == *buildings[k];
         }
         //for (const auto& r : rotations) {
         //    if (check(b1, b2, r)) {
@@ -703,6 +704,12 @@ int main() {
         //        break;
         //    }
         //}
+    }
+
+    for (std::size_t i = 0; i < matches.size(); ++i) {
+        if (matches[i]) {
+            std::cout << (i+2) << ' ' << std::endl;
+        }
     }
     std::cout << std::endl;
 }
