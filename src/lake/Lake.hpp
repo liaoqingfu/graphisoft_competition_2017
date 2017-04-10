@@ -371,9 +371,6 @@ Problem readInput(std::istream& stream) {
     for (const Ferry& ferry : ferries) {
         if (!previous || previous->from != ferry.from ||
                 previous->to != ferry.to) {
-            // std::cerr << "Ferry: " << ferry.from << " -> " << ferry.to
-            //         << " t=" << ferry.time << " bt=" << ferry.skippedBikeTime
-            //         << "\n";
             problem.ferries.push_back(ferry);
         }
         previous = &ferry;
