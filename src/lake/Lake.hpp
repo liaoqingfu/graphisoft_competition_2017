@@ -361,15 +361,15 @@ Problem readInput(std::istream& stream) {
     std::sort(ferries.begin(), ferries.end());
     const Ferry* previous = 0;
     for (const Ferry& ferry : ferries) {
-        std::cerr << "Ferry: " << ferry.from << " -> " << ferry.to
-                << " t=" << ferry.time << " bt=" << ferry.skippedBikeTime;
-        // if (!previous || previous->from != ferry.from ||
-        //         previous->to != ferry.to) {
+        // std::cerr << "Ferry: " << ferry.from << " -> " << ferry.to
+        //         << " t=" << ferry.time << " bt=" << ferry.skippedBikeTime;
+        if (!previous || previous->from != ferry.from ||
+                previous->to != ferry.to) {
             problem.ferries.push_back(ferry);
-        // } else {
-        //     std::cerr << " skipped";
-        // }
-        std::cerr << "\n";
+        } else {
+           // std::cerr << " skipped";
+        }
+        // std::cerr << "\n";
         previous = &ferry;
     }
 
