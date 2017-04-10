@@ -10,9 +10,9 @@ namespace hex {
 
 template<typename T>
 void printMatrix(std::ostream& os, const Matrix<T>& matrix) {
-    os << "  ";
+    os << "   ";
     for (int x = 0; x < static_cast<int>(matrix.width()); ++x) {
-        os << std::setw(2) << x % 100 << " ";
+        os << std::setw(3) << x % 100;
     }
     os << "\n";
     for (int y = 0; y < static_cast<int>(2*matrix.height()); ++y) {
@@ -23,7 +23,7 @@ void printMatrix(std::ostream& os, const Matrix<T>& matrix) {
         }
         for (int x = 0; x < static_cast<int>(matrix.width()); ++x) {
             if (x % 2 == y % 2) {
-                os << to_string(matrix[Point{x, y / 2}]) << "  ";
+                os << std::setw(3) << to_string(matrix[Point{x, y / 2}]);
             } else {
                 os << "   ";
             }

@@ -1,7 +1,3 @@
-#pragma GCC optimize ("O3")
-
-#define NDEBUG
-
 #include "Field.hpp"
 #include "HexMatrix.hpp"
 #include "MatrixPropertyMap.hpp"
@@ -224,9 +220,7 @@ void printSolution(std::ostream& os, const Solution& solution) {
 
 int main() {
     auto input = readInput(std::cin);
-#ifndef NDEBUG
     hex::printMatrix(std::cerr, input);
-#endif
     Solution solution = solve(std::move(input));
     printSolution(std::cout, solution);
 }
