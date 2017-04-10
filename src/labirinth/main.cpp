@@ -224,9 +224,16 @@ Solution solve(const Graph& graph) {
 void printSolution(std::ostream& os, const Solution& solution) {
     os << solution.coordinates.size() << " " << solution.distance <<
             "\n";
-    // TODO sorting!!
+    std::vector<Point> output;
+    output.reserve(solution.coordinates.size());
     for (Point coordinate : solution.coordinates) {
-        Point ecosim = hex::local2ecosim(coordinate, solution.halfWidth);
+        output.push_back(hex::local2ecosim(coordinate, solution.halfWidth));
+    }
+    std::sort(output.begin(), output.end(),
+            [](Point lhs, Point rhs) {
+                return lhs.y < rhs.y || (lhs.y == rhs.y && lhs.x < rhs.x);
+            });
+    for (Point ecosim : output) {
         os << ecosim.y << " " << ecosim.x << "\n";
     }
 }
