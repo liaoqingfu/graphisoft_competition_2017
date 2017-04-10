@@ -61,13 +61,21 @@ std::ostream& operator<<(std::ostream& os, const Problem& p) {
 }
 
 bool isFerryBlockingAnother(const Ferry& main, const Ferry& other) {
-    return (other.from < main.to && other.to > main.from);
+    std::size_t mainRealTo = main.to == 0
+            ? std::numeric_limits<std::size_t>::max() : main.to;
+    std::size_t otherRealTo = other.to == 0
+            ? std::numeric_limits<std::size_t>::max() : other.to;
+    return (other.from < mainRealTo && otherRealTo > main.from);
 }
 
 bool operator<(const Ferry& lhs, const Ferry& rhs) {
+    std::size_t lhsRealTo = lhs.to == 0
+            ? std::numeric_limits<std::size_t>::max() : lhs.to;
+    std::size_t rhsRealTo = rhs.to == 0
+            ? std::numeric_limits<std::size_t>::max() : rhs.to;
     return lhs.from < rhs.from
-            || (lhs.from == rhs.from && (lhs.to < rhs.to
-            || (lhs.to == rhs.to && lhs.time < rhs.time)));
+            || (lhs.from == rhs.from && (lhsRealTo < rhsRealTo
+            || (lhsRealTo == rhsRealTo && lhs.time < rhs.time)));
 }
 
 class VertexIterator : public boost::iterator_facade<
@@ -361,20 +369,18 @@ Problem readInput(std::istream& stream) {
     std::sort(ferries.begin(), ferries.end());
     const Ferry* previous = 0;
     for (const Ferry& ferry : ferries) {
-        // std::cerr << "Ferry: " << ferry.from << " -> " << ferry.to
-        //         << " t=" << ferry.time << " bt=" << ferry.skippedBikeTime;
         if (!previous || previous->from != ferry.from ||
                 previous->to != ferry.to) {
+            // std::cerr << "Ferry: " << ferry.from << " -> " << ferry.to
+            //         << " t=" << ferry.time << " bt=" << ferry.skippedBikeTime
+            //         << "\n";
             problem.ferries.push_back(ferry);
-        } else {
-           // std::cerr << " skipped";
         }
-        // std::cerr << "\n";
         previous = &ferry;
     }
 
     stream >> problem.timeLimit;
-    std::cerr << "Number of usable ferries: " << problem.ferries.size() << "\n";
+    // std::cerr << "Number of usable ferries: " << problem.ferries.size() << "\n";
     //std::cerr << problem << std::endl << std::endl;
     return problem;
 }
@@ -465,10 +471,16 @@ public:
                 while (totalTime <= problem.timeLimit
                         || usableFerries.size() == 0) {
                     removeFerry();
+                    // if (!doCheckResult(usedFerries, totalTime, bikeTime)) {
+                    //     return;
+                    // }
                 }
                 while (totalTime > problem.timeLimit &&
                         usableFerries.size() != 0) {
                     addFerry();
+                    // if (!doCheckResult(usedFerries, totalTime, bikeTime)) {
+                    //     return;
+                    // }
                 }
                 if (currentBest != bestBikeTime) {
                     notChanged = 0;
@@ -498,11 +510,25 @@ public:
     }
 
     bool checkResult() const {
+        return doCheckResult(bestSolution, bestTotalTime, bestBikeTime);
+    }
+
+    const Problem& getProblem() const { return problem; }
+    int getBestBikeTime() const { return bestBikeTime; }
+    int getBestTotalTime() const { return bestTotalTime; }
+
+private:
+    using FerrySet = boost::container::flat_set<const Ferry*,
+            PointerComparator<const Ferry*>>;
+
+    template<typename Solution>
+    bool doCheckResult(const Solution& solution, int totalTime,
+            int bikeTime) const {
         int time = 0;
-        int bikeTime = 0;
+        int calculatedBikeTime = 0;
         std::size_t position = 0;
         bool result = true;
-        for (const Ferry* ferry : bestSolution) {
+        for (const Ferry* ferry : solution) {
             if (ferry->from < position) {
                 std::cerr << "Wrong ferry chosen: "
                         << problem.cityNames[ferry->from] << " -> "
@@ -511,7 +537,7 @@ public:
             }
             for (; position < ferry->from; ++position) {
                 time += problem.bikePaths[position];
-                bikeTime += problem.bikePaths[position];
+                calculatedBikeTime += problem.bikePaths[position];
             }
             if (ferry->to == 0) {
                 position = problem.bikePaths.size();
@@ -526,28 +552,20 @@ public:
         }
         for (; position < problem.bikePaths.size(); ++position) {
             time += problem.bikePaths[position];
-            bikeTime += problem.bikePaths[position];
+            calculatedBikeTime += problem.bikePaths[position];
         }
         std::cerr << "Calculated time: " << time << " calculated bike time: "
-                << bikeTime << "\n";
-        if (time != bestTotalTime) {
+                << calculatedBikeTime << "\n";
+        if (time != totalTime) {
             std::cerr << "Total time mismatch.\n";
             result = false;
         }
-        if (bikeTime != bestBikeTime) {
+        if (calculatedBikeTime != bikeTime) {
             std::cerr << "Bike time mismatch.\n";
             result = false;
         }
         return result;
     }
-
-    const Problem& getProblem() const { return problem; }
-    int getBestBikeTime() const { return bestBikeTime; }
-    int getBestTotalTime() const { return bestTotalTime; }
-
-private:
-    using FerrySet = boost::container::flat_set<const Ferry*,
-            PointerComparator<const Ferry*>>;
 
     float getHash() const {
         constexpr int hashSize = 10000000;
