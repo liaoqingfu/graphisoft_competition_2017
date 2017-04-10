@@ -488,8 +488,16 @@ public:
                 time += problem.bikePaths[position];
                 bikeTime += problem.bikePaths[position];
             }
-            position = ferry->to;
+            if (ferry->to == 0) {
+                position = problem.bikePaths.size();
+            } else {
+                position = ferry->to;
+            }
             time += ferry->time;
+        }
+        if (position > problem.bikePaths.size()) {
+            std::cerr << "Ferry position overflow.\n";
+            return false;
         }
         for (; position < problem.bikePaths.size(); ++position) {
             time += problem.bikePaths[position];
