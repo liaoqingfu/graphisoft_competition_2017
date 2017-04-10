@@ -92,14 +92,16 @@ private:
             std::size_t usableFerryCount, int bikeTime, int totalTime,
             float hash, int bikeTimeMultiplier) {
         const Problem& problem = solver->getProblem();
+        auto edge = std::make_pair(ferry.from, ferry.to);
         Weights inputs{
                 ferry.time * totalTimeFactor,
                 ferry.time * totalTimeShortFactor,
                 ferry.skippedBikeTime * bikeTimeFactor,
                 ferry.skippedBikeTime * bikeTimeShortFactor,
-                ferry.from * cityNumberFactor,
-                ferry.to * cityNumberFactor,
-                (ferry.to - ferry.from) * cityNumberFactor,
+                source(edge, problem) * cityNumberFactor,
+                target(edge, problem) * cityNumberFactor,
+                (target(edge, problem) - source(edge, problem))
+                        * cityNumberFactor,
                 (totalTime - problem.timeLimit) * totalTimeFactor,
                 (totalTime - problem.timeLimit) * totalTimeShortFactor,
                 (totalTime - problem.timeLimit + ferry.time) * totalTimeFactor,
