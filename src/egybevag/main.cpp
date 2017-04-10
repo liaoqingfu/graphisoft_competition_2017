@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cmath>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
@@ -132,6 +133,49 @@ const std::vector<RotationMatrix> rotations = {
     }},
 };
 
+std::array<RotationMatrix, 3> srotations;
+
+//============================================================================//
+
+// struct Quaternion {
+//     double w = 0, x = 0, y = 0, z = 0;
+// };
+//
+// static const double s2 = std::sqrt(2.0);
+//
+// static const std::vector<Quaternion> qrotations = {
+//     // w,   i,   j,   k
+//     { 1.,  .0,  .0,  .0},
+//     { s2,  .0,  s2,  .0},
+//     { .0,  .0,  1.,  .0},
+//     { s2,  .0, -s2,  .0},
+//
+//     { s2,  .0,  .0,  s2},
+//     { .5,  .5,  .5,  .5},
+//     { .0,  s2,  s2,  .0},
+//     { .5, -.5, -.5,  .5},
+//
+//     { s2,  .0,  .0, -s2},
+//     { .5, -.5,  .5, -.5},
+//     { .0, -s2,  s2,  .0},
+//     { .5,  .5, -.5, -.5},
+//
+//     { s2,  s2,  .0,  .0},
+//     { .5,  .5,  .5, -.5},
+//     { .0,  .0,  s2, -s2},
+//     { .5,  .5, -.5,  .5},
+//
+//     { .0,  1.,  .0,  .0},
+//     { .0,  s2,  .0, -s2},
+//     { .0,  .0,  .0,  1.},
+//     { .0,  s2,  .0,  s2},
+//
+//     { s2,  s2,  .0,  .0},
+//     { .5, -.5,  .5,  .5},
+//     { .0,  .0,  s2,  s2},
+//     { .5, -.5, -.5, -.5}
+// };
+
 //============================================================================//
 
 template<typename T>
@@ -142,9 +186,13 @@ bool lessThanByValue(T* lhs, T* rhs) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 template<typename T>
-bool equalsByValue(T* lhs, T* rhs) {
-    return *lhs == *rhs;
-}
+struct EqualsByValue;
+// template<typename T>
+// struct EqualsByValue {
+//     bool operator()(T* lhs, T* rhs) {
+//         return *lhs == *rhs;
+//     }
+// };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -176,7 +224,7 @@ bool operator<(const Vertex& lhs, const Vertex& rhs) {
     return lhs.x < rhs.x;
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 bool operator==(const Vertex& lhs, const Vertex& rhs) {
     return lhs.refs == rhs.refs && lhs.x == rhs.x && lhs.y == rhs.y &&
@@ -185,15 +233,15 @@ bool operator==(const Vertex& lhs, const Vertex& rhs) {
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-//Vertex operator-(const Vertex& lhs, const Vertex& rhs) {
-//    lhs.offset(
-//    return lhs;
-//    //return {rhs.x - lhs.x, rhs.y - lhs.y, rhs.z - lhs.z};
-//}
+// Vertex operator-(const Vertex& lhs, const Vertex& rhs) {
+//     return {lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z};
+// }
 //
-//Vertex operator+(const Vertex& lhs, const Vertex& rhs) {
-//    //return {rhs.x + lhs.x, rhs.y + lhs.y, rhs.z + lhs.z, lhs.refs};
-//}
+// //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+//
+// Vertex operator+(const Vertex& lhs, const Vertex& rhs) {
+//     return {rhs.x + lhs.x, rhs.y + lhs.y, rhs.z + lhs.z};
+// }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -207,6 +255,25 @@ std::ostream& operator<<(std::ostream& out, const Vertex& v) {
 std::istream& operator>>(std::istream& in, Vertex& v) {
     return in >> v.x >> v.y >> v.z;
 }
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+template<>
+struct EqualsByValue<Vertex> {
+    explicit EqualsByValue(const Vertex& offset) : offset(offset) {
+    }
+
+    bool operator()(Vertex* lhs, Vertex* rhs) {
+        std::cerr << "comparing " << *lhs << " with " << *rhs
+                  << " using offset " << offset << std::endl;
+        return lhs->x - offset.x == rhs->x &&
+               lhs->y - offset.y == rhs->y &&
+               lhs->z - offset.z == rhs->z &&
+               lhs ->refs == rhs->refs;
+    }
+
+    Vertex offset;
+};
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -256,6 +323,22 @@ bool operator==(const Edge& lhs, const Edge& rhs) {
 std::ostream& operator<<(std::ostream& out, const Edge& e) {
     return out << "e(" << *e.v1 << ',' << * e.v2 << '|' << e.refs << ')';
 }
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+template<>
+struct EqualsByValue<Edge> {
+    explicit EqualsByValue(const Vertex& offset) : comparator(offset) {
+    }
+
+    bool operator()(Edge* lhs, Edge* rhs) {
+        return comparator(lhs->v1, rhs->v1) &&
+               comparator(lhs->v2, rhs->v2) &&
+               lhs->refs == rhs->refs;
+    }
+
+    EqualsByValue<Vertex> comparator;
+};
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -311,15 +394,28 @@ bool operator<(const Side& lhs, const Side& rhs) {
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-bool operator==(const Side& lhs, const Side& rhs) {
-    bool equalEdges = lhs.edges.size() == rhs.edges.size() &&
-            std::equal(lhs.edges.begin(), lhs.edges.end(),
-                    rhs.edges.begin(), rhs.edges.end(), equalsByValue<Edge>);
-    bool equalHoles = lhs.holes.size() == rhs.holes.size() &&
-            std::equal(lhs.holes.begin(), lhs.holes.end(),
-                    rhs.holes.begin(), rhs.holes.end());
-    return equalEdges && equalHoles;
-}
+struct SideEquals {
+    explicit SideEquals(const Vertex& offset) : offset(offset) {
+    }
+
+    bool operator()(const Side& lhs, const Side& rhs) const {
+        if (lhs.edges.size() != rhs.edges.size() ||
+                lhs.holes.size() != rhs.holes.size()) {
+            return false;
+        }
+        bool equalEdges = std::equal(lhs.edges.begin(), lhs.edges.end(),
+                        rhs.edges.begin(), rhs.edges.end(),
+                        EqualsByValue<Edge>(offset));
+        if (!equalEdges) {
+            return false;
+        }
+        bool equalHoles = std::equal(lhs.holes.begin(), lhs.holes.end(),
+                        rhs.holes.begin(), rhs.holes.end(), SideEquals(offset));
+        return equalHoles;
+    }
+
+    const Vertex offset;
+};
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -455,41 +551,48 @@ public:
             v->x = r[0][0] * o.x + r[0][1] * o.y + r[0][2] * o.z;
             v->y = r[1][0] * o.x + r[1][1] * o.y + r[1][2] * o.z;
             v->z = r[2][0] * o.x + r[2][1] * o.y + r[2][2] * o.z;
+//            Quaternion qo{0, static_cast<double>(o.x), static_cast<double>(o.y),
+//                        static_cast<double>(o.z)};
+//            o.x = 0;
         }
         //sort();
     }
 
     bool operator==(const Building& rhs) const {
         assert(isSorted);
-        bool verticesEqual = vertices.size() == rhs.vertices.size() &&
-                std::equal(vertices.begin(), vertices.end(),
-                        rhs.vertices.begin(), rhs.vertices.end(),
-                        equalsByValue<Vertex>);
-        if (!verticesEqual) {
+        if (vertices.size() != rhs.vertices.size() ||
+                edges.size() != rhs.edges.size() ||
+                sides.size() != rhs.sides.size()) {
             return false;
         }
-        bool verticeRefsEqual = vertices.size() == rhs.vertices.size() &&
-                std::equal(vertices.begin(), vertices.end(),
-                        rhs.vertices.begin(), rhs.vertices.end(),
-                        equalsByRefs);
-        if (!verticeRefsEqual) {
-            return false;
+        Vertex offset = {0, 0, 0};
+        if (vertices.size() > 0 && rhs.vertices.size() > 0) {
+            offset = calculateOffset(rhs);
+            // bool verticesEqual = std::equal(vertices.begin(), vertices.end(),
+            //         rhs.vertices.begin(), rhs.vertices.end(),
+            //         EqualsByValue<Vertex>(offset));
+            // if (!verticesEqual) {
+            //     return false;
+            // }
+            // bool verticeRefsEqual = std::equal(vertices.begin(), vertices.end(),
+            //         rhs.vertices.begin(), rhs.vertices.end(),
+            //         equalsByRefs);
+            // if (!verticeRefsEqual) {
+            //     return false;
+            // }
         }
-        bool edgesEqual = edges.size() == rhs.edges.size() &&
-                std::equal(edges.begin(), edges.end(),
-                        rhs.edges.begin(), rhs.edges.end(),
-                        equalsByValue<Edge>);
-        if (!edgesEqual) {
-            return false;
-        }
-        bool sidesEqual = sides.size() == rhs.sides.size() &&
-                std::equal(sides.begin(), sides.end(),
-                        rhs.sides.begin(), rhs.sides.end());
+        // bool edgesEqual = std::equal(edges.begin(), edges.end(),
+        //         rhs.edges.begin(), rhs.edges.end(),
+        //         EqualsByValue<Edge>(offset));
+        // if (!edgesEqual) {
+        //     return false;
+        // }
+        bool sidesEqual = std::equal(sides.begin(), sides.end(),
+                rhs.sides.begin(), rhs.sides.end(), SideEquals(offset));
         if (!sidesEqual) {
             return false;
         }
         return true;
-        //return verticesEqual && verticeRefsEqual && edgesEqual && sidesEqual;
     }
 
     friend std::istream& operator>>(std::istream& in, Building& b) {
@@ -566,14 +669,15 @@ public:
 bool check(const Building& b1, Building b2, RotationMatrix r) {
     b2.rotate(r);
     //std::cerr << b2 << std::endl;
-    Vertex offset = b1.calculateOffset(b2);
-    std::cerr << offset << std::endl;
-    b2.shift(offset);
+    //Vertex offset = b1.calculateOffset(b2);
+    //std::cerr << offset << std::endl;
+    //b2.shift(offset);
     //std::cerr << b2 << std::endl;
+    //b2.sort();
+    //std::cerr << b2 << std::endl;
+    //std::cerr << "b1: " << std::endl << b1 << std::endl << "b2: "
+    //          << std::endl << b2 << std::endl;
     b2.sort();
-    //std::cerr << b2 << std::endl;
-    std::cerr << "b1: " << std::endl << b1 << std::endl << "b2: "
-              << std::endl << b2 << std::endl;
     return b1 == b2;
 }
 
@@ -586,12 +690,19 @@ int main() {
     for (int i = 2; i <= numberOfBuildings; ++i) {
         Building b2;
         std::cin >> b2;
-        for (const auto& r : rotations) {
-            if (check(b1, b2, r)) {
+        //assert(rotations.size() == qrotations.size());
+        for (int j = 0; j < rotations.size(); ++j) {
+            if (check(b1, b2, rotations[j])) {
                 std::cout << i << " ";
                 break;
             }
         }
+        //for (const auto& r : rotations) {
+        //    if (check(b1, b2, r)) {
+        //        std::cout << i << " ";
+        //        break;
+        //    }
+        //}
     }
     std::cout << std::endl;
 }
