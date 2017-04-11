@@ -59,9 +59,13 @@ public:
     using Edge = std::pair<Point, Point>;
     using Edges = std::vector<Edge>;
 
-    Graph(const Matrix<Field>& matrix) :
-            matrix(std::move(matrix)),
-            edges{this->matrix.width(), this->matrix.height()} {
+    Graph(const Matrix<Field>& inputMatrix) :
+            matrix(inputMatrix.width() + 4, inputMatrix.height() + 4,
+                    Field::corridor),
+            edges{inputMatrix.width() + 4, inputMatrix.height() + 4} {
+        for (Point p : matrixRange(inputMatrix)) {
+            matrix[p + p11 * 2] = inputMatrix[p];
+        }
         int width = this->matrix.width();
         int height =this->matrix.height();
         addEscapePoints(Point{0, 0}, p10);
@@ -138,9 +142,8 @@ private:
 
     void addEscapePoints(Point start, Point direction) const {
         for (Point p = start; isInsideMatrix(matrix, p); p += direction) {
-            if (isPassable(matrix[p])) {
-                escapePoints.push_back(p);
-            }
+            assert(matrix[p] == Field::corridor);
+            escapePoints.push_back(p);
         }
     }
 
@@ -210,11 +213,11 @@ Solution solve(const Graph& graph) {
             distances.end());
     Solution solution;
     solution.distance = maxDistance - 1;
-    solution.halfWidth = graph.getMatrix().width() / 2;
+    solution.halfWidth = graph.getMatrix().width() / 2 - 2;
     for (Point p : matrixRange(graph.getMatrix())) {
         if (distances[p] == maxDistance) {
             std::cerr << "-> " << p << "\n";
-            solution.coordinates.push_back(p);
+            solution.coordinates.push_back(p - p11 * 2);
         }
     }
     printDistances(graph, distances);
