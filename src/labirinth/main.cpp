@@ -186,12 +186,19 @@ struct graph_traits<Graph> {
 
 };
 
+bool isInsideLabirinth(const Matrix<Field>& matrix, Point p) {
+    return p.x >= 2 && p.x < static_cast<int>(matrix.width()) - 2
+            && p.y >= 2 && p.y < static_cast<int>(matrix.height()) - 2;
+}
+
 void printDistances(const Graph& graph, const Matrix<int> distances) {
     Matrix<std::string> result{graph.getMatrix().width(),
             graph.getMatrix().height()};
     for (Point p : matrixRange(graph.getMatrix())) {
         using std::to_string;
-        result[p] = to_string(graph.getMatrix()[p]) + to_string(distances[p]);
+        std::string element = isInsideLabirinth(graph.getMatrix(), p)
+                ? to_string(graph.getMatrix()[p]) : ".";
+        result[p] = element + to_string(distances[p]);
     }
     hex::printMatrix(std::cerr, result);
     std::cerr << "\n";
@@ -215,7 +222,8 @@ Solution solve(const Graph& graph) {
     solution.distance = maxDistance - 1;
     solution.halfWidth = graph.getMatrix().width() / 2 - 2;
     for (Point p : matrixRange(graph.getMatrix())) {
-        if (distances[p] == maxDistance) {
+        if (distances[p] == maxDistance
+                && isInsideLabirinth(graph.getMatrix(), p)) {
             std::cerr << "-> " << p << "\n";
             solution.coordinates.push_back(p - p11 * 2);
         }
