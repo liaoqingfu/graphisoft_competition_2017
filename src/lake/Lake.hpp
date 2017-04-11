@@ -46,7 +46,6 @@ std::ostream& operator<<(std::ostream& os, const Problem& p) {
     for (const auto& city : p.cityNames) {
         os << city << std::endl;
     }
-    //os << p.bikePaths.size() << std::endl;
     for (const auto& bikePath : p.bikePaths) {
         os << bikePath << ' ';
     }
@@ -114,20 +113,15 @@ private:
     using InnerIterator = std::vector<Ferry>::const_iterator;
 public:
     EdgeIterator() {
-        // std::cerr << this << ": default construct\n";
     }
 
     EdgeIterator(InnerIterator begin, InnerIterator iterator,
             std::size_t vertex, std::size_t numVertices) :
             begin(begin), iterator(iterator), vertex(vertex),
             numVertices(numVertices) {
-        // std::cerr << this << ": construct: " << std::distance(begin, iterator)
-        //         << "\n";
     }
 
     Edge dereference() const {
-        // std::cerr << this << ": dereference: " << std::distance(begin, iterator)
-        //         << "\n";
         if (isAtBeginning()) {
             return {vertex, (vertex + 1) % numVertices};
         }
@@ -140,18 +134,12 @@ public:
 
     void increment() {
         ++iterator;
-        // std::cerr << this << ": increment: " << std::distance(begin, iterator)
-        //         << "\n";
     }
     void decrement() {
         --iterator;
-        // std::cerr << this << ": decrement: " << std::distance(begin, iterator)
-        //         << "\n";
     }
     void advance(std::ptrdiff_t n) {
         iterator += n;
-        // std::cerr << this << ": advance " << n << ": "
-        //         << std::distance(begin, iterator) << "\n";
     }
 
     std::ptrdiff_t distance_to(const EdgeIterator& other) {
@@ -357,13 +345,8 @@ Problem readInput(std::istream& stream) {
                     problem.bikePaths.begin() + toIndex, 0);
         }
         if (skippedBikeTime > time) {
-            // std::cerr << fromIndex << " -> " << toIndex << ": t=" << time
-            //         << " bt=" << skippedBikeTime << "\n";
             ferries.push_back(Ferry{fromIndex, toIndex, time,
                     skippedBikeTime});
-        } else {
-            // std::cerr << "Skipped: " << fromIndex << " -> " << toIndex
-            //         << ": t=" << time << " bt=" << skippedBikeTime << "\n";
         }
     }
     std::sort(ferries.begin(), ferries.end());
@@ -458,7 +441,6 @@ public:
             std::cerr << "Not solving: already have a trivial solution.\n";
             return;
         }
-        // TODO: Use time limit.
         for (int i = 0; i < iterationLimit && !isTimeExpired(); ++i) {
             // std::cerr << "--- iteratrion #" << i << "\n";
             int notChanged = 0;
@@ -603,9 +585,6 @@ private:
         for (auto iterator = begin; iterator < end; ++iterator) {
             if (!next || !isFerryBlockingAnother(*next, *iterator)) {
                 usableFerries.insert(&*iterator);
-                // std::cerr << "Ferry now usable: "
-                //         << problem.cityNames[iterator->from] << " -> "
-                //         << problem.cityNames[iterator->to] << "\n";
             }
         }
     }
@@ -623,9 +602,6 @@ private:
                 currentFerries.begin());
         for (const Ferry* ferry : currentFerries) {
             if (isFerryBlockingAnother(*addedFerry, *ferry)) {
-                // std::cerr << "Ferry now unusable: "
-                //         << problem.cityNames[ferry->from] << " -> "
-                //         << problem.cityNames[ferry->to] << "\n";
                 usableFerries.erase(ferry);
             }
         }
@@ -643,19 +619,6 @@ private:
         const Ferry* ferry = *iterator;
 
         int newTotalTime = totalTime + ferry->skippedBikeTime - ferry->time;
-        //if (totalTime <= problem.timeLimit
-        //        && newTotalTime > problem.timeLimit) {
-        //    if (bikeTime > bestBikeTime) {
-        //        // std::cerr << "Iteration #" << iteration
-        //        //         << ": new best solution: bike time = " << bikeTime
-        //        //         << " total time = " << totalTime << "\n";
-        //        bestSolution.resize(usedFerries.size());
-        //        std::copy(usedFerries.begin(), usedFerries.end(),
-        //                bestSolution.begin());
-        //        bestBikeTime = bikeTime;
-        //        bestTotalTime = totalTime;
-        //    }
-        //}
 
         bikeTime += ferry->skippedBikeTime;
         totalTime = newTotalTime;
@@ -687,8 +650,6 @@ private:
     }
 
     void checkNewPath() {
-        //std::cerr << "checkNewPath(): tt: " << totalTime << " bt: "
-        //          << bikeTime << " bbt: " << bestBikeTime << std::endl;
         if (totalTime <= problem.timeLimit &&
                 bikeTime > bestBikeTime) {
             updateBestPath();
@@ -718,6 +679,5 @@ private:
     int totalTime;
     std::string iteration;
 };
-
 
 #endif // LAKE_LAKE_HPP
