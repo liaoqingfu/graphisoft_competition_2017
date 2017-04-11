@@ -346,10 +346,10 @@ Problem readInput(std::istream& stream) {
         } else {
             continue;
         }
-        // if (skippedBikeTime > time) {
+        if (skippedBikeTime > 0) {
             ferries.push_back(Ferry{fromIndex, toIndex, time,
                     skippedBikeTime});
-        // }
+        }
     }
     std::sort(ferries.begin(), ferries.end());
     const Ferry* previous = 0;
