@@ -3,7 +3,6 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
-#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -13,130 +12,6 @@
 using RotationMatrix = std::array<std::array<int, 3>, 3>;
 
 const RotationMatrix identity = {{ {{ 1, 0, 0, }}, {{ 0, 1, 0 }}, {{ 0, 0, 1 }} }};
-
-const std::vector<RotationMatrix> rotations = {
-    {{
-        {{1, 0, 0}},
-        {{0, 1, 0}},
-        {{0, 0, 1}},
-    }},
-    {{
-        {{-1, 0, 0}},
-        {{0, -1, 0}},
-        {{0, 0, 1}},
-    }},
-    {{
-        {{-1, 0, 0}},
-        {{0, 0, -1}},
-        {{0, -1, 0}},
-    }},
-    {{
-        {{-1, 0, 0}},
-        {{0, 0, 1}},
-        {{0, 1, 0}},
-    }},
-    {{
-        {{-1, 0, 0}},
-        {{0, 1, 0}},
-        {{0, 0, -1}},
-    }},
-    {{
-        {{0, -1, 0}},
-        {{-1, 0, 0}},
-        {{0, 0, -1}},
-    }},
-    {{
-        {{0, -1, 0}},
-        {{0, 0, -1}},
-        {{1, 0, 0}},
-    }},
-    {{
-        {{0, -1, 0}},
-        {{0, 0, 1}},
-        {{-1, 0, 0}},
-    }},
-    {{
-        {{0, -1, 0}},
-        {{1, 0, 0}},
-        {{0, 0, 1}},
-    }},
-    {{
-        {{0, 0, -1}},
-        {{-1, 0, 0}},
-        {{0, 1, 0}},
-    }},
-    // 11
-    {{
-        {{0, 0, -1}},
-        {{0, -1, 0}},
-        {{-1, 0, 0}},
-    }},
-    {{
-        {{0, 0, -1}},
-        {{0, 1, 0}},
-        {{1, 0, 0}},
-    }},
-    {{
-        {{0, 0, -1}},
-        {{1, 0, 0}},
-        {{0, -1, 0}},
-    }},
-    {{
-        {{0, 0, 1}},
-        {{-1, 0, 0}},
-        {{0, -1, 0}},
-    }},
-    {{
-        {{0, 0, 1}},
-        {{0, -1, 0}},
-        {{1, 0, 0}},
-    }},
-    {{
-        {{0, 0, 1}},
-        {{0, 1, 0}},
-        {{-1, 0, 0}},
-    }},
-    {{
-        {{0, 0, 1}},
-        {{1, 0, 0}},
-        {{0, 1, 0}},
-    }},
-    {{
-        {{0, 1, 0}},
-        {{-1, 0, 0}},
-        {{0, 0, 1}},
-    }},
-    {{
-        {{0, 1, 0}},
-        {{0, 0, -1}},
-        {{-1, 0, 0}},
-    }},
-    {{
-        {{0, 1, 0}},
-        {{0, 0, 1}},
-        {{1, 0, 0}},
-    }},
-    {{
-        {{0, 1, 0}},
-        {{1, 0, 0}},
-        {{0, 0, -1}},
-    }},
-    {{
-        {{1, 0, 0}},
-        {{0, -1, 0}},
-        {{0, 0, -1}},
-    }},
-    {{
-        {{1, 0, 0}},
-        {{0, 0, -1}},
-        {{0, 1, 0}},
-    }},
-    {{
-        {{1, 0, 0}},
-        {{0, 0, 1}},
-        {{0, -1, 0}},
-    }},
-};
 
 std::vector<RotationMatrix> localRotations = {{
         {{
@@ -391,8 +266,8 @@ struct EqualsByValue<Vertex> {
     }
 
     bool operator()(Vertex* lhs, Vertex* rhs) {
-        //std::cerr << "comparing " << *lhs << " with " << *rhs
-        //          << " using offset " << offset << std::endl;
+        // std::cerr << "comparing " << *lhs << " with " << *rhs
+        //           << " using offset " << offset << std::endl;
         return lhs->x - offset.x == rhs->x &&
                lhs->y - offset.y == rhs->y &&
                lhs->z - offset.z == rhs->z &&
@@ -576,50 +451,6 @@ private:
         sides.push_back(std::move(s));
     }
 
-    void copy(const Building& other) {
-        if (this == &other) {
-            return;
-        }
-        assert(vertices.empty());
-        assert(edges.empty());
-        assert(sides.empty());
-        std::unordered_map<const Vertex*, Vertex*> vTranslationTable;
-        for (const Vertex* const& v : other.vertices) {
-            Vertex* vertex = new Vertex(v->x, v->y, v->z);
-            vertices.push_back(vertex);
-            vTranslationTable[v] = vertex;
-        }
-        std::unordered_map<const Edge*, Edge*> eTranslationTable;
-        //std::cerr << "edges at copy: " << std::endl;
-        for (const Edge* const& e : other.edges) {
-            Edge* edge = new Edge(vTranslationTable[e->v1],
-                    vTranslationTable[e->v2]);
-            edges.push_back(edge);
-            //std::cerr << edge << ' ' <<  edge->v1->refs << ' ' << edge->v2->refs
-            //          << std::endl;
-            eTranslationTable[e] = edge;
-        }
-        for (const Side& s : other.sides) {
-            Side side;
-            for (const Edge* e : s.edges) {
-                side.addEdge(eTranslationTable[e]);
-            }
-            for (const Side& h : s.holes) {
-                Side hole;
-                for (const Edge* he : h.edges) {
-                    hole.addEdge(eTranslationTable[he]);
-                }
-                side.holes.push_back(hole);
-            }
-            sides.push_back(side);
-        }
-        //std::cerr << "edges after copy: " << std::endl;
-        //for (const auto& edge : edges) {
-        //    std::cerr << edge << ' ' <<  edge->v1->refs << ' ' << edge->v2->refs
-        //              << std::endl;
-        //}
-    }
-
 public:
     Building() = default;
 
@@ -628,7 +459,6 @@ public:
 //         copy(other);
 //     }
     Building(const Building&) = delete;
-
     Building(Building&&) = delete;
 
 //     Building& operator=(const Building& other) {
@@ -637,7 +467,6 @@ public:
 //         return *this;
 //     }
     Building& operator=(const Building) = delete;
-
     Building& operator=(Building&&) = delete;
 
     ~Building() {
@@ -668,14 +497,6 @@ public:
                     vertices[0]->z - rhs.vertices[0]->z};
     }
 
-    void shift(const Vertex& offset) {
-        //std::cout << "shifting with: " << offset << std::endl;
-        for (Vertex*& v : vertices) {
-            //*v = *v + offset;
-            v->shift(offset.x, offset.y, offset.z);
-        }
-    }
-
     void rotate(const RotationMatrix& r) {
         if (r == identity) {
             return;
@@ -685,15 +506,13 @@ public:
             v->x = r[0][0] * o.x + r[0][1] * o.y + r[0][2] * o.z;
             v->y = r[1][0] * o.x + r[1][1] * o.y + r[1][2] * o.z;
             v->z = r[2][0] * o.x + r[2][1] * o.y + r[2][2] * o.z;
-//            Quaternion qo{0, static_cast<double>(o.x), static_cast<double>(o.y),
-//                        static_cast<double>(o.z)};
-//            o.x = 0;
         }
-        //sort();
+        isSorted = false;
     }
 
     bool operator==(const Building& rhs) const {
         assert(isSorted);
+        assert(rhs.isSorted);
         if (vertices.size() != rhs.vertices.size() ||
                 edges.size() != rhs.edges.size() ||
                 sides.size() != rhs.sides.size()) {
@@ -708,12 +527,12 @@ public:
             if (!verticesEqual) {
                 return false;
             }
-            // bool verticeRefsEqual = std::equal(vertices.begin(), vertices.end(),
-            //         rhs.vertices.begin(), rhs.vertices.end(),
-            //         equalsByRefs);
-            // if (!verticeRefsEqual) {
-            //     return false;
-            // }
+            bool verticeRefsEqual = std::equal(vertices.begin(), vertices.end(),
+                    rhs.vertices.begin(), rhs.vertices.end(),
+                    equalsByRefs);
+            if (!verticeRefsEqual) {
+                return false;
+            }
         }
         bool edgesEqual = std::equal(edges.begin(), edges.end(),
                 rhs.edges.begin(), rhs.edges.end(),
@@ -805,35 +624,19 @@ int main() {
     std::cin >> numberOfBuildings;
     Building b1;
     std::cin >> b1;
-    b1.sort();
-    std::vector<std::shared_ptr<Building>> buildings;
+    //b1.sort();
     for (int i = 2; i <= numberOfBuildings; ++i) {
-        std::shared_ptr<Building> b2 = std::make_shared<Building>();
-        std::cin >> *b2;
-        b2->sort();
-        buildings.push_back(b2);
-    }
-    //assert(rotations.size() == qrotations.size());
-    std::vector<bool> matches(numberOfBuildings - 1, false);
-    for (std::size_t j = 0; j < localRotations.size(); ++j) {
-        if (std::all_of(matches.begin(), matches.end(),
-                        [](bool b) { return b; })) {
-            break;
-        }
-        //Building b = b1;
-        b1.rotate(localRotations[j]);
-        b1.sort();
-        for (std::size_t k = 0; k < buildings.size(); ++k) {
-            if (matches[k]) {
-                continue; // already matched
+        Building b2;
+        std::cin >> b2;
+        b2.sort();
+        //assert(rotations.size() == qrotations.size());
+        for (std::size_t j = 0; j < localRotations.size(); ++j) {
+            b1.rotate(localRotations[j]);
+            b1.sort();
+            if (b1 == b2) {
+                std::cout << i << " ";
+                break;
             }
-            matches[k] = b1 == *buildings[k];
-        }
-    }
-
-    for (std::size_t i = 0; i < matches.size(); ++i) {
-        if (matches[i]) {
-            std::cout << (i+2) << ' ' << std::endl;
         }
     }
     std::cout << std::endl;
