@@ -343,6 +343,8 @@ Problem readInput(std::istream& stream) {
             skippedBikeTime = std::accumulate(
                     problem.bikePaths.begin() + fromIndex,
                     problem.bikePaths.begin() + toIndex, 0);
+        } else {
+            continue;
         }
         if (skippedBikeTime > time) {
             ferries.push_back(Ferry{fromIndex, toIndex, time,
