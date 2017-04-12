@@ -13,7 +13,7 @@ int main() {
     ferryChooser.setNeuralNetwork(getNeuralNetwork());
 
     Solver<NeuralFerryChooser> solver{readInput(std::cin), ferryChooser,
-            100000, boost::posix_time::seconds(9)};
+            std::numeric_limits<int>::max(), boost::posix_time::seconds(9)};
     solver.findShortestPath();
     if (solver.getBestTotalTime() > solver.getProblem().timeLimit) {
         std::cerr << "Solution is too long.\n";

@@ -44,7 +44,8 @@ private:
 
 int main() {
     RandomFerryChooser ferryChooser;
-    Solver<RandomFerryChooser> solver{readInput(std::cin), ferryChooser, 100};
+    Solver<RandomFerryChooser> solver{readInput(std::cin), ferryChooser,
+            std::numeric_limits<int>::max(), boost::posix_time::seconds(9)};
     solver.findShortestPath();
     solver.solve();
     auto solution = solver.getResult();
