@@ -20,7 +20,8 @@ public:
             int /*bikeTime*/, int /*totalTime*/, std::size_t /*hash*/) {
         auto iterator = getRandomElement(usableFerries, rng,
                 [this](const Ferry* ferry) {
-                    return totalBikeTime - (ferry->skippedBikeTime);
+                    int value = totalBikeTime - (ferry->skippedBikeTime);
+                    return value * value;
                 });
         return std::distance(usableFerries.begin(), iterator);
     }
@@ -31,7 +32,8 @@ public:
             int /*bikeTime*/, int /*totalTime*/, std::size_t /*hash*/) {
         auto iterator = getRandomElement(usedFerries, rng,
                 [](const Ferry* ferry) {
-                    return ferry->skippedBikeTime;
+                    int value = ferry->skippedBikeTime;
+                    return value * value;
                 });
         return std::distance(usedFerries.begin(), iterator);
     }
