@@ -79,16 +79,12 @@ private:
         std::vector<float> values(ferries.size());
         std::transform(ferries.begin(), ferries.end(), values.begin(),
                 [&](const Ferry* ferry) {
-                    float value = callNeuralNetwork(
-                            network, *ferry, usedFerryCount,
+                    return callNeuralNetwork(network, *ferry, usedFerryCount,
                             usableFerryCount, bikeTime, totalTime, hash,
                             bikeTimeMultiplier);
-                    return value < 0 ? 0 : value * value;
                 });
-
-        std::discrete_distribution<std::size_t> distribution{
-                values.begin(), values.end()};
-        return distribution(rng);
+        return std::distance(values.begin(),
+                std::max_element(values.begin(), values.end()));
     }
 
     float callNeuralNetwork(NeuralNetwork& network,
@@ -138,7 +134,6 @@ private:
     float bikeTimeShortFactor;
     float ferryNumberFactor;
     float cityNumberFactor;
-    std::mt19937 rng{847573426};
 };
 
 #endif // LAKE_NEURAL_HPP
