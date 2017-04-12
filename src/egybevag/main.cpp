@@ -625,18 +625,35 @@ int main() {
     Building b1;
     std::cin >> b1;
     //b1.sort();
-    for (int i = 2; i <= numberOfBuildings; ++i) {
-        Building b2;
+    for (int i = 2; i <= numberOfBuildings; i+=2) {
+        Building b2, b3;
         std::cin >> b2;
         b2.sort();
+        bool b2match = false, b3match = true;
+        if (i < numberOfBuildings) {
+            b3match = false;
+            std::cin >> b3;
+            b3.sort();
+        }
         //assert(rotations.size() == qrotations.size());
         for (std::size_t j = 0; j < localRotations.size(); ++j) {
             b1.rotate(localRotations[j]);
             b1.sort();
-            if (b1 == b2) {
-                std::cout << i << " ";
+            if (!b2match) {
+                b2match = b1 == b2;
+            }
+            if (!b3match) {
+                b3match = b1 == b3;
+            }
+            if (b2match && b3match) {
                 break;
             }
+        }
+        if (b2match) {
+            std::cout << i << " ";
+        }
+        if (b3match && i < numberOfBuildings) {
+            std::cout << (i+1) << ' ';
         }
     }
     std::cout << std::endl;
