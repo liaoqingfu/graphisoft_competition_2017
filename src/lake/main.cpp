@@ -19,8 +19,8 @@ public:
             const FerrySet& /*usedFerries*/, const FerrySet& usableFerries,
             int /*bikeTime*/, int /*totalTime*/, std::size_t /*hash*/) {
         auto iterator = getRandomElement(usableFerries, rng,
-                [](const Ferry* ferry) {
-                    return 1.0 / (ferry->skippedBikeTime);
+                [this](const Ferry* ferry) {
+                    return totalBikeTime - (ferry->skippedBikeTime);
                 });
         return std::distance(usableFerries.begin(), iterator);
     }
@@ -36,9 +36,14 @@ public:
         return std::distance(usedFerries.begin(), iterator);
     }
 
-    void initialize(const Solver<RandomFerryChooser>&) {}
+    void initialize(const Solver<RandomFerryChooser>& solver) {
+        const Problem& problem = solver.getProblem();
+        totalBikeTime = std::accumulate(problem.bikePaths.begin(),
+                problem.bikePaths.end(), 0);
+    }
 private:
     std::mt19937 rng{std::random_device{}()};
+    int totalBikeTime;
     // std::mt19937 rng{123123};
 };
 
