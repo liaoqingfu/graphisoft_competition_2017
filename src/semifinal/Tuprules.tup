@@ -1,0 +1,2 @@
+TRACK_DIR = $(TUP_CWD)/track
+TRACK_LIB = $(TRACK_DIR)/track.a

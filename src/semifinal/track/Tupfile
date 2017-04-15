@@ -7,6 +7,6 @@ include $(COMPILE_TUP)
 
 : foreach *.cpp |> !cxx |>
 
-include $(LINK_TUP)
+include $(ARCHIVE_TUP)
 
-: *.o $(TRACK_LIB) $(MATRIX_LIB) |> !linker |> client
+: *.o |> !ar |> track.a
