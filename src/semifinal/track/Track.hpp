@@ -57,7 +57,7 @@ public:
 
     Track(std::size_t width, std::size_t height,
             const std::vector<int>& fieldTypes,
-            Monitors monitors, Princesses princesses);
+            Monitors monitors, Princesses princesses); // TODO
 
     Track(const Track&) = default;
     Track(Track&&) = default;
