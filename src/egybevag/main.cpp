@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -625,35 +626,40 @@ int main() {
     Building b1;
     std::cin >> b1;
     //b1.sort();
-    for (int i = 2; i <= numberOfBuildings; i+=2) {
-        Building b2, b3;
-        std::cin >> b2;
-        b2.sort();
-        bool b2match = false, b3match = true;
-        if (i < numberOfBuildings) {
-            b3match = false;
-            std::cin >> b3;
-            b3.sort();
+    int buildingsToMatch = 2;
+    for (int i = 2; i <= numberOfBuildings; i+=buildingsToMatch) {
+        int buildingSize = buildingsToMatch;
+        if (buildingSize + i > numberOfBuildings) {
+            buildingSize = numberOfBuildings - i + 1;
+        }
+        std::vector<bool> matchedBuildings(buildingSize, false);
+        std::vector<std::shared_ptr<Building>> bs;
+        //Building b2, b3;
+        for (int m = 0; m < buildingSize; ++m) {
+            std::shared_ptr<Building> bb = std::make_shared<Building>();
+            std::cin >> *bb;
+            bb->sort();
+            bs.push_back(bb);
         }
         //assert(rotations.size() == qrotations.size());
         for (std::size_t j = 0; j < localRotations.size(); ++j) {
-            b1.rotate(localRotations[j]);
-            b1.sort();
-            if (!b2match) {
-                b2match = b1 == b2;
-            }
-            if (!b3match) {
-                b3match = b1 == b3;
-            }
-            if (b2match && b3match) {
+            if (std::all_of(matchedBuildings.begin(),
+                            matchedBuildings.end(),
+                            [](bool b) { return b; })) {
                 break;
             }
+            b1.rotate(localRotations[j]);
+            b1.sort();
+            for (std::size_t m = 0; m < bs.size(); ++m) {
+                if (!matchedBuildings[m]) {
+                    matchedBuildings[m] = b1 == *bs[m];
+                }
+            }
         }
-        if (b2match) {
-            std::cout << i << " ";
-        }
-        if (b3match && i < numberOfBuildings) {
-            std::cout << (i+1) << ' ';
+        for (std::size_t m = 0; m < bs.size(); ++m) {
+            if (matchedBuildings[m]) {
+                std::cout << (i+m) << ' ';
+            }
         }
     }
     std::cout << std::endl;
