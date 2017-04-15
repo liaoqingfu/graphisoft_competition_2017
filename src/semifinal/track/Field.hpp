@@ -5,6 +5,7 @@
 
 #include <array>
 #include <assert.h>
+#include <vector>
 
 constexpr std::size_t numNeighbors = 4;
 using Neighbors = std::array<Point, numNeighbors>;
@@ -51,6 +52,6 @@ bool canMove(int fieldType, std::size_t direction) {
     return fieldType & directionBits[direction];
 }
 
-
+std::vector<int> getIsomorphs(int fieldType); // TODO
 
 #endif // SEMIFINAL_TRACK_FIELD_HPP
