@@ -1,0 +1,12 @@
+include_rules
+
+INCLUDE_DIRS += -I$(MATRIX_DIR)
+# LD_FLAGS += -lboost_program_options
+
+include $(COMPILE_TUP)
+
+: foreach *.cpp |> !cxx |>
+
+include $(LINK_TUP)
+
+: *.o $(MATRIX_LIB) |> !linker |> client
