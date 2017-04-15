@@ -68,7 +68,9 @@ public:
     Point getMonitor(int id) const { return monitors[id]; }
     Point getPrincess(int player) const { return princesses[player]; }
 
-    void moveFields(int direction, int position); // TODO
+    // Returns the field that is pushed out.
+    int moveFields(int direction, int position, int fieldToPush); // TODO
+
     bool canMovePrincess(int player, Point target) const; // TODO
     void movePrincess(int player, Point target);
     void removeMonitor(int id);
