@@ -8,11 +8,14 @@
 
 struct GameState {
     Track track;
-    int maxTick;
-    int currentTick;
-    int playerId;
-    int targetMonitor;
-    int extraField;
+    int width = -1;
+    int height = -1;
+    int numDisplays = -1;
+    int maxTick = -1;
+    int currentTick = -1;
+    int playerId = -1;
+    int targetMonitor = -1;
+    int extraField = -1;
 };
 
 struct Step {
