@@ -19,9 +19,13 @@ Track::Track(std::size_t width, std::size_t height,
     }
 }
 
+bool Track::isReachableFrom(Point source, Point target) const {
+    calculateReachability(source);
+    return reachability[source] == reachability[target];
+}
+
 bool Track::canMovePrincess(int player, Point target) const {
-    calculateReachability(princesses[player]);
-    return reachability[princesses[player]] == reachability[target];
+    return isReachableFrom(princesses[player], target);
 }
 
 void Track::movePrincess(int player, Point target) {

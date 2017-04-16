@@ -40,6 +40,7 @@ public:
 
 private:
     void calculateReachability(Point from) const;
+    bool isReachableFrom(Point source, Point target) const;
     void resetReachability();
 
     Matrix<Field> fields;
