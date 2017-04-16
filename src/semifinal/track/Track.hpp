@@ -20,6 +20,8 @@ public:
     Track& operator=(const Track&) = default;
     Track& operator=(Track&&) = default;
 
+    std::size_t width() const { return fields.width(); }
+    std::size_t height() const { return fields.height(); }
     const Field& getField(Point p) const { return fields[p]; }
     Point getMonitor(int id) const { return monitors[id]; }
     Point getPrincess(int player) const { return princesses[player]; }
@@ -36,5 +38,7 @@ private:
     Monitors monitors;
     Princesses princesses;
 };
+
+std::ostream& operator<<(std::ostream& os, const Track& track);
 
 #endif // SEMIFINAL_TRACK_TRACK_HPP

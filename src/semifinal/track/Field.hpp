@@ -32,6 +32,7 @@ struct Field {
     int princess; // player ID, -1 = none
 };
 
+inline
 bool operator==(const Field& lhs, const Field& rhs) {
     return lhs.type == rhs.type && lhs.monitor == rhs.monitor
             && lhs.princess == rhs.princess;
