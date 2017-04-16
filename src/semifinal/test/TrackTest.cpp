@@ -15,16 +15,16 @@ BOOST_AUTO_TEST_CASE(Construct) {
     BOOST_TEST_MESSAGE(track);
 
     BOOST_TEST(track.getField({0, 0}).type == 1);
-    BOOST_TEST(track.getField({0, 0}).monitor);
+    BOOST_TEST(track.getField({0, 0}).monitor == 0);
     BOOST_TEST(track.getField({0, 0}).princess == -1);
     BOOST_TEST(track.getField({1, 0}).type == 2);
-    BOOST_TEST(track.getField({1, 0}).monitor);
+    BOOST_TEST(track.getField({1, 0}).monitor == 1);
     BOOST_TEST(track.getField({1, 0}).princess == 0);
     BOOST_TEST(track.getField({0, 1}).type == 3);
-    BOOST_TEST(!track.getField({0, 1}).monitor);
+    BOOST_TEST(track.getField({0, 1}).monitor == -1);
     BOOST_TEST(track.getField({0, 1}).princess == 1);
     BOOST_TEST(track.getField({1, 1}).type == 4);
-    BOOST_TEST(!track.getField({1, 1}).monitor);
+    BOOST_TEST(track.getField({1, 1}).monitor == -1);
     BOOST_TEST(track.getField({1, 1}).princess == -1);
 
     BOOST_TEST(track.getMonitor(0) == monitors[0]);

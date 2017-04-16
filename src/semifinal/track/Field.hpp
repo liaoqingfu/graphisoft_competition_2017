@@ -28,7 +28,7 @@ constexpr const Neighbors& getNeighbors(Point) {
 
 struct Field {
     int type;
-    bool monitor;
+    int monitor; // monitor ID, -1 = none
     int princess; // player ID, -1 = none
 };
 

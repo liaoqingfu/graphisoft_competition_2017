@@ -11,8 +11,8 @@ Track::Track(std::size_t width, std::size_t height,
         reachability{width, height, -1} {
     std::transform(fieldTypes.begin(), fieldTypes.end(), fields.begin(),
             [](int type) { return Field{type, false, -1}; });
-    for (Point p : this->monitors) {
-        fields[p].monitor = true;
+    for (std::size_t i = 0; i < this->monitors.size(); ++i) {
+        fields[this->monitors[i]].monitor = i;
     }
     for (std::size_t i = 0; i < this->princesses.size(); ++i) {
         fields[this->princesses[i]].princess = i;
@@ -107,11 +107,11 @@ int Track::moveFields(std::size_t direction, int position, int fieldToPush) {
 }
 
 void Track::removeMonitor(int id) {
-    bool& monitor = fields[monitors[id]].monitor;
-    assert(monitor);
+    int& monitor = fields[monitors[id]].monitor;
+    assert(monitor == id);
     assert(isInsideMatrix(fields, monitors[id]));
 
-    monitor = false;
+    monitor = -1;
     monitors[id] = -p11;
 }
 
