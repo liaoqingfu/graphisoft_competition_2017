@@ -17,7 +17,9 @@ class client {
 	solver your_solver;
 public:
 	client(const char host_name[], unsigned short port,
-		const char team_name[], const char password[], int task_id) {
+		const char team_name[], const char password[], int task_id,
+		solver your_solver = solver{}) :
+				your_solver{std::move(your_solver)} {
 
 		if(!socket_handler.valid()) {
 			throw std::runtime_error("Error: Cannot open a socket!");

@@ -12,6 +12,7 @@ public:
     using Monitors = std::vector<Point>;
     using Princesses = std::vector<Point>;
 
+    Track() = default;
     Track(std::size_t width, std::size_t height,
             const std::vector<int>& fieldTypes,
             Monitors monitors, Princesses princesses);
