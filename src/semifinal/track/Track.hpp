@@ -14,7 +14,7 @@ public:
 
     Track(std::size_t width, std::size_t height,
             const std::vector<int>& fieldTypes,
-            Monitors monitors, Princesses princesses); // TODO
+            Monitors monitors, Princesses princesses);
 
     Track(const Track&) = default;
     Track(Track&&) = default;
@@ -30,7 +30,7 @@ public:
     // Returns the field that is pushed out.
     int moveFields(int direction, int position, int fieldToPush); // TODO
 
-    bool canMovePrincess(int player, Point target) const; 
+    bool canMovePrincess(int player, Point target) const;
     void movePrincess(int player, Point target);
     void removeMonitor(int id);
 
