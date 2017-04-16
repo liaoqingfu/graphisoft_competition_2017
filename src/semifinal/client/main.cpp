@@ -85,6 +85,7 @@ public:
 
 		std::stringstream consumer(received_buffer + buffer.c_str());
 		while(std::getline(consumer, buffer)) {
+            std::cerr << "received: " << std::string{buffer} << std::endl;
 			if(buffer == ".") {
 				received_buffer = consumer.str().substr(consumer.tellg());
 				return result;
