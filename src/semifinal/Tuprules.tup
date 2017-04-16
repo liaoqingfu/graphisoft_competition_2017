@@ -1,2 +1,4 @@
 TRACK_DIR = $(TUP_CWD)/track
 TRACK_LIB = $(TRACK_DIR)/track.a
+CLIENT_DIR = $(TUP_CWD)/client
+CLIENT_LIB = $(CLIENT_DIR)/client.a
