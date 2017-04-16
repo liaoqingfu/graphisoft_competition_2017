@@ -21,6 +21,10 @@ public:
     Track& operator=(const Track&) = default;
     Track& operator=(Track&&) = default;
 
+    bool operator==(const Track& other) const {
+        return fields == other.fields;
+    }
+
     std::size_t width() const { return fields.width(); }
     std::size_t height() const { return fields.height(); }
     const Field& getField(Point p) const { return fields[p]; }
@@ -28,7 +32,7 @@ public:
     Point getPrincess(int player) const { return princesses[player]; }
 
     // Returns the field that is pushed out.
-    int moveFields(int direction, int position, int fieldToPush); // TODO
+    int moveFields(std::size_t direction, int position, int fieldToPush);
 
     bool canMovePrincess(int player, Point target) const;
     void movePrincess(int player, Point target);

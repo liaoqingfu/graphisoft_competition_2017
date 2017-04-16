@@ -15,6 +15,10 @@ std::size_t oppositeDirection(std::size_t direction) {
     return (direction + numNeighbors / 2) % numNeighbors;
 }
 
+enum Directions : std::size_t {
+    left, up, right, down
+};
+
 constexpr Neighbors neighbors{
         {-p10, -p01, p10, p01}};
 

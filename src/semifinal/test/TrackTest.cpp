@@ -391,4 +391,200 @@ BOOST_AUTO_TEST_CASE(Crosses) {
 
 BOOST_AUTO_TEST_SUITE_END() // CanMovePrincess
 
+BOOST_AUTO_TEST_SUITE(MoveFields)
+
+BOOST_AUTO_TEST_CASE(MoveRight) {
+    Track track{4, 4, {
+             1,  2,  3,  4,
+             5,  6,  7,  8,
+             9, 10, 11, 12,
+            13, 14, 15,  1}, {}, {}};
+    BOOST_TEST_MESSAGE(track);
+
+    track.moveFields(right, 1, 10);
+    BOOST_TEST_MESSAGE(track);
+
+    Track expectedResult{4, 4, {
+             1,  2,  3,  4,
+            10,  5,  6,  7,
+             9, 10, 11, 12,
+            13, 14, 15,  1}, {}, {}};
+    BOOST_TEST(track == expectedResult);
+}
+
+BOOST_AUTO_TEST_CASE(MoveLeft) {
+    Track track{4, 4, {
+             1,  2,  3,  4,
+             5,  6,  7,  8,
+             9, 10, 11, 12,
+            13, 14, 15,  1}, {}, {}};
+    BOOST_TEST_MESSAGE(track);
+
+    track.moveFields(left, 0, 6);
+    BOOST_TEST_MESSAGE(track);
+
+    Track expectedResult{4, 4, {
+             2,  3,  4,  6,
+             5,  6,  7,  8,
+             9, 10, 11, 12,
+            13, 14, 15,  1}, {}, {}};
+    BOOST_TEST(track == expectedResult);
+}
+
+BOOST_AUTO_TEST_CASE(MoveDown) {
+    Track track{4, 4, {
+             1,  2,  3,  4,
+             5,  6,  7,  8,
+             9, 10, 11, 12,
+            13, 14, 15,  1}, {}, {}};
+    BOOST_TEST_MESSAGE(track);
+
+    track.moveFields(down, 2, 8);
+    BOOST_TEST_MESSAGE(track);
+
+    Track expectedResult{4, 4, {
+             1,  2,  8,  4,
+             5,  6,  3,  8,
+             9, 10,  7, 12,
+            13, 14, 11,  1}, {}, {}};
+    BOOST_TEST(track == expectedResult);
+}
+
+BOOST_AUTO_TEST_CASE(MoveUp) {
+    Track track{4, 4, {
+             1,  2,  3,  4,
+             5,  6,  7,  8,
+             9, 10, 11, 12,
+            13, 14, 15,  1}, {}, {}};
+    BOOST_TEST_MESSAGE(track);
+
+    track.moveFields(up, 3, 15);
+    BOOST_TEST_MESSAGE(track);
+
+    Track expectedResult{4, 4, {
+             1,  2,  3,  8,
+             5,  6,  7, 12,
+             9, 10, 11,  1,
+            13, 14, 15, 15}, {}, {}};
+    BOOST_TEST(track == expectedResult);
+}
+
+BOOST_AUTO_TEST_CASE(MonitorsMoved) {
+    Track track{4, 4, {
+             1,  2,  3,  4,
+             5,  6,  7,  8,
+             9, 10, 11, 12,
+            13, 14, 15,  1},
+            {Point{1, 0}, Point{1, 1}}, {}};
+    BOOST_TEST_MESSAGE(track);
+
+    track.moveFields(right, 1, 5);
+    BOOST_TEST_MESSAGE(track);
+
+    const Track::Monitors expectedMonitors{Point{1, 0}, Point{2, 1}};
+    Track expectedResult{4, 4, {
+             1,  2,  3,  4,
+             5,  5,  6,  7,
+             9, 10, 11, 12,
+            13, 14, 15,  1}, expectedMonitors, {}};
+    BOOST_TEST(track == expectedResult);
+    BOOST_TEST(track.getMonitor(0) == expectedMonitors[0]);
+    BOOST_TEST(track.getMonitor(1) == expectedMonitors[1]);
+}
+
+BOOST_AUTO_TEST_CASE(MonitorsRotated1) {
+    Track track{3, 2, {
+             1,  2,  3,
+             4,  5,  6}, {Point{2, 0}}, {}};
+    BOOST_TEST_MESSAGE(track);
+
+    track.moveFields(right, 0, 10);
+    BOOST_TEST_MESSAGE(track);
+
+    const Track::Monitors expectedMonitors{Point{0, 0}};
+    Track expectedResult{3, 2, {
+            10,  1,  2,
+             4,  5,  6}, expectedMonitors, {}};
+    BOOST_TEST(track == expectedResult);
+    BOOST_TEST(track.getMonitor(0) == expectedMonitors[0]);
+}
+
+BOOST_AUTO_TEST_CASE(MonitorsRotated2) {
+    Track track{2, 3, {
+             1,  2,
+             3,  4,
+             5,  6}, {Point{0, 0}}, {}};
+    BOOST_TEST_MESSAGE(track);
+
+    track.moveFields(up, 0, 11);
+    BOOST_TEST_MESSAGE(track);
+
+    const Track::Monitors expectedMonitors{Point{0, 2}};
+    Track expectedResult{2, 3, {
+             3,  2,
+             5,  4,
+            11,  6}, expectedMonitors, {}};
+    BOOST_TEST(track == expectedResult);
+    BOOST_TEST(track.getMonitor(0) == expectedMonitors[0]);
+}
+
+BOOST_AUTO_TEST_CASE(PrincessesMoved) {
+    Track track{4, 4, {
+             1,  2,  3,  4,
+             5,  6,  7,  8,
+             9, 10, 11, 12,
+            13, 14, 15,  1}, {},
+            {Point{0, 0}, Point{1, 1}, Point{1, 2}}};
+    BOOST_TEST_MESSAGE(track);
+
+    track.moveFields(up, 1, 5);
+    BOOST_TEST_MESSAGE(track);
+
+    const Track::Monitors expectedPrincesses{
+            Point{0, 0}, Point{1, 0}, Point{1, 1}};
+    Track expectedResult{4, 4, {
+             1,  6,  3,  4,
+             5, 10,  7,  8,
+             9, 14, 11, 12,
+            13,  5, 15,  1}, {}, expectedPrincesses};
+    BOOST_TEST(track == expectedResult);
+    BOOST_TEST(track.getPrincess(0) == expectedPrincesses[0]);
+    BOOST_TEST(track.getPrincess(1) == expectedPrincesses[1]);
+}
+
+BOOST_AUTO_TEST_CASE(PrincessesRotated1) {
+    Track track{3, 2, {
+             1,  2,  3,
+             4,  5,  6}, {}, {Point{0, 1}}};
+    BOOST_TEST_MESSAGE(track);
+
+    track.moveFields(left, 1, 10);
+    BOOST_TEST_MESSAGE(track);
+
+    const Track::Princesses expectedPrincesses{Point{2, 1}};
+    Track expectedResult{3, 2, {
+             1,  2,  3,
+             5,  6, 10}, {}, expectedPrincesses};
+    BOOST_TEST(track == expectedResult);
+    BOOST_TEST(track.getPrincess(0) == expectedPrincesses[0]);
+}
+
+BOOST_AUTO_TEST_CASE(ReachabilityIsRecalculated) {
+    Track track{4, 2, {
+            10, 10, 14, 10,
+             5,  5,  5,  5}, {}, {Point{0, 0}}};
+    BOOST_TEST_MESSAGE(track);
+
+    BOOST_TEST(track.canMovePrincess(0, Point{2, 1}));
+    BOOST_TEST(!track.canMovePrincess(0, Point{3, 1}));
+
+    track.moveFields(right, 0, 10);
+    BOOST_TEST_MESSAGE(track);
+
+    BOOST_TEST(!track.canMovePrincess(0, Point{2, 1}));
+    BOOST_TEST(track.canMovePrincess(0, Point{3, 1}));
+}
+
+BOOST_AUTO_TEST_SUITE_END() // MoveFields
+
 BOOST_AUTO_TEST_SUITE_END() // TrackTest

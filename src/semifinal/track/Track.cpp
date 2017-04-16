@@ -36,6 +36,72 @@ void Track::movePrincess(int player, Point target) {
     princesses[player] = target;
 }
 
+namespace {
+
+void calculateSwapDirection(int delta, int size, int& begin, int& end) {
+    if (delta < 0) {
+        begin = 0;
+        end = size - 1;
+    } else {
+        begin = size - 1;
+        end = 0;
+    }
+}
+
+void rotatePoints(std::vector<Point>& points, int Point::*toCheck,
+        int Point::*toMove, int position, int delta, int size) {
+    for (Point& p : points) {
+        if (p.*toCheck == position) {
+            p.*toMove += delta;
+            if (p.*toMove < 0) {
+                p.*toMove = size - 1;
+            }
+            if (p.*toMove >= size) {
+                p.*toMove = 0;
+            }
+        }
+    }
+}
+
+}
+
+int Track::moveFields(std::size_t direction, int position, int fieldToPush) {
+    assert(direction >= 0);
+    assert(direction < numNeighbors);
+    Point delta = neighbors[direction];
+    std::size_t swapDirection = oppositeDirection(direction);
+    Point begin, end;
+    if (delta.y == 0) {
+        begin.y = position;
+        end.y = position;
+        calculateSwapDirection(delta.x, width(), begin.x, end.x);
+        rotatePoints(monitors, &Point::y, &Point::x, position, delta.x,
+                width());
+        rotatePoints(princesses, &Point::y, &Point::x, position, delta.x,
+                width());
+    } else {
+        assert(delta.x == 0);
+        begin.x = position;
+        end.x = position;
+        calculateSwapDirection(delta.y, height(), begin.y, end.y);
+        rotatePoints(monitors, &Point::x, &Point::y, position, delta.y,
+                height());
+        rotatePoints(princesses, &Point::x, &Point::y, position, delta.y,
+                height());
+    }
+
+    for (Point p = begin; p != end; p += neighbors[swapDirection]) {
+        std::swap(fields[p], fields[p + neighbors[swapDirection]]);
+    }
+
+    int result = fields[end].type;
+    fields[end].type = fieldToPush;
+
+    resetReachability();
+
+    return result;
+}
+
 void Track::removeMonitor(int id) {
     bool& monitor = fields[monitors[id]].monitor;
     assert(monitor);
