@@ -1,11 +1,14 @@
 #include "Track.hpp"
 
+#include "FloodFill.hpp"
+
 Track::Track(std::size_t width, std::size_t height,
         const std::vector<int>& fieldTypes,
         Monitors monitors, Princesses princesses) :
         fields{width, height},
         monitors(std::move(monitors)),
-        princesses(std::move(princesses)) {
+        princesses(std::move(princesses)),
+        reachability{width, height, -1} {
     std::transform(fieldTypes.begin(), fieldTypes.end(), fields.begin(),
             [](int type) { return Field{type, false, -1}; });
     for (Point p : this->monitors) {
@@ -14,6 +17,11 @@ Track::Track(std::size_t width, std::size_t height,
     for (std::size_t i = 0; i < this->princesses.size(); ++i) {
         fields[this->princesses[i]].princess = i;
     }
+}
+
+bool Track::canMovePrincess(int player, Point target) const {
+    calculateReachability(princesses[player]);
+    return reachability[princesses[player]] == reachability[target];
 }
 
 void Track::movePrincess(int player, Point target) {
@@ -35,6 +43,20 @@ void Track::removeMonitor(int id) {
 
     monitor = false;
     monitors[id] = -p11;
+}
+
+void Track::calculateReachability(Point from) const {
+    if (reachability[from] >= 0) {
+        return;
+    }
+    floodFill(fields, from,
+            [this](Point p) { reachability[p] = reachabilityIndex; });
+    ++reachabilityIndex;
+}
+
+void Track::resetReachability() {
+    reachability.fill(-1);
+    reachabilityIndex = 0;
 }
 
 std::ostream& operator<<(std::ostream& os, const Track& track) {

@@ -5,6 +5,7 @@
 #include "Matrix.hpp"
 
 #include <iostream>
+#include <memory>
 
 class Track {
 public:
@@ -34,9 +35,14 @@ public:
     void removeMonitor(int id);
 
 private:
+    void calculateReachability(Point from) const;
+    void resetReachability();
+
     Matrix<Field> fields;
     Monitors monitors;
     Princesses princesses;
+    mutable Matrix<int> reachability;
+    mutable int reachabilityIndex = 0;
 };
 
 std::ostream& operator<<(std::ostream& os, const Track& track);

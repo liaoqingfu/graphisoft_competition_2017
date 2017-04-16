@@ -10,6 +10,11 @@
 constexpr std::size_t numNeighbors = 4;
 using Neighbors = std::array<Point, numNeighbors>;
 
+inline
+std::size_t oppositeDirection(std::size_t direction) {
+    return (direction + numNeighbors / 2) % numNeighbors;
+}
+
 constexpr Neighbors neighbors{
         {-p10, -p01, p10, p01}};
 
