@@ -10,7 +10,7 @@ Track::Track(std::size_t width, std::size_t height,
         princesses(std::move(princesses)),
         reachability{width, height, -1} {
     std::transform(fieldTypes.begin(), fieldTypes.end(), fields.begin(),
-            [](int type) { return Field{type, false, -1}; });
+            [](int type) { return Field{type, -1, -1}; });
     for (std::size_t i = 0; i < this->monitors.size(); ++i) {
         fields[this->monitors[i]].monitor = i;
     }
