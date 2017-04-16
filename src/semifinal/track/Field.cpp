@@ -1,5 +1,7 @@
 #include "Field.hpp"
 
+#include <algorithm>
+
 namespace {
 
 constexpr std::size_t numFieldTypes = 16;
@@ -29,6 +31,28 @@ std::string clearColor() {
     return "\e[0m";
 }
 
+std::vector<std::vector<int>> isomorphs{
+        {1, 2, 4, 8},
+        {3, 6, 9, 12},
+        {7, 11, 13, 14},
+        {5, 10},
+        {15}};
+
+std::vector<std::vector<int>*> calculateIsomorphs() {
+    std::vector<std::vector<int>*> result{nullptr};
+    for (int i = 1; i < static_cast<int>(numFieldTypes); ++i) {
+        auto iterator = std::find_if(isomorphs.begin(), isomorphs.end(),
+                [i](const std::vector<int>& v) {
+                    return std::find(v.begin(), v.end(), i) != v.end();
+                });
+        result.push_back(&*iterator);
+    }
+    assert(result.size() == numFieldTypes);
+    return result;
+}
+
+std::vector<std::vector<int>*> isomorphCatalog = calculateIsomorphs();
+
 }
 
 std::string to_string(const Field& field)
@@ -41,4 +65,10 @@ std::string to_string(const Field& field)
                             : defaultColor)
             + fieldTypes[field.type]
             + clearColor();
+}
+
+const std::vector<int>& getIsomorphs(int fieldType) {
+    assert(fieldType >= 1);
+    assert(fieldType < static_cast<int>(numFieldTypes));
+    return *isomorphCatalog[fieldType];
 }

@@ -4,8 +4,6 @@
 
 BOOST_AUTO_TEST_SUITE(TrackTest)
 
-BOOST_AUTO_TEST_SUITE(TrackTest)
-
 BOOST_AUTO_TEST_SUITE(Construction)
 
 BOOST_AUTO_TEST_CASE(Construct) {
@@ -34,6 +32,8 @@ BOOST_AUTO_TEST_CASE(Construct) {
 }
 
 BOOST_AUTO_TEST_SUITE_END() // Construction
+
+BOOST_AUTO_TEST_SUITE(CanMovePrincess)
 
 BOOST_AUTO_TEST_CASE(StraightLineHorizontal) {
     Track track{6, 1, {10, 10, 2, 8, 10, 10}, {},

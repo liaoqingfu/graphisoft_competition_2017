@@ -53,6 +53,6 @@ bool canMove(int fieldType, std::size_t direction) {
     return fieldType & directionBits[direction];
 }
 
-std::vector<int> getIsomorphs(int fieldType); // TODO
+const std::vector<int>& getIsomorphs(int fieldType);
 
 #endif // SEMIFINAL_TRACK_FIELD_HPP
