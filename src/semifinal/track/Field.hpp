@@ -10,7 +10,7 @@
 constexpr std::size_t numNeighbors = 4;
 using Neighbors = std::array<Point, numNeighbors>;
 
-inline
+inline constexpr
 std::size_t oppositeDirection(std::size_t direction) {
     return (direction + numNeighbors / 2) % numNeighbors;
 }
@@ -21,15 +21,6 @@ constexpr Neighbors neighbors{
 constexpr const Neighbors& getNeighbors(Point) {
     return neighbors;
 }
-
-constexpr std::size_t numFieldTypes = 16;
-extern const std::array<std::string, numFieldTypes> fieldTypes;
-
-constexpr std::size_t numPlayers = 4;
-extern const std::array<std::string, numPlayers> playerColors;
-
-extern const std::string monitorColor;
-extern const std::string noColor;
 
 struct Field {
     int type;

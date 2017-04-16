@@ -11,7 +11,7 @@ int main() {
              5,  5,  1,  5,  1,  5,  5,
              5,  1,  8, 15,  2,  1,  5,
              9, 10, 10, 11, 10, 10,  3},
-          {Point{3, 3}},
+          {Point{3, 3}, Point{0, 0}},
           {Point{0, 0}, Point{6, 0}, Point{0, 6}, Point{6, 6}}};
     std::cout << track;
 }
