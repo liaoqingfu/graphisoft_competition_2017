@@ -30,7 +30,7 @@ public:
     // Returns the field that is pushed out.
     int moveFields(int direction, int position, int fieldToPush); // TODO
 
-    bool canMovePrincess(int player, Point target) const; // TODO
+    bool canMovePrincess(int player, Point target) const; 
     void movePrincess(int player, Point target);
     void removeMonitor(int id);
 
