@@ -98,7 +98,7 @@ public:
 };
 
 template<typename T>
-inline const typename Matrix<T>::const_reference matrixAt(const Matrix<T> &arr,
+inline const T matrixAt(const Matrix<T> &arr,
         Point p, const T& def) {
     return isInsideMatrix(arr, p) ? arr[p] : def;
 }
