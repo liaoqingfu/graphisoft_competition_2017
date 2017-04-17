@@ -13,9 +13,12 @@ struct GameState {
     int numDisplays = -1;
     int maxTick = -1;
     int currentTick = -1;
+    int numPlayers = 4; // in semifinal this is const
     int playerId = -1;
+    int activePlayerId = -1;
     int targetMonitor = -1;
     int extraField = -1;
+    bool ourTurn() { return playerId == activePlayerId; }
 };
 
 struct Step {
