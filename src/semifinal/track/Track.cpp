@@ -157,3 +157,19 @@ std::ostream& operator<<(std::ostream& os, const Track& track) {
     }
     return os;
 }
+
+std::string toBox(const Track& track) {
+    Point p;
+
+    std::string result;
+    for (unsigned int y = 0; y < track.height() * BOXHEIGHT; ++y) {
+        std::string line;
+        p.y = y / BOXHEIGHT;
+        for (p.x = 0; p.x < static_cast<int>(track.width()); ++p.x) {
+            line.append(getBoxLine(track.getField(p), y % BOXHEIGHT));
+        }
+        line.append("\n");
+        result.append(line);
+    }
+    return result;
+}

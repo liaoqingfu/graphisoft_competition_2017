@@ -23,4 +23,80 @@ BOOST_AUTO_TEST_CASE(GetIsomorphs) {
     BOOST_TEST((getIsomorphs(15) == V{15}));
 }
 
+BOOST_AUTO_TEST_SUITE(ToBox)
+
+BOOST_AUTO_TEST_CASE(Value1) {
+    Field field; field.type = 1;
+    std::string tmp =
+R"foo(
+┏━━━┻━━━┓
+┃       ┃
+┃       ┃
+┃       ┃
+┗━━━━━━━┛
+)foo";
+    std::string expected(tmp.begin() + 1, tmp.end());
+    BOOST_CHECK_EQUAL(toBox(field), expected);
+}
+
+BOOST_AUTO_TEST_CASE(Value2) {
+    Field field; field.type = 2;
+    std::string tmp =
+R"foo(
+┏━━━━━━━┓
+┃       ┃
+┫       ┃
+┃       ┃
+┗━━━━━━━┛
+)foo";
+    std::string expected(tmp.begin() + 1, tmp.end());
+    BOOST_CHECK_EQUAL(toBox(field), expected);
+}
+
+BOOST_AUTO_TEST_CASE(Value4) {
+    Field field; field.type = 4;
+    std::string tmp =
+R"foo(
+┏━━━━━━━┓
+┃       ┃
+┃       ┃
+┃       ┃
+┗━━━┳━━━┛
+)foo";
+    std::string expected(tmp.begin() + 1, tmp.end());
+    BOOST_CHECK_EQUAL(toBox(field), expected);
+}
+
+BOOST_AUTO_TEST_CASE(Value8) {
+    Field field; field.type = 8;
+    std::string tmp =
+R"foo(
+┏━━━━━━━┓
+┃       ┃
+┃       ┣
+┃       ┃
+┗━━━━━━━┛
+)foo";
+    std::string expected(tmp.begin() + 1, tmp.end());
+    BOOST_CHECK_EQUAL(toBox(field), expected);
+}
+
+BOOST_AUTO_TEST_CASE(Value15) {
+    Field field; field.type = 15;
+    std::string tmp =
+R"foo(
+┏━━━┻━━━┓
+┃       ┃
+┫       ┣
+┃       ┃
+┗━━━┳━━━┛
+)foo";
+    std::string expected(tmp.begin() + 1, tmp.end());
+    BOOST_CHECK_EQUAL(toBox(field), expected);
+}
+
+
+
+BOOST_AUTO_TEST_SUITE_END() // ToBox
+
 BOOST_AUTO_TEST_SUITE_END() // FieldTest

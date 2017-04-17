@@ -60,4 +60,6 @@ private:
 
 std::ostream& operator<<(std::ostream& os, const Track& track);
 
+std::string toBox(const Track& track);
+
 #endif // SEMIFINAL_TRACK_TRACK_HPP

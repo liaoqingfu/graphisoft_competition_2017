@@ -59,3 +59,78 @@ const std::vector<int>& getIsomorphs(int fieldType) {
     assert(fieldType < static_cast<int>(numFieldTypes));
     return *isomorphCatalog[fieldType];
 }
+
+namespace BigFieldLines {
+    constexpr static std::array<const char*, 2> upper{
+        {"┏━━━━━━━┓", "┏━━━┻━━━┓"}};
+    constexpr static std::array<const char*, 2> lower{
+        {"┗━━━━━━━┛", "┗━━━┳━━━┛"}};
+    constexpr static std::array<const char*, 2> left{
+        { "┃","┫"}};
+    constexpr static std::array<const char*, 2> right{
+        { "┃","┣"}};
+    constexpr static const char* neutral = "┃";
+}
+
+namespace {
+auto getUpperLine(const Field& field) {
+    return BigFieldLines::upper[0b0001 & field.type];
+}
+auto getLowerLine(const Field& field) {
+    return BigFieldLines::lower[(0b0100 & field.type) >> 2];
+}
+std::string get2ndLine(const Field& field) {
+    auto result = std::string(BigFieldLines::neutral);
+    if (field.princess == -1) {
+        result.append("       ");
+    } else {
+        result.append(" K").append(std::to_string(field.princess));
+        result.append("  ");
+    }
+    return result.append(BigFieldLines::neutral);
+}
+auto getLeftChar(const Field& field) {
+    return BigFieldLines::left[(0b0010 & field.type) >> 1];
+}
+auto getRightChar(const Field& field) {
+    return BigFieldLines::right[(0b1000 & field.type) >> 3];
+}
+std::string getMiddleLine(const Field& field) {
+    return std::string().append(getLeftChar(field)).append("       ").append(getRightChar(field));
+}
+std::string get4thLine(const Field& field) {
+    auto result = std::string(BigFieldLines::neutral);
+    if (field.monitor == -1) {
+        result.append("       ");
+    } else {
+        result.append(" M").append(std::to_string(field.monitor));
+        result.append("  ");
+    }
+    return result.append(BigFieldLines::neutral);
+}
+} // unnamed
+
+std::string getBoxLine(const Field& field, unsigned i) {
+    switch(i) {
+        case 0:
+            return getUpperLine(field);
+        case 1:
+            return get2ndLine(field);
+        case 2:
+            return getMiddleLine(field);
+        case 3:
+            return get4thLine(field);
+        case 4:
+            return getLowerLine(field);
+        default: return "";
+    }
+}
+
+std::string toBox(const Field& field) {
+    std::string result;
+    for (int i = 0; i < BOXHEIGHT; ++i) {
+        result.append(getBoxLine(field, i)).append("\n");
+    }
+    return result;
+}
+

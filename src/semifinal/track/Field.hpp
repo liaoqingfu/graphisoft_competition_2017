@@ -27,9 +27,9 @@ constexpr const Neighbors& getNeighbors(Point) {
 }
 
 struct Field {
-    int type;
-    int monitor; // monitor ID, -1 = none
-    int princess; // player ID, -1 = none
+    int type = 0;
+    int monitor = -1; // monitor ID, -1 = none
+    int princess = -1; // player ID, -1 = none
 };
 
 inline
@@ -68,5 +68,9 @@ bool canMove(int fieldType, std::size_t direction) {
 }
 
 const std::vector<int>& getIsomorphs(int fieldType);
+
+constexpr int BOXHEIGHT = 5;
+std::string getBoxLine(const Field& field, unsigned i);
+std::string toBox(const Field& field);
 
 #endif // SEMIFINAL_TRACK_FIELD_HPP
