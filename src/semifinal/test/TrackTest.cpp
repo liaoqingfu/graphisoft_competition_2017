@@ -796,4 +796,36 @@ BOOST_FIXTURE_TEST_CASE(RotateDown, Fixture) {
 
 BOOST_AUTO_TEST_SUITE_END() // TransformPoints
 
+BOOST_AUTO_TEST_SUITE(GetExtraField)
+
+class Fixture {
+public:
+    Track track{3, 3, {
+            1, 2, 3,
+            4, 5, 6,
+            7, 8, 9}, {}, {}};
+
+    Fixture() {
+        BOOST_TEST_MESSAGE(track);
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(Left, Fixture) {
+    BOOST_TEST(getExtraField(track, left, 1) == 4);
+}
+
+BOOST_FIXTURE_TEST_CASE(Right, Fixture) {
+    BOOST_TEST(getExtraField(track, right, 2) == 9);
+}
+
+BOOST_FIXTURE_TEST_CASE(Up, Fixture) {
+    BOOST_TEST(getExtraField(track, up, 0) == 1);
+}
+
+BOOST_FIXTURE_TEST_CASE(Down, Fixture) {
+    BOOST_TEST(getExtraField(track, down, 1) == 8);
+}
+
+BOOST_AUTO_TEST_SUITE_END() // GetExtraField
+
 BOOST_AUTO_TEST_SUITE_END() // TrackTest

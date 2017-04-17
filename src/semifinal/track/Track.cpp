@@ -186,3 +186,17 @@ std::vector<TransformedPoint> transformPoints(const Track& track,
     }
     return result;
 }
+
+int getExtraField(const Track& track, Directions direction, int position) {
+    Point delta = neighbors[direction];
+    Point begin, end;
+    if (delta.y == 0) {
+        begin.y = position;
+        calculateSwapDirection(delta.x, track.width(), begin.x, end.x);
+    } else {
+        assert(delta.x == 0);
+        begin.x = position;
+        calculateSwapDirection(delta.y, track.height(), begin.y, end.y);
+    }
+    return track.getField(begin).type;
+}

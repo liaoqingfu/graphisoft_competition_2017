@@ -8,6 +8,7 @@
 struct PotentialStep {
     const GameState* sourceState;
     Track targetTrack;
+    int targetExtraField;
     Step step;
 };
 

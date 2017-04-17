@@ -4,8 +4,8 @@ namespace {
 
 PotentialStep createPotentialStep(const GameState& gameState, Step step) {
     Track targetTrack{gameState.track};
-    executeStep(targetTrack, gameState.playerId, step);
-    return PotentialStep{&gameState, targetTrack, std::move(step)};
+    int extraField = executeStep(targetTrack, gameState.playerId, step);
+    return PotentialStep{&gameState, targetTrack, extraField, std::move(step)};
 }
 
 } // unnamed namespace

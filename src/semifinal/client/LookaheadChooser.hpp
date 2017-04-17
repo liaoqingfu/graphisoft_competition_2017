@@ -26,6 +26,7 @@ public:
             processStep(stepValues, step);
         }
         if (stepValues.empty()) {
+            std::cerr << "No good step is found.\n";
             return chooser.chooseBadStep(potentialSteps);
         }
 
@@ -41,6 +42,9 @@ public:
             }
             goodSteps.push_back(record.step);
         }
+        std::cerr << "Found " << goodSteps.size()
+                << " good steps with value " << stepValues.front().value
+                << "\n";
         return chooser.chooseGoodStep(goodSteps);
     }
 
@@ -59,6 +63,7 @@ private:
         }
 
         GameState newGameState{*step.sourceState, step.targetTrack};
+        newGameState.extraField = step.targetExtraField;
         for (const PotentialStep& nextStep :
                 calculatePotentialSteps(newGameState)) {
             auto transformedPoints = transformPoints(nextStep.targetTrack,
