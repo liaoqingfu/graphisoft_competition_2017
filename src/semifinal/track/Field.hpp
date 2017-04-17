@@ -45,6 +45,20 @@ std::ostream& operator<<(std::ostream& os, const Field& field) {
     return os << to_string(field);
 }
 
+constexpr std::size_t numFieldTypes = 16;
+extern const std::array<std::string, numFieldTypes> fieldTypes;
+
+constexpr std::size_t numPlayers = 4;
+constexpr std::array<int, numPlayers> playerColors {{31, 32, 33, 34}};
+
+constexpr int defaultColor = 0;
+constexpr int monitorColor = 46;
+
+std::string setColor(int background, int foreground);
+
+inline std::string clearColor() { return "\e[0m"; }
+inline std::string clearScreen() { return "\e[2J"; }
+
 inline
 bool canMove(int fieldType, std::size_t direction) {
     constexpr std::array<int, numNeighbors> directionBits{{

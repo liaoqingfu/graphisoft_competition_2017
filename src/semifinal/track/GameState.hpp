@@ -31,9 +31,13 @@ void parseTickInfo(GameState& gameState,
 std::vector<std::string> createOutput(const Step& step); // TODO
 
 inline
-void executeStep(Track& track, int playerId, const Step& step) {
-    track.moveFields(step.pushDirection, step.pushPosition, step.pushFieldType);
-    track.movePrincess(playerId, step.princessTarget);
+int executeStep(Track& track, int playerId, const Step& step) {
+    int result = track.moveFields(step.pushDirection, step.pushPosition,
+            step.pushFieldType);
+    if (track.canMovePrincess(playerId, step.princessTarget)) {
+        track.movePrincess(playerId, step.princessTarget);
+    }
+    return result;
 }
 
 #endif // SEMIFINAL_TRACK_GAMESTATE_HPP

@@ -26,7 +26,8 @@ bool Track::isReachableFrom(Point source, Point target) const {
 }
 
 bool Track::canMovePrincess(int player, Point target) const {
-    return isReachableFrom(princesses[player], target);
+    return isReachableFrom(princesses[player], target)
+            && fields[target].princess == -1;
 }
 
 void Track::movePrincess(int player, Point target) {
