@@ -95,6 +95,36 @@ R"foo(
     BOOST_CHECK_EQUAL(toBox(field), expected);
 }
 
+BOOST_AUTO_TEST_CASE(Princess) {
+    Field field; field.type = 8;
+    field.princess = 3;
+    std::string tmp =
+R"foo(
+┏━━━━━━━┓
+┃ K3    ┃
+┃       ┣
+┃       ┃
+┗━━━━━━━┛
+)foo";
+    std::string expected(tmp.begin() + 1, tmp.end());
+    BOOST_CHECK_EQUAL(toBox(field), expected);
+}
+
+BOOST_AUTO_TEST_CASE(Monitor) {
+    Field field; field.type = 8;
+    field.monitor = 3;
+    std::string tmp =
+R"foo(
+┏━━━━━━━┓
+┃       ┃
+┃       ┣
+┃ M3    ┃
+┗━━━━━━━┛
+)foo";
+    std::string expected(tmp.begin() + 1, tmp.end());
+    BOOST_CHECK_EQUAL(toBox(field), expected);
+}
+
 
 
 BOOST_AUTO_TEST_SUITE_END() // ToBox

@@ -85,7 +85,7 @@ std::string get2ndLine(const Field& field) {
         result.append("       ");
     } else {
         result.append(" K").append(std::to_string(field.princess));
-        result.append("  ");
+        result.append("    ");
     }
     return result.append(BigFieldLines::neutral);
 }
@@ -104,7 +104,7 @@ std::string get4thLine(const Field& field) {
         result.append("       ");
     } else {
         result.append(" M").append(std::to_string(field.monitor));
-        result.append("  ");
+        result.append("    ");
     }
     return result.append(BigFieldLines::neutral);
 }
