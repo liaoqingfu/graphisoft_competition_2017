@@ -146,4 +146,16 @@ BOOST_AUTO_TEST_CASE(MessageError) {
 
 BOOST_AUTO_TEST_SUITE_END() // ParseTickInfo
 
+BOOST_AUTO_TEST_SUITE(CreateOutput)
+
+BOOST_AUTO_TEST_CASE(OK) {
+    Step step = {left, 1, 3, {2,3}};
+    auto output = createOutput(step);
+    BOOST_CHECK_EQUAL(output.size(), 2);
+    BOOST_CHECK_EQUAL(output.at(0), "PUSH 1 0 1 3");
+    BOOST_CHECK_EQUAL(output.at(1), "GOTO 2 3");
+}
+
+BOOST_AUTO_TEST_SUITE_END() // CreateOutput
+
 BOOST_AUTO_TEST_SUITE_END()

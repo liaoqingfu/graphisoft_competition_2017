@@ -101,5 +101,27 @@ void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
     gs.track = Track(gs.width, gs.height, fields, monitors, princesses);
 }
 
-std::vector<std::string> createOutput(const Step& step) { return {}; }
+std::vector<std::string> createOutput(const Step& step) {
+    std::string c =
+        (step.pushPosition == left || step.pushPosition == right) ? "0" : "1";
+    std::string p =
+        (step.pushPosition == right || step.pushPosition == down) ? "1" : "0";
+    std::string k = std::to_string(step.pushPosition);
+    std::string t = std::to_string(step.pushFieldType);
+    auto pushMsg = std::string("PUSH ")
+                       .append(c)
+                       .append(" ")
+                       .append(p)
+                       .append(" ")
+                       .append(k)
+                       .append(" ")
+                       .append(t);
+
+    auto gotoMsg = std::string("GOTO ")
+                       .append(std::to_string(step.princessTarget.x))
+                       .append(" ")
+                       .append(std::to_string(step.princessTarget.y));
+
+    return {pushMsg, gotoMsg};
+}
 
