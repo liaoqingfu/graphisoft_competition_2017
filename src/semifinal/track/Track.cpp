@@ -200,12 +200,12 @@ std::string toBox(const Track& track) {
 
             // additional horizontal connection
             Point next{p.x + 1, p.y};
-            if (y % BOXHEIGHT == BOXHEIGHT / 2 && next.x < (int)track.width()) {
-                if (track.getField(p).type == 8 &&
-                    track.getField(next).type == 2) {
-                    line.append("━");
-                }
-            } else if (p.x < (int)track.width() - 1) {
+            if (y % BOXHEIGHT == BOXHEIGHT / 2 && next.x < (int)track.width() &&
+                (track.getField(p).type & 0b1000) >> 3 &&
+                (track.getField(next).type & 0b0010) >> 1) {
+                line.append("━");
+            } else if (p.x < (int)track.width() -
+                                 1) { // do not append space after the last col
                 line.append(" ");
             }
 

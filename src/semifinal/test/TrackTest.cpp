@@ -735,6 +735,27 @@ R"foo(
     BOOST_CHECK_EQUAL(toBox(track), expected);
 }
 
+BOOST_AUTO_TEST_CASE(Test4x4) {
+    Track track{2, 2, {12, 6, 1, 1}, {}, {}};
+    std::cout << toBox(track);
+    std::string tmp =
+R"foo(
+       0         1    
+   ┏━━━━━━━┓ ┏━━━━━━━┓
+   ┃       ┃ ┃       ┃
+0  ┃       ┣━┫       ┃
+   ┃       ┃ ┃       ┃
+   ┗━━━┳━━━┛ ┗━━━┳━━━┛
+   ┏━━━┻━━━┓ ┏━━━┻━━━┓
+   ┃       ┃ ┃       ┃
+1  ┃       ┃ ┃       ┃
+   ┃       ┃ ┃       ┃
+   ┗━━━━━━━┛ ┗━━━━━━━┛
+)foo";
+    std::string expected(tmp.begin() + 1, tmp.end());
+    BOOST_CHECK_EQUAL(toBox(track), expected);
+}
+
 BOOST_AUTO_TEST_SUITE_END() // ToBox
 
 BOOST_AUTO_TEST_SUITE_END() // TrackTest
