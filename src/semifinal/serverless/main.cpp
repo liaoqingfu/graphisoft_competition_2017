@@ -1,5 +1,6 @@
 #include "ChoosingStrategy.hpp"
 #include "GameState.hpp"
+#include "LookaheadChooser.hpp"
 #include "RandomChooser.hpp"
 
 #include <boost/lexical_cast.hpp>
@@ -65,11 +66,10 @@ int getRandomMonitor(Rng& rng, const GameState& gameState) {
     return result;
 }
 
-using Chooser = RandomChooser;
-using Strategy = ChoosingStrategy<Chooser>;
+using Strategy = std::function<Step(const GameState&)>;
 
 struct PlayerState {
-    PlayerState(Rng& rng) : strategy{Chooser{rng}} {}
+    PlayerState(Strategy strategy) : strategy{strategy} {}
 
     Strategy strategy;
     GameState gameState;
@@ -87,6 +87,14 @@ void setPlayerMonitors(Rng& rng, std::vector<PlayerState>& playerStates,
     }
 }
 
+std::vector<Strategy> createStrategies(Rng& rng) {
+    using LookaheadChooser = ::LookaheadChooser<RandomChooser>;
+    using RandomStrategy = ChoosingStrategy<RandomChooser>;
+    using LookaheadStrategy = ChoosingStrategy<LookaheadChooser>;
+    return {RandomStrategy{RandomChooser{rng}},
+            LookaheadStrategy{LookaheadChooser{RandomChooser{rng}}}};
+}
+
 int main(int argc, char* argv[]) {
     unsigned int seed;
     if (argc > 1) {
@@ -99,8 +107,10 @@ int main(int argc, char* argv[]) {
     GameState gameState = generateGame(rng);
     std::vector<PlayerState> playerStates;
 
+    std::vector<Strategy> strategies = createStrategies(rng);
+
     for (int i = 0; i < static_cast<int>(numPlayers); ++i) {
-        playerStates.emplace_back(rng);
+        playerStates.emplace_back(strategies[i % strategies.size()]);
         GameState& state = playerStates.back().gameState;
         state = gameState;
         state.playerId = i;
@@ -142,7 +152,7 @@ int main(int argc, char* argv[]) {
                 std::cout << "Monitor removed: " << targetMonitor
                         << " " << track.getMonitor(targetMonitor)
                         << " Remaining: " << track.getRemainingMonitors()
-                        << "\n" 
+                        << "\n"
                         << setColor(defaultColor, playerColors[playerId])
                         << "Score awarded to player " << playerId
                         << clearColor() << "\n";

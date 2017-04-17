@@ -62,4 +62,36 @@ std::ostream& operator<<(std::ostream& os, const Track& track);
 
 std::string toBox(const Track& track);
 
+struct TransformedPoint {
+    Point original;
+    Point transformed;
+};
+
+class TransformedPointCompare {
+public:
+    TransformedPointCompare(Point TransformedPoint::* fieldToCompare) :
+            fieldToCompare(fieldToCompare) {
+    }
+
+    bool operator()(const TransformedPoint& lhs, const TransformedPoint& rhs) {
+        return lhs.*fieldToCompare < rhs.*fieldToCompare;
+    }
+
+    bool operator()(Point lhs, const TransformedPoint& rhs) {
+        return lhs < rhs.*fieldToCompare;
+    }
+
+    bool operator()(const TransformedPoint& lhs, Point rhs) {
+        return lhs.*fieldToCompare < rhs;
+    }
+
+private:
+    Point TransformedPoint::* fieldToCompare;
+};
+
+std::vector<TransformedPoint> transformPoints(const Track& track,
+        const std::vector<Point>& points, Directions direction, int position);
+
+int getExtraField(const Track& track, Directions direction, int position);
+
 #endif // SEMIFINAL_TRACK_TRACK_HPP

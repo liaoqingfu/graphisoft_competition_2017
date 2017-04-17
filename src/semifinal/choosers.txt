@@ -1,0 +1,34 @@
+Implemented:
+
+RandomChooser:
+    good: random
+    bad: random
+
+LookaheadChooser (decorator):
+    good: delegál
+    bad: Előrenéz egy lépéssel. Megnézi, hogy van-e olyan lehetséges 2 hosszú
+         lépéssorozat, amivel el lehet jutni a célba. Ha talál ilyet, akkor
+         kiválasztja azokat a lépéseket, ahonnan a legtöbbféleképpen lehet a
+         következő lépésben eljutni a célba, és ezek közül választ a dekorált
+         chooser good-jával. Ha nem talál, akkor delegál bad-re.
+
+
+Not yet implemented:
+
+PrincessMovingChooser (decorator):
+    good: delegál
+    bad: Keres egy olyan lépést, amivel a királylányt a lehető legközelebb
+         tudja vinni a célhoz. A legjobbak közül választ a dekorált good-jával.
+
+OpponentMovingChooser (decorator):
+    good/bad: Olyan lépést keres, amivel minél jobban elmozgatja az ellenfelet.
+              Preferált az olyan mozgatás, ahol egy ellenfelet átlök a képernyő
+              túloldalára. Ezután delegál a dekorátor good/bad-jével (attól
+              függően, hogy melyik ágban vagyunk).
+
+MonitorDefendingChooser (decorator):
+    good: Ha a kiválasztott lépések ráviszik a királylányt a monitorunkra,
+          akkor delegál. Egyébként hasonlóan viselkedik, mint bad esetén.
+    bad: Olyan lépést keres, amivel meg tudja akadályozni, hogy az ellenfelek
+         elérjék a monitorunkat. Ha több azonos minőségű van, akkor ezek közül
+         választ delegálással.

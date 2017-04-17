@@ -59,9 +59,12 @@ void calculateSwapDirection(int delta, int size, int& begin, int& end) {
     }
 }
 
-void rotatePoints(std::vector<Point>& points, int Point::*toCheck,
-        int Point::*toMove, int position, int delta, int size) {
-    for (Point& p : points) {
+template<typename Container, typename Action>
+void rotatePoints(Container& points, int Point::*toCheck,
+        int Point::*toMove, int position, int delta, int size,
+        const Action& action) {
+    for (auto& original : points) {
+        Point p = original;
         if (p.*toCheck == position) {
             p.*toMove += delta;
             if (p.*toMove < 0) {
@@ -71,7 +74,14 @@ void rotatePoints(std::vector<Point>& points, int Point::*toCheck,
                 p.*toMove = 0;
             }
         }
+        action(original, p);
     }
+}
+
+void rotatePoints(std::vector<Point>& points, int Point::*toCheck,
+        int Point::*toMove, int position, int delta, int size) {
+    rotatePoints(points, toCheck, toMove, position, delta, size,
+            [](Point& original, Point p) { original = p; });
 }
 
 }
@@ -214,4 +224,37 @@ std::string toBox(const Track& track) {
         result.append(line);
     }
     return result;
+}
+
+std::vector<TransformedPoint> transformPoints(const Track& track,
+        const std::vector<Point>& points, Directions direction, int position) {
+    Point delta = neighbors[direction];
+    std::vector<TransformedPoint> result;
+    auto action =
+            [&result](Point original, Point p) {
+                result.push_back(TransformedPoint{original, p});
+            };
+    if (delta.y == 0) {
+        rotatePoints(points, &Point::y, &Point::x, position, delta.x,
+                track.width(), action);
+    } else {
+        assert(delta.x == 0);
+        rotatePoints(points, &Point::x, &Point::y, position, delta.y,
+                track.height(), action);
+    }
+    return result;
+}
+
+int getExtraField(const Track& track, Directions direction, int position) {
+    Point delta = neighbors[direction];
+    Point begin, end;
+    if (delta.y == 0) {
+        begin.y = position;
+        calculateSwapDirection(delta.x, track.width(), begin.x, end.x);
+    } else {
+        assert(delta.x == 0);
+        begin.x = position;
+        calculateSwapDirection(delta.y, track.height(), begin.y, end.y);
+    }
+    return track.getField(begin).type;
 }
