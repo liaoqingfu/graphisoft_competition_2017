@@ -41,6 +41,11 @@ private:
         for (PotentialStep& step : goodSteps) {
             Point target = gameState.track.getMonitor(gameState.targetMonitor);
             step.step.princessTarget = target;
+            std::cerr << "Good step: " << step.step.pushDirection
+                    << " " << step.step.pushPosition
+                    << " " << fieldTypes[step.step.pushFieldType]
+                    << " " << step.step.princessTarget
+                    << "\n";
             step.targetTrack.movePrincess(gameState.playerId, target);
         }
         return chooser.chooseGoodStep(goodSteps);

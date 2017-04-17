@@ -7,6 +7,8 @@
 
 class RandomChooser {
 public:
+    RandomChooser(std::mt19937& rng) : rng(rng) {}
+
     const Step& chooseGoodStep(
             const std::vector<PotentialStep>& potentialSteps) {
         return chooseStep(potentialSteps);
@@ -25,7 +27,7 @@ private:
         return potentialSteps[distribution(rng)].step;
     }
 
-    std::mt19937 rng{std::random_device{}()};
+    std::mt19937& rng;
 };
 
 #endif // SEMIFINAL_RANDOM_CLIENT_RANDOMCHOOSER_HPP
