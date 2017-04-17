@@ -101,11 +101,13 @@ int main(int argc, char* argv[]) {
             int targetMonitor = playerState.gameState.targetMonitor;
             Track& track = gameState.track;
 
-            std::cout << setColor(defaultColor, playerColors[playerId])
-                    << "Player " << playerId << clearColor()
-                    << " tick " << gameState.currentTick 
-                    << " score " << playerState.score << "\n" <<
-                    gameState.track;
+            std::cout
+                    << "Tick " << gameState.currentTick
+                    << " monitors " << track.getRemainingMonitors()
+                    << setColor(defaultColor, playerColors[playerId])
+                    << " player " << playerId
+                    << " score " << playerState.score  << clearColor()
+                    << "\n" << gameState.track;
 
             playerState.gameState.track = track;
             playerState.gameState.currentTick = gameState.currentTick;
