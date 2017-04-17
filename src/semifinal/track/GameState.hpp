@@ -18,6 +18,22 @@ struct GameState {
     int activePlayerId = -1;
     int targetMonitor = -1;
     int extraField = -1;
+
+    GameState() = default;
+    GameState(Track track) : track(std::move(track)) {}
+    GameState(const GameState& other, Track track) :
+        track(std::move(track)),
+        width(other.width),
+        height(other.height),
+        numDisplays(other.numDisplays),
+        maxTick(other.maxTick),
+        currentTick(other.currentTick),
+        numPlayers(other.numPlayers),
+        playerId(other.playerId),
+        activePlayerId(other.activePlayerId),
+        targetMonitor(other.targetMonitor),
+        extraField(other.extraField) {}
+
     bool ourTurn() { return playerId == activePlayerId; }
 };
 
