@@ -139,10 +139,14 @@ int main(int argc, char* argv[]) {
             if (track.getPrincess(playerId) ==
                     track.getMonitor(targetMonitor)) {
                 ++playerState.score;
-                track.removeMonitor(targetMonitor);
                 std::cout << "Monitor removed: " << targetMonitor
+                        << " " << track.getMonitor(targetMonitor)
                         << " Remaining: " << track.getRemainingMonitors()
-                        << "\n";
+                        << "\n" 
+                        << setColor(defaultColor, playerColors[playerId])
+                        << "Score awarded to player " << playerId
+                        << clearColor() << "\n";
+                track.removeMonitor(targetMonitor);
                 if (track.getRemainingMonitors() == 0) {
                     break;
                 }
