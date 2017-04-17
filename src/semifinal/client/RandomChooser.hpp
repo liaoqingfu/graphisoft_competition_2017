@@ -1,7 +1,7 @@
 #ifndef SEMIFINAL_RANDOM_CLIENT_RANDOMCHOOSER_HPP
 #define SEMIFINAL_RANDOM_CLIENT_RANDOMCHOOSER_HPP
 
-#include "ChoosingStrategy.hpp"
+#include "PotentialStep.hpp"
 
 #include <random>
 
