@@ -7,6 +7,7 @@ Track::Track(std::size_t width, std::size_t height,
         Monitors monitors, Princesses princesses) :
         fields{width, height},
         monitors(std::move(monitors)),
+        remainingMonitors(this->monitors.size()),
         princesses(std::move(princesses)),
         reachability{width, height, -1} {
     std::transform(fieldTypes.begin(), fieldTypes.end(), fields.begin(),
@@ -33,7 +34,7 @@ void Track::movePrincess(int player, Point target) {
     int& toPrincess = fields[target].princess;
     assert(fromPrincess == player);
     assert(toPrincess == -1);
-    // canMove() is not checked: it's expensive
+    // canMove() is not checked: it's expe
 
     fromPrincess = -1;
     toPrincess = player;
@@ -113,6 +114,7 @@ void Track::removeMonitor(int id) {
 
     monitor = -1;
     monitors[id] = -p11;
+    --remainingMonitors;
 }
 
 void Track::calculateReachability(Point from) const {

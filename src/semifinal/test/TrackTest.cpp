@@ -587,4 +587,41 @@ BOOST_AUTO_TEST_CASE(ReachabilityIsRecalculated) {
 
 BOOST_AUTO_TEST_SUITE_END() // MoveFields
 
+BOOST_AUTO_TEST_SUITE(RemoveMonitor)
+
+BOOST_AUTO_TEST_CASE(MonitorRemovedFromField) {
+    Point monitor0{0, 0};
+    Point monitor1{1, 0};
+    Track track{2, 2, {1, 2, 3, 4}, {monitor0, monitor1}, {}};
+    BOOST_TEST_MESSAGE(track);
+
+    BOOST_TEST(track.getField(monitor0).monitor == 0);
+    BOOST_TEST(track.getField(monitor1).monitor == 1);
+
+    track.removeMonitor(0);
+    BOOST_TEST(track.getField(monitor0).monitor == -1);
+    BOOST_TEST(track.getField(monitor1).monitor == 1);
+}
+
+BOOST_AUTO_TEST_CASE(RemainingMonitorsCounted) {
+    Point monitor0{0, 0};
+    Point monitor1{1, 0};
+    Point monitor2{1, 1};
+    Track track{2, 2, {1, 2, 3, 4}, {monitor0, monitor1, monitor2}, {}};
+    BOOST_TEST_MESSAGE(track);
+
+    BOOST_TEST(track.getRemainingMonitors() == 3);
+
+    track.removeMonitor(2);
+    BOOST_TEST(track.getRemainingMonitors() == 2);
+
+    track.removeMonitor(0);
+    BOOST_TEST(track.getRemainingMonitors() == 1);
+
+    track.removeMonitor(1);
+    BOOST_TEST(track.getRemainingMonitors() == 0);
+}
+
+BOOST_AUTO_TEST_SUITE_END() // RemoveMonitor
+
 BOOST_AUTO_TEST_SUITE_END() // TrackTest

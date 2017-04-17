@@ -30,6 +30,7 @@ public:
     std::size_t height() const { return fields.height(); }
     const Field& getField(Point p) const { return fields[p]; }
     Point getMonitor(int id) const { return monitors[id]; }
+    std::size_t getRemainingMonitors() const { return remainingMonitors; }
     Point getPrincess(int player) const { return princesses[player]; }
 
     // Returns the field that is pushed out.
@@ -46,6 +47,7 @@ private:
 
     Matrix<Field> fields;
     Monitors monitors;
+    std::size_t remainingMonitors;
     Princesses princesses;
     mutable Matrix<int> reachability;
     mutable int reachabilityIndex = 0;
