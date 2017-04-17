@@ -1,7 +1,7 @@
 #ifndef SEMIFINAL_RANDOM_CLIENT_RANDOMCHOOSER_HPP
 #define SEMIFINAL_RANDOM_CLIENT_RANDOMCHOOSER_HPP
 
-#include "HeuristicSolver.hpp"
+#include "ChoosingStrategy.hpp"
 
 #include <random>
 

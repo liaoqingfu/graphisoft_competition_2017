@@ -1,5 +1,5 @@
-#ifndef SEMIFINAL_CLIENT_HEURISTICSOLVER_HPP
-#define SEMIFINAL_CLIENT_HEURISTICSOLVER_HPP
+#ifndef SEMIFINAL_CLIENT_CHOOSINGSTRATEGY_HPP
+#define SEMIFINAL_CLIENT_CHOOSINGSTRATEGY_HPP
 
 #include "GameState.hpp"
 
@@ -14,22 +14,13 @@ struct PotentialStep {
 };
 
 template<typename Chooser>
-class HeuristicSolver {
+class ChoosingStrategy {
 public:
-    HeuristicSolver(Chooser chooser) : chooser(std::move(chooser)) {}
+    ChoosingStrategy(Chooser chooser) : chooser(chooser) {}
 
-    void init(const std::vector<std::string>& fieldInfos) {
-        gameState = parseInitialGameState(fieldInfos);
-    }
-
-    std::vector<std::string> process(
-            const std::vector<std::string>& tickInfos) {
-        parseTickInfo(gameState, tickInfos);
-        return createOutput(calculateStep());
-    }
-
-    void end(const std::string& message) {
-        std::cerr << "Game over: " << message << std::endl;
+    Step operator()(GameState gameState) {
+        this->gameState = std::move(gameState);
+        return calculateStep();
     }
 
 private:
@@ -88,10 +79,8 @@ private:
         return PotentialStep{&gameState, targetTrack, std::move(step)};
     }
 
-    GameState gameState;
     Chooser chooser;
+    GameState gameState;
 };
 
-
-
-#endif // SEMIFINAL_CLIENT_HEURISTICSOLVER_HPP
+#endif // SEMIFINAL_CLIENT_CHOOSINGSTRATEGY_HPP

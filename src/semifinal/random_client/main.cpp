@@ -1,5 +1,6 @@
 #include "client.hpp"
-#include "HeuristicSolver.hpp"
+#include "ChoosingStrategy.hpp"
+#include "GenericSolver.hpp"
 #include "RandomChooser.hpp"
 
 #include <iostream>
@@ -19,11 +20,14 @@ int main(int argc, char** argv) {
     try {
         platform_dep::enable_socket _;
 
-        HeuristicSolver<RandomChooser> solver{RandomChooser{}};
-        client<HeuristicSolver<RandomChooser>>(host_name, port, team_name,
+        using Strategy = ChoosingStrategy<RandomChooser>;
+        using Solver = GenericSolver<Strategy>;
+
+        Solver solver{Strategy{RandomChooser{}}};
+        client<Solver>(host_name, port, team_name,
                 password, task_id, std::move(solver)).run();
 
     } catch(std::exception& e) {
-        std::cerr << "Exception throwed. what(): " << e.what() << std::endl;
+        std::cerr << "Exception thrown. what(): " << e.what() << std::endl;
     }
 }
