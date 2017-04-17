@@ -69,10 +69,23 @@ using Chooser = RandomChooser;
 using Strategy = ChoosingStrategy<Chooser>;
 
 struct PlayerState {
-    Strategy strategy{Chooser{}};
+    PlayerState(Rng& rng) : strategy{Chooser{rng}} {}
+
+    Strategy strategy;
     GameState gameState;
     int score = 0;
 };
+
+void setPlayerMonitors(Rng& rng, std::vector<PlayerState>& playerStates,
+        GameState& globalState) {
+    for (PlayerState& playerState : playerStates) {
+        if (globalState.track.getMonitor(playerState.gameState.targetMonitor)
+                .x < 0) {
+            playerState.gameState.targetMonitor = getRandomMonitor(
+                    rng, globalState);
+        }
+    }
+}
 
 int main(int argc, char* argv[]) {
     int seed;
@@ -84,10 +97,11 @@ int main(int argc, char* argv[]) {
     Rng rng{seed};
 
     GameState gameState = generateGame(rng);
-    std::array<PlayerState, numPlayers> playerStates;
+    std::vector<PlayerState> playerStates;
 
     for (int i = 0; i < static_cast<int>(numPlayers); ++i) {
-        GameState& state = playerStates[i].gameState;
+        playerStates.emplace_back(rng);
+        GameState& state = playerStates.back().gameState;
         state = gameState;
         state.playerId = i;
         state.targetMonitor = getRandomMonitor(rng, state);
@@ -118,8 +132,7 @@ int main(int argc, char* argv[]) {
             std::cout << "Step: push " << step.pushDirection
                     << " " << step.pushPosition
                     << " " << fieldTypes[step.pushFieldType]
-                    << " princess=" << step.princessTarget << "\n\n"
-                    << std::endl;
+                    << " princess=" << step.princessTarget << "\n";
             playerState.gameState.extraField = executeStep(track, playerId,
                     step);
 
@@ -127,12 +140,22 @@ int main(int argc, char* argv[]) {
                     track.getMonitor(targetMonitor)) {
                 ++playerState.score;
                 track.removeMonitor(targetMonitor);
-                playerState.gameState.targetMonitor = getRandomMonitor(
-                        rng, gameState);
+                std::cout << "Monitor removed: " << targetMonitor
+                        << " Remaining: " << track.getRemainingMonitors()
+                        << "\n";
                 if (track.getRemainingMonitors() == 0) {
                     break;
                 }
+                setPlayerMonitors(rng, playerStates, gameState);
             }
+            std::cout << "\n" << std::endl;
         }
+    }
+    std::cout << "Game over.\n";
+    for (const PlayerState& playerState : playerStates) {
+        int playerId = playerState.gameState.playerId;
+        std::cout << setColor(defaultColor, playerColors[playerId])
+                << "Player " << playerId << " final score "
+                << playerState.score << std::endl;
     }
 }
