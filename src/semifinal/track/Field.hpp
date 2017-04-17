@@ -70,6 +70,7 @@ bool canMove(int fieldType, std::size_t direction) {
 const std::vector<int>& getIsomorphs(int fieldType);
 
 constexpr int BOXHEIGHT = 5;
+constexpr int BOXWIDTH = 9;
 std::string getBoxLine(const Field& field, unsigned i);
 std::string toBox(const Field& field);
 

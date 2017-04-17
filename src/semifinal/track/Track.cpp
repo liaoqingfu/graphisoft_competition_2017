@@ -159,11 +159,35 @@ std::ostream& operator<<(std::ostream& os, const Track& track) {
 }
 
 std::string toBox(const Track& track) {
-    Point p;
-
     std::string result;
+
+    // header for X axis
+    result.append("   "); /*Y axis offset*/
+    for (std::size_t i = 0; i < track.width(); ++i) {
+        auto num = std::to_string(i);
+            result.append("    ")  /*to middle of field*/
+            .append(num);
+        for (std::size_t j = 0; j <= BOXWIDTH / 2 - num.size(); ++j) {
+            result.append(" ");
+        }
+    }
+    result.append("\n");
+
+    Point p;
     for (unsigned int y = 0; y < track.height() * BOXHEIGHT; ++y) {
         std::string line;
+
+        //header for Y axis
+        if (y % BOXHEIGHT == BOXHEIGHT / 2) {
+            auto num = std::to_string(y / BOXHEIGHT);
+            line.append(num);
+            for (std::size_t j = 0; j <= 2 - num.size(); ++j) {
+                line.append(" ");
+            }
+        } else {
+            line.append("   ");
+        }
+
         p.y = y / BOXHEIGHT;
         for (p.x = 0; p.x < static_cast<int>(track.width()); ++p.x) {
             line.append(getBoxLine(track.getField(p), y % BOXHEIGHT));
