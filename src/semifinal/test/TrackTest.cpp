@@ -724,12 +724,12 @@ BOOST_AUTO_TEST_CASE(OneRow) {
     std::cout << toBox(track);
     std::string tmp =
 R"foo(
-       0        1    
-   ┏━━━━━━━┓┏━━━━━━━┓
-   ┃       ┃┃       ┃
-0  ┃       ┣┫       ┃
-   ┃       ┃┃       ┃
-   ┗━━━━━━━┛┗━━━━━━━┛
+       0         1    
+   ┏━━━━━━━┓ ┏━━━━━━━┓
+   ┃       ┃ ┃       ┃
+0  ┃       ┣━┫       ┃
+   ┃       ┃ ┃       ┃
+   ┗━━━━━━━┛ ┗━━━━━━━┛
 )foo";
     std::string expected(tmp.begin() + 1, tmp.end());
     BOOST_CHECK_EQUAL(toBox(track), expected);

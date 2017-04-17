@@ -170,6 +170,12 @@ std::string toBox(const Track& track) {
         for (std::size_t j = 0; j <= BOXWIDTH / 2 - num.size(); ++j) {
             result.append(" ");
         }
+
+        // for additonal horizontal connection
+        if (i < track.width() - 1) {
+            result.append(" ");
+        }
+
     }
     result.append("\n");
 
@@ -191,6 +197,18 @@ std::string toBox(const Track& track) {
         p.y = y / BOXHEIGHT;
         for (p.x = 0; p.x < static_cast<int>(track.width()); ++p.x) {
             line.append(getBoxLine(track.getField(p), y % BOXHEIGHT));
+
+            // additional horizontal connection
+            Point next{p.x + 1, p.y};
+            if (y % BOXHEIGHT == BOXHEIGHT / 2 && next.x < (int)track.width()) {
+                if (track.getField(p).type == 8 &&
+                    track.getField(next).type == 2) {
+                    line.append("━");
+                }
+            } else if (p.x < (int)track.width() - 1) {
+                line.append(" ");
+            }
+
         }
         line.append("\n");
         result.append(line);
