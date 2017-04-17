@@ -72,7 +72,6 @@ void rotatePoints(std::vector<Point>& points, int Point::*toCheck,
 }
 
 int Track::moveFields(std::size_t direction, int position, int fieldToPush) {
-    assert(direction >= 0);
     assert(direction < numNeighbors);
     Point delta = neighbors[direction];
     std::size_t swapDirection = oppositeDirection(direction);

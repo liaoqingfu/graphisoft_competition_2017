@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
         using Strategy = ChoosingStrategy<RandomChooser>;
         using Solver = GenericSolver<Strategy>;
 
-        int seed;
+        unsigned int seed;
         if (argc > 6) {
             seed = boost::lexical_cast<int>(argv[6]);
         } else {

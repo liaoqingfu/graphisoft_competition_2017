@@ -88,7 +88,7 @@ void setPlayerMonitors(Rng& rng, std::vector<PlayerState>& playerStates,
 }
 
 int main(int argc, char* argv[]) {
-    int seed;
+    unsigned int seed;
     if (argc > 1) {
         seed = boost::lexical_cast<int>(argv[1]);
     } else {
