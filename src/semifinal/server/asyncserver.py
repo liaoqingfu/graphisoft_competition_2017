@@ -2,13 +2,15 @@
 import asyncio
 import logging
 from collections import namedtuple
+from functools import partial
+from game import Player, Maze
 
 
 class Client(object):
 
-    def __init__(self, num, reader, writer):
+    def __init__(self, player, reader, writer):
         self.__is_registered = False
-        self.__num = num
+        self.__player = player
         self.__reader = reader
         self.__writer = writer
 
@@ -46,21 +48,46 @@ class AuthReply(object):
 
     accepted = 'OK'
 
-    def __init__(self, result, level=0, displays=0, player=0, maxtick=0):
+    def __init__(self, result):
         self.__result = result
-        self.__level = level
-        self.__displays = displays
-        self.__player = player
-        self.__maxtick = maxtick
+
+    def __str__(self):
+        return 'MESSAGE {!s}\n'.format(self.__result)
+
+
+class PlayerStepMsg(object):
+
+    def __init__(self, positions, player_turn, target=None, field=None):
+        self.positions = positions
+        self.player_turn = player_turn
+        self.target = target
+        self.field = field
 
     def __str__(self):
         lines = [
-            'MESSAGE {!s}'.format(self.__result)
-            ]
-        if self.__result == AuthReply.accepted:
-            pass  # TODO
+            'POSITION {} {} {}'.format(player,
+                                       self.positions[player][0],
+                                       self.positions[player][1])
+            for player in self.positions
+        ]
+        lines.append('PLAYER {}'.format(self.player_turn))
+        if self.target is not None:
+            assert(self.field is not None)
+            lines.extend([
+                'MESSAGE OK',
+                'TARGET {}'.format(self.target),
+                'EXTRAFIELD {}'.format(self.field),
+            ])
         lines.append('')
         return '\n'.join(lines)
+
+
+class PlayerStepRequest(object):
+
+    def __init__(self, message):
+        parts = message.split('\n')
+        assert(parts[0].startswith('PUSH'))
+        assert(len(parts) == 1 or parts[1].startswith('GOTO'))
 
 
 def parse_authentication(message):
@@ -74,7 +101,9 @@ def parse_authentication(message):
 
 class GameServer(object):
 
-    def __init__(self, loop=None):
+    def __init__(self, connect_cb, receive_cb, loop=None):
+        self.__connect_cb = connect_cb
+        self.__receive_cb = receive_cb
         self.__loop = loop if loop is not None else asyncio.get_event_loop()
         if loop is None:
             self.__loop = asyncio.get_event_loop()
@@ -97,18 +126,18 @@ class GameServer(object):
         self.__loop.run_forever()
 
     def __accept_client(self, client_reader, client_writer):
-        num = len(self.__tasks) + 1
-        client = Client(num, client_reader, client_writer)
-        self.__clients[num] = client
+        player = len(self.__tasks) + 1
+        client = Client(player, client_reader, client_writer)
+        self.__clients[player] = client
         task = self.__loop.create_task(self.__handle_client(client))
-        self.__tasks[task] = (num, client_reader, client_writer)
+        self.__tasks[task] = (player, client_reader, client_writer)
 
         def client_done(task):
             logging.info('client is done: {}'.format(task))
-            num, _, _ = self.__tasks[task]
+            player, _, _ = self.__tasks[task]
             del self.__tasks[task]
-            if num in self.__clients:
-                del self.__clients[num]  # FIXME: __clients needed?
+            if player in self.__clients:
+                del self.__clients[player]  # FIXME: __clients needed?
 
         task.add_done_callback(client_done)
 
@@ -119,11 +148,13 @@ class GameServer(object):
             logging.debug('received: {}'.format(message))
             auth_msg = parse_authentication(message)
             client.register(auth_msg.name, auth_msg.password)
-            auth_reply = AuthReply('NOT IMPLEMENTED', auth_msg.level)
-            yield from self.__send_message(client.writer, auth_reply)
-            # TODO: auth_msg.level ?
+            # auth_reply = AuthReply(AuthReply.accepted)
+            # yield from self.__send_message(client.writer, auth_reply)
+            sender = partial(GameServer.__send_message, self, client.writer)
+            client_id = yield from self.__connect_cb(auth_msg, sender)
             while True:
                 message = yield from self.__extract_message(client.reader)
+                self.__receive_cb(client_id, message, sender)
         except EOFError as error:
             logging.error(error)
 
@@ -146,11 +177,69 @@ class GameServer(object):
         logging.debug('message is sent')
 
 
+class GameController(object):
+
+    __LEVEL = 1  # FIXME: hardcoded
+    __MAX_TICK = 5  # FIXME: hardcoded
+    __STARTING_POSITION = (0, 0)  # FIXME: hardcoded
+    __STARTING_FIELD = 15
+    __STARTING_DISPLAY = 0  # FIXME: hardcoded
+
+    def __init__(self, number_of_players):
+        self.__NUMBER_OF_PLAYERS = number_of_players
+        self.__maze = Maze()
+        self.__players = {}
+        self.__player_turn = 0
+
+    def add_player(self, auth_msg, message_sender):
+        # TODO: check auth_msg
+        auth_reply = AuthReply(AuthReply.accepted)
+        player_number = len(self.__players)
+        self.__players[player_number] = (
+            Player(player_number, GameController.__STARTING_POSITION,
+                   GameController.__STARTING_FIELD,
+                   GameController.__STARTING_DISPLAY),
+            message_sender)
+        assert(len(self.__players) <= self.__NUMBER_OF_PLAYERS)
+        game_info = self.__maze.get_info_as_str(
+            GameController.__LEVEL, player_number, GameController.__MAX_TICK)
+        yield from message_sender(str(auth_reply) + game_info)
+        if len(self.__players) == self.__NUMBER_OF_PLAYERS:
+            yield from self.__next_player_turn()  # TODO: start game
+        return player_number
+
+    def player_step_requested(self, client_id, message, message_sender):
+        print(message)
+        req = PlayerStepRequest(message)
+        print(req)
+
+    def __next_player_turn(self):
+        logging.debug('next player turn: {}'.format(self.__player_turn))
+        for player_number in self.__players:
+            positions = {}
+            for player_number in self.__players:
+                positions[player_number] = self.__players[
+                    player_number][0].position
+            step_msg = PlayerStepMsg(positions, self.__player_turn)
+            (player, message_sender) = self.__players[player_number]
+            if player_number == self.__player_turn:
+                step_msg.target = player.target
+                step_msg.field = player.field
+            msg = str(self.__maze) + str(step_msg)
+            yield from message_sender(msg)
+            self.__player_turn = (self.__player_turn + 1) % len(self.__players)
+
+
 def main():
     logging.basicConfig(level=logging.DEBUG)
     IP_ADDRESS, TCP_PORT = '127.0.0.1', 32323
     loop = asyncio.get_event_loop()
-    server = GameServer(loop)
+    NUMBER_OF_PLAYERS = 1   # FIXME: hardcoded
+    game_controller = GameController(NUMBER_OF_PLAYERS)
+    server = GameServer(
+        partial(GameController.add_player, game_controller),
+        partial(GameController.player_step_requested, game_controller),
+        loop)
     try:
         server.start(IP_ADDRESS, TCP_PORT)
         server.run()
