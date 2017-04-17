@@ -1,3 +1,4 @@
+#include "TestTools.hpp"
 #include "Track.hpp"
 
 #include <boost/test/unit_test.hpp>
@@ -390,6 +391,82 @@ BOOST_AUTO_TEST_CASE(Crosses) {
 }
 
 BOOST_AUTO_TEST_SUITE_END() // CanMovePrincess
+
+BOOST_AUTO_TEST_SUITE(GetReachablePoints)
+
+BOOST_AUTO_TEST_CASE(SimpleTrack) {
+    Track track{6, 1, {10, 10, 2, 8, 10, 10}, {}, {}};
+    BOOST_TEST_MESSAGE(track);
+
+    std::vector<Point> expcectedClass1{Point{0, 0}, Point{1, 0}, Point{2, 0}};
+    std::vector<Point> expcectedClass2{Point{3, 0}, Point{4, 0}, Point{5, 0}};
+
+    BOOST_TEST(sorted(track.getReachablePoints(Point{0, 0}))
+            == expcectedClass1);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{1, 0}))
+            == expcectedClass1);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{2, 0}))
+            == expcectedClass1);
+
+    BOOST_TEST(sorted(track.getReachablePoints(Point{3, 0}))
+            == expcectedClass2);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{4, 0}))
+            == expcectedClass2);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{5, 0}))
+            == expcectedClass2);
+}
+
+BOOST_AUTO_TEST_CASE(ComplexTrack) {
+    Track track{5, 3, {
+            12, 10, 10, 10,  6,
+            10, 14,  3, 15,  4,
+            10,  1, 10, 10,  3}, {}, {}};
+    BOOST_TEST_MESSAGE(track);
+
+    std::vector<Point> expcectedClass1{Point{0, 0}, Point{1, 0}, Point{2, 0},
+            Point{3, 0}, Point{4, 0}};
+    std::vector<Point> expcectedClass2{Point{0, 1}, Point{1, 1}, Point{2, 1},
+            Point{1, 2}};
+    std::vector<Point> expcectedClass3{Point{4, 1}, Point{2, 2}, Point{3, 2},
+            Point{4, 2}};
+    std::vector<Point> expcectedClass4{Point{3, 1}};
+    std::vector<Point> expcectedClass5{Point{0, 2}};
+
+    BOOST_TEST(sorted(track.getReachablePoints(Point{0, 0}))
+            == expcectedClass1);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{1, 0}))
+            == expcectedClass1);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{2, 0}))
+            == expcectedClass1);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{3, 0}))
+            == expcectedClass1);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{4, 0}))
+            == expcectedClass1);
+
+    BOOST_TEST(sorted(track.getReachablePoints(Point{0, 1}))
+            == expcectedClass2);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{1, 1}))
+            == expcectedClass2);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{2, 1}))
+            == expcectedClass2);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{3, 1}))
+            == expcectedClass4);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{4, 1}))
+            == expcectedClass3);
+
+    BOOST_TEST(sorted(track.getReachablePoints(Point{0, 2}))
+            == expcectedClass5);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{1, 2}))
+            == expcectedClass2);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{2, 2}))
+            == expcectedClass3);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{3, 2}))
+            == expcectedClass3);
+    BOOST_TEST(sorted(track.getReachablePoints(Point{4, 2}))
+            == expcectedClass3);
+}
+
+BOOST_AUTO_TEST_SUITE_END() // GetReachablePoints
 
 BOOST_AUTO_TEST_SUITE(MoveFields)
 

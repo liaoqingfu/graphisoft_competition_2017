@@ -9,7 +9,7 @@ Track::Track(std::size_t width, std::size_t height,
         monitors(std::move(monitors)),
         remainingMonitors(this->monitors.size()),
         princesses(std::move(princesses)),
-        reachability{width, height, -1} {
+        reachability{width, height} {
     std::transform(fieldTypes.begin(), fieldTypes.end(), fields.begin(),
             [](int type) { return Field{type, -1, -1}; });
     for (std::size_t i = 0; i < this->monitors.size(); ++i) {
@@ -23,6 +23,11 @@ Track::Track(std::size_t width, std::size_t height,
 bool Track::isReachableFrom(Point source, Point target) const {
     calculateReachability(source);
     return reachability[source] == reachability[target];
+}
+
+const std::vector<Point>& Track::getReachablePoints(Point source) const {
+    calculateReachability(source);
+    return reachability[source]->elements;
 }
 
 bool Track::canMovePrincess(int player, Point target) const {
@@ -118,17 +123,19 @@ void Track::removeMonitor(int id) {
 }
 
 void Track::calculateReachability(Point from) const {
-    if (reachability[from] >= 0) {
+    if (reachability[from]) {
         return;
     }
+    auto reachabilityClass = std::make_shared<ReachabilityClass>();
     floodFill(fields, from,
-            [this](Point p) { reachability[p] = reachabilityIndex; });
-    ++reachabilityIndex;
+            [this, &reachabilityClass](Point p) {
+                reachability[p] = reachabilityClass;
+                reachabilityClass->elements.push_back(p);
+            });
 }
 
 void Track::resetReachability() {
-    reachability.fill(-1);
-    reachabilityIndex = 0;
+    reachability.fill({});
 }
 
 std::ostream& operator<<(std::ostream& os, const Track& track) {

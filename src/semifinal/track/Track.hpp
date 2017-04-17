@@ -37,20 +37,25 @@ public:
     int moveFields(std::size_t direction, int position, int fieldToPush);
 
     bool canMovePrincess(int player, Point target) const;
+    bool isReachableFrom(Point source, Point target) const;
+    const std::vector<Point>& getReachablePoints(Point source) const;
+
     void movePrincess(int player, Point target);
     void removeMonitor(int id);
 
 private:
+    struct ReachabilityClass {
+        std::vector<Point> elements;
+    };
+
     void calculateReachability(Point from) const;
-    bool isReachableFrom(Point source, Point target) const;
     void resetReachability();
 
     Matrix<Field> fields;
     Monitors monitors;
     std::size_t remainingMonitors;
     Princesses princesses;
-    mutable Matrix<int> reachability;
-    mutable int reachabilityIndex = 0;
+    mutable Matrix<std::shared_ptr<ReachabilityClass>> reachability;
 };
 
 std::ostream& operator<<(std::ostream& os, const Track& track);
