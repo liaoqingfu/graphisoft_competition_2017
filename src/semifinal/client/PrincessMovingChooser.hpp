@@ -1,6 +1,7 @@
 #ifndef SEMIFINAL_CLIENT_PRINCESSMOVINGCHOOSER_HPP
 #define SEMIFINAL_CLIENT_PRINCESSMOVINGCHOOSER_HPP
 
+#include "DelegatingChooser.hpp"
 #include "GameState.hpp"
 #include "PotentialStep.hpp"
 #include "Track.hpp"
@@ -10,25 +11,20 @@
 #include <numeric>
 #include <unordered_map>
 
-template<typename Chooser>
-class PrincessMovingChooser {
+class PrincessMovingChooser : public DelegatingChooser {
 public:
-    PrincessMovingChooser(Chooser chooser) : chooser(std::move(chooser)) {}
-
-    const Step& chooseGoodStep(
-            const std::vector<PotentialStep>& potentialSteps) {
-        return chooser.chooseGoodStep(potentialSteps);
-    }
+    PrincessMovingChooser(std::unique_ptr<IChooser>&& chooser) :
+            DelegatingChooser(std::move(chooser)) {}
 
     Step chooseBadStep(
-            const std::vector<PotentialStep>& potentialSteps) {
+            const std::vector<PotentialStep>& potentialSteps) override {
         std::vector<StepRecord> stepValues;
         for (const PotentialStep& step : potentialSteps) {
             processStep(stepValues, step);
         }
         if (stepValues.empty()) {
             std::cerr << "PrincessMovingChooser: No good step is found.\n";
-            return chooser.chooseBadStep(potentialSteps);
+            return DelegatingChooser::chooseBadStep(potentialSteps);
         }
 
         std::sort(stepValues.begin(), stepValues.end(),
@@ -46,7 +42,7 @@ public:
         std::cerr << "PrincessMovingChooser: Found " << goodSteps.size()
                 << " good steps with value " << stepValues.front().value
                 << "\n";
-        return chooser.chooseGoodStep(goodSteps);
+        return DelegatingChooser::chooseGoodStep(goodSteps);
     }
 
 private:
@@ -66,8 +62,6 @@ private:
                     std::abs(p.x - target.x) + std::abs(p.y - target.y)});
         }
     }
-
-    Chooser chooser;
 };
 
 #endif // SEMIFINAL_CLIENT_PRINCESSMOVINGCHOOSER_HPP

@@ -1,16 +1,24 @@
 #ifndef SEMIFINAL_CLIENT_CHOOSINGSTRATEGY_HPP
 #define SEMIFINAL_CLIENT_CHOOSINGSTRATEGY_HPP
 
+#include "IChooser.hpp"
 #include "GameState.hpp"
 #include "PotentialStep.hpp"
 
+#include <memory>
 #include <iostream>
 #include <vector>
 
-template<typename Chooser>
 class ChoosingStrategy {
 public:
-    ChoosingStrategy(Chooser chooser) : chooser(chooser) {}
+    ChoosingStrategy(std::unique_ptr<IChooser>&& chooser) :
+            chooser(std::move(chooser)) {}
+
+    ChoosingStrategy(const ChoosingStrategy&) = delete;
+    ChoosingStrategy& operator=(const ChoosingStrategy&) = delete;
+
+    ChoosingStrategy(ChoosingStrategy&&) noexcept = default;
+    ChoosingStrategy& operator=(ChoosingStrategy&&) noexcept = default;
 
     Step operator()(GameState gameState) {
         this->gameState = std::move(gameState);
@@ -30,7 +38,7 @@ private:
                                     step.sourceState->targetMonitor));
                 });
         if (goodSteps.empty()) {
-            return chooser.chooseBadStep(potentialSteps);
+            return chooser->chooseBadStep(potentialSteps);
         }
         for (PotentialStep& step : goodSteps) {
             Point target = step.targetTrack.getMonitor(gameState.targetMonitor);
@@ -42,10 +50,10 @@ private:
             //         << "\n";
             step.targetTrack.movePrincess(gameState.playerId, target);
         }
-        return chooser.chooseGoodStep(goodSteps);
+        return chooser->chooseGoodStep(goodSteps);
     }
 
-    Chooser chooser;
+    std::unique_ptr<IChooser> chooser;
     GameState gameState;
 };
 

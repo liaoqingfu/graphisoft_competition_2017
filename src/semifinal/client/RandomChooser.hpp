@@ -1,21 +1,22 @@
 #ifndef SEMIFINAL_RANDOM_CLIENT_RANDOMCHOOSER_HPP
 #define SEMIFINAL_RANDOM_CLIENT_RANDOMCHOOSER_HPP
 
+#include "IChooser.hpp"
 #include "PotentialStep.hpp"
 
 #include <random>
 
-class RandomChooser {
+class RandomChooser : public IChooser {
 public:
     RandomChooser(std::mt19937& rng) : rng(rng) {}
 
-    const Step& chooseGoodStep(
-            const std::vector<PotentialStep>& potentialSteps) {
+    Step chooseGoodStep(
+            const std::vector<PotentialStep>& potentialSteps) override {
         return chooseStep(potentialSteps);
     }
 
-    const Step& chooseBadStep(
-            const std::vector<PotentialStep>& potentialSteps) {
+    Step chooseBadStep(
+            const std::vector<PotentialStep>& potentialSteps) override {
         return chooseStep(potentialSteps);
     }
 

@@ -1,34 +1,29 @@
 #ifndef SEMIFINAL_CLIENT_LOOKAHEADCHOOSER_HPP
 #define SEMIFINAL_CLIENT_LOOKAHEADCHOOSER_HPP
 
+#include "DelegatingChooser.hpp"
 #include "GameState.hpp"
 #include "PotentialStep.hpp"
 #include "Track.hpp"
 
 #include <algorithm>
 #include <iostream>
-#include <numeric>
 #include <unordered_map>
 
-template<typename Chooser>
-class LookaheadChooser {
+class LookaheadChooser : public DelegatingChooser {
 public:
-    LookaheadChooser(Chooser chooser) : chooser(std::move(chooser)) {}
-
-    const Step& chooseGoodStep(
-            const std::vector<PotentialStep>& potentialSteps) {
-        return chooser.chooseGoodStep(potentialSteps);
-    }
+    LookaheadChooser(std::unique_ptr<IChooser>&& chooser) :
+            DelegatingChooser(std::move(chooser)) {}
 
     Step chooseBadStep(
-            const std::vector<PotentialStep>& potentialSteps) {
+            const std::vector<PotentialStep>& potentialSteps) override {
         std::vector<StepRecord> stepValues;
         for (const PotentialStep& step : potentialSteps) {
             processStep(stepValues, step);
         }
         if (stepValues.empty()) {
             std::cerr << "LookaheadChooser: No good step is found.\n";
-            return chooser.chooseBadStep(potentialSteps);
+            return DelegatingChooser::chooseBadStep(potentialSteps);
         }
 
         std::sort(stepValues.begin(), stepValues.end(),
@@ -46,7 +41,7 @@ public:
         std::cerr << "LookaheadChooser: Found " << goodSteps.size()
                 << " good steps with value " << stepValues.front().value
                 << "\n";
-        return chooser.chooseGoodStep(goodSteps);
+        return DelegatingChooser::chooseGoodStep(goodSteps);
     }
 
 private:
@@ -94,8 +89,6 @@ private:
             stepValues.push_back(StepRecord{step, element.second});
         }
     }
-
-    Chooser chooser;
 };
 
 #endif // SEMIFINAL_CLIENT_LOOKAHEADCHOOSER_HPP

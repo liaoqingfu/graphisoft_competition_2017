@@ -22,8 +22,7 @@ int main(int argc, char** argv) {
     try {
         platform_dep::enable_socket _;
 
-        using Strategy = ChoosingStrategy<RandomChooser>;
-        using Solver = GenericSolver<Strategy>;
+        using Solver = GenericSolver<ChoosingStrategy>;
 
         unsigned int seed;
         if (argc > 6) {
@@ -33,7 +32,7 @@ int main(int argc, char** argv) {
         }
         std::mt19937 rng{seed};
 
-        Solver solver{Strategy{RandomChooser{rng}}};
+        Solver solver{ChoosingStrategy{std::make_unique<RandomChooser>(rng)}};
         client<Solver>(host_name, port, team_name,
                 password, task_id, std::move(solver)).run();
 

@@ -68,12 +68,17 @@ int getRandomMonitor(Rng& rng, const GameState& gameState) {
     return result;
 }
 
-using Strategy = std::function<Step(const GameState&)>;
-
 struct PlayerState {
-    PlayerState(Strategy strategy) : strategy{strategy} {}
+    PlayerState(ChoosingStrategy&& strategy) : strategy{std::move(strategy)} {}
 
-    Strategy strategy;
+    PlayerState(const PlayerState&) = delete;
+    PlayerState& operator=(const PlayerState&) = delete;
+
+    PlayerState(PlayerState&&) noexcept = default;
+    PlayerState& operator=(PlayerState&&) noexcept = default;
+
+
+    ChoosingStrategy strategy;
     GameState gameState;
     int score = 0;
     clock_t time = 0;
@@ -90,23 +95,17 @@ void setPlayerMonitors(Rng& rng, std::vector<PlayerState>& playerStates,
     }
 }
 
-std::vector<Strategy> createStrategies(Rng& rng) {
-    using PrincessMovingChooser = ::PrincessMovingChooser<RandomChooser>;
-    using LookaheadChooser = ::LookaheadChooser<RandomChooser>;
-    using PrincessMovingLookaheadChooser =
-            ::LookaheadChooser<PrincessMovingChooser>;
-
-    using RandomStrategy = ChoosingStrategy<RandomChooser>;
-    using LookaheadStrategy = ChoosingStrategy<LookaheadChooser>;
-    using PrincessMovingStrategy = ChoosingStrategy<PrincessMovingChooser>;
-    using PrincessMovingLookaheadStrategy =
-            ChoosingStrategy<PrincessMovingLookaheadChooser>;
-
-    return {RandomStrategy{RandomChooser{rng}},
-            LookaheadStrategy{LookaheadChooser{RandomChooser{rng}}},
-            PrincessMovingStrategy{PrincessMovingChooser{RandomChooser{rng}}},
-            PrincessMovingLookaheadStrategy{PrincessMovingLookaheadChooser{
-                    PrincessMovingChooser{RandomChooser{rng}}}}};
+std::vector<ChoosingStrategy> createStrategies(Rng& rng) {
+    std::vector<ChoosingStrategy> result;
+    result.emplace_back(std::make_unique<RandomChooser>(rng));
+    result.emplace_back(std::make_unique<LookaheadChooser>(
+            std::make_unique<RandomChooser>(rng)));
+    result.emplace_back(std::make_unique<PrincessMovingChooser>(
+            std::make_unique<RandomChooser>(rng)));
+    result.emplace_back(std::make_unique<LookaheadChooser>(
+            std::make_unique<PrincessMovingChooser>(
+                    std::make_unique<RandomChooser>(rng))));
+    return result;
 }
 
 void runGame(Rng& rng, std::vector<PlayerState>& playerStates, bool print) {
@@ -196,10 +195,12 @@ int main(int argc, char* argv[]) {
 
     std::vector<PlayerState> playerStates;
 
-    std::vector<Strategy> strategies = createStrategies(rng);
-
-    for (int i = 0; i < static_cast<int>(numPlayers); ++i) {
-        playerStates.emplace_back(strategies[i % strategies.size()]);
+    {
+        std::vector<ChoosingStrategy> strategies = createStrategies(rng);
+        for (int i = 0; i < static_cast<int>(numPlayers); ++i) {
+            playerStates.emplace_back(std::move(
+                    strategies[i % strategies.size()]));
+        }
     }
 
     for (int i = 0; i < numRuns; ++i) {
@@ -214,6 +215,6 @@ int main(int argc, char* argv[]) {
                 << "Player " << playerId << " final score "
                 << playerState.score << " Total time spent: "
                 << static_cast<double>(playerState.time) / CLOCKS_PER_SEC
-                << clearColor() << std::endl;
+                << " s" << clearColor() << std::endl;
     }
 }
