@@ -198,7 +198,7 @@ std::string toBox(const Track& track) {
             if (y % BOXHEIGHT == BOXHEIGHT / 2 && next.x < (int)track.width() &&
                 (track.getField(p).type & 0b1000) >> 3 &&
                 (track.getField(next).type & 0b0010) >> 1) {
-                line.append("━");
+                line.append(" ");
             } else if (p.x < (int)track.width() -
                                  1) { // do not append space after the last col
                 line.append(" ");

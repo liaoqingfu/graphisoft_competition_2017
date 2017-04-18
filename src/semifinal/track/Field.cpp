@@ -62,17 +62,50 @@ const std::vector<int>& getIsomorphs(int fieldType) {
 
 namespace BigFieldLines {
     constexpr static std::array<const char*, 2> upper{
-        {"┏━━━━━━━┓", "┏━━━┻━━━┓"}};
+        {"┏━━━━━━━┓", "┏━┛   ┗━┓"}};
     constexpr static std::array<const char*, 2> lower{
-        {"┗━━━━━━━┛", "┗━━━┳━━━┛"}};
-    constexpr static std::array<const char*, 2> left{
-        { "┃","┫"}};
-    constexpr static std::array<const char*, 2> right{
-        { "┃","┣"}};
-    constexpr static const char* neutral = "┃";
-}
+        {"┗━━━━━━━┛", "┗━┓   ┏━┛"}};
+
+    namespace left {
+        constexpr static std::array<const char*, 2> u{ // up
+            { "┃","┛"}};
+        constexpr static std::array<const char*, 2> m{ // middle
+            { "┃"," "}};
+        constexpr static std::array<const char*, 2> d{ // down
+            { "┃","┓"}};
+    } // left
+
+    namespace right {
+        constexpr static std::array<const char*, 2> u{
+            { "┃","┗"}};
+        constexpr static std::array<const char*, 2> m{ // middle
+            { "┃"," "}};
+        constexpr static std::array<const char*, 2> d{
+            { "┃","┏"}};
+    } // right
+
+} // BigFieldLines
 
 namespace {
+auto getLeftUChar(const Field& field) {
+    return BigFieldLines::left::u[(0b0010 & field.type) >> 1];
+}
+auto getLeftMChar(const Field& field) {
+    return BigFieldLines::left::m[(0b0010 & field.type) >> 1];
+}
+auto getLeftDChar(const Field& field) {
+    return BigFieldLines::left::d[(0b0010 & field.type) >> 1];
+}
+auto getRightUChar(const Field& field) {
+    return BigFieldLines::right::u[(0b1000 & field.type) >> 3];
+}
+auto getRightMChar(const Field& field) {
+    return BigFieldLines::right::m[(0b1000 & field.type) >> 3];
+}
+auto getRightDChar(const Field& field) {
+    return BigFieldLines::right::d[(0b1000 & field.type) >> 3];
+}
+
 auto getUpperLine(const Field& field) {
     return BigFieldLines::upper[0b0001 & field.type];
 }
@@ -80,26 +113,20 @@ auto getLowerLine(const Field& field) {
     return BigFieldLines::lower[(0b0100 & field.type) >> 2];
 }
 std::string get2ndLine(const Field& field) {
-    auto result = std::string(BigFieldLines::neutral);
+    auto result = std::string(getLeftUChar(field));
     if (field.princess == -1) {
         result.append("       ");
     } else {
         result.append(" K").append(std::to_string(field.princess));
         result.append("    ");
     }
-    return result.append(BigFieldLines::neutral);
-}
-auto getLeftChar(const Field& field) {
-    return BigFieldLines::left[(0b0010 & field.type) >> 1];
-}
-auto getRightChar(const Field& field) {
-    return BigFieldLines::right[(0b1000 & field.type) >> 3];
+    return result.append(getRightUChar(field));
 }
 std::string getMiddleLine(const Field& field) {
-    return std::string().append(getLeftChar(field)).append("       ").append(getRightChar(field));
+    return std::string().append(getLeftMChar(field)).append("       ").append(getRightMChar(field));
 }
 std::string get4thLine(const Field& field) {
-    auto result = std::string(BigFieldLines::neutral);
+    auto result = std::string(getLeftDChar(field));
     if (field.monitor == -1) {
         result.append("       ");
     } else {
@@ -109,8 +136,9 @@ std::string get4thLine(const Field& field) {
             result.append(" ");
         }
     }
-    return result.append(BigFieldLines::neutral);
+    return result.append(getRightDChar(field));
 }
+
 } // unnamed
 
 std::string getBoxLine(const Field& field, unsigned i) {
