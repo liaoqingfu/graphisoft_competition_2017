@@ -103,8 +103,11 @@ std::string get4thLine(const Field& field) {
     if (field.monitor == -1) {
         result.append("       ");
     } else {
-        result.append(" M").append(std::to_string(field.monitor));
-        result.append("    ");
+        auto Mstr = std::string(" M").append(std::to_string(field.monitor));
+        result.append(Mstr);
+        for (std::size_t j = 0; j < 7 - Mstr.size(); ++j) {
+            result.append(" ");
+        }
     }
     return result.append(BigFieldLines::neutral);
 }
