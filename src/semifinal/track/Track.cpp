@@ -16,7 +16,7 @@ Track::Track(std::size_t width, std::size_t height,
         fields[this->monitors[i]].monitor = i;
     }
     for (std::size_t i = 0; i < this->princesses.size(); ++i) {
-        fields[this->princesses[i]].princess.push_back(i);
+        fields[this->princesses[i]].addPrincess(i);
     }
 }
 
@@ -32,7 +32,7 @@ const std::vector<Point>& Track::getReachablePoints(Point source) const {
 
 bool Track::canMovePrincess(int player, Point target) const {
     return isReachableFrom(princesses[player], target)
-            && fields[target].princess.empty();
+            && fields[target].noPrincess();
 }
 
 void Track::movePrincess(int player, Point target) {

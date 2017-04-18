@@ -118,7 +118,7 @@ std::string get2ndLine(const Field& field) {
         result.append("       ");
     } else {
         auto Kstr = std::string(" ");
-        for (const auto& p : field.getPrincess()) {
+        for (const auto& p : field.getPrincesses()) {
             Kstr.append("K").append(std::to_string(p));
         }
         result.append(Kstr);

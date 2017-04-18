@@ -27,36 +27,34 @@ constexpr const Neighbors& getNeighbors(Point) {
 }
 
 struct Field {
+
     int type = 0;
     int monitor = -1; // monitor ID, -1 = none
 
-    std::vector<int> princess;
+    Field() : type(0), monitor(-1), princesses() {}
+    Field(int type, int monitor, std::vector<int> princesses)
+        : type(type), monitor(monitor), princesses(std::move(princesses)) {}
+
     void removePrincess(int p) {
-        princess.erase(std::remove(princess.begin(), princess.end(), p),
-                       princess.end());
+        princesses.erase(std::remove(princesses.begin(), princesses.end(), p),
+                         princesses.end());
     }
-    void addPrincess(int p) { princess.push_back(p); }
+    void addPrincess(int p) { princesses.push_back(p); }
     bool hasPrincess(int p) const {
-        return std::find(princess.begin(), princess.end(), p) != princess.end();
+        return std::find(princesses.begin(), princesses.end(), p) !=
+               princesses.end();
     }
-    bool noPrincess() const {
-        return princess.empty();
+    bool noPrincess() const { return princesses.empty(); }
+    const std::vector<int>& getPrincesses() const { return princesses; }
+
+    friend bool operator==(const Field& lhs, const Field& rhs) {
+        return lhs.type == rhs.type && lhs.monitor == rhs.monitor &&
+               lhs.princesses == rhs.princesses;
     }
-    const std::vector<int>& getPrincess() const { return princess; }
+
+private:
+    std::vector<int> princesses;
 };
-
-inline
-bool operator==(const Field& lhs, const Field& rhs) {
-    return lhs.type == rhs.type && lhs.monitor == rhs.monitor
-            && lhs.princess == rhs.princess;
-}
-
-std::string to_string(const Field& field);
-
-inline
-std::ostream& operator<<(std::ostream& os, const Field& field) {
-    return os << to_string(field);
-}
 
 constexpr std::size_t numFieldTypes = 16;
 extern const std::array<std::string, numFieldTypes> fieldTypes;
