@@ -1,6 +1,7 @@
 #include "ChoosingStrategy.hpp"
 #include "GameState.hpp"
 #include "LookaheadChooser.hpp"
+#include "PrincessMovingChooser.hpp"
 #include "RandomChooser.hpp"
 
 #include <boost/lexical_cast.hpp>
@@ -8,6 +9,7 @@
 #include <iostream>
 #include <random>
 #include <set>
+#include <time.h>
 
 using Rng = std::mt19937;
 
@@ -74,6 +76,7 @@ struct PlayerState {
     Strategy strategy;
     GameState gameState;
     int score = 0;
+    clock_t time = 0;
 };
 
 void setPlayerMonitors(Rng& rng, std::vector<PlayerState>& playerStates,
@@ -88,30 +91,28 @@ void setPlayerMonitors(Rng& rng, std::vector<PlayerState>& playerStates,
 }
 
 std::vector<Strategy> createStrategies(Rng& rng) {
+    using PrincessMovingChooser = ::PrincessMovingChooser<RandomChooser>;
     using LookaheadChooser = ::LookaheadChooser<RandomChooser>;
+    using PrincessMovingLookaheadChooser =
+            ::LookaheadChooser<PrincessMovingChooser>;
+
     using RandomStrategy = ChoosingStrategy<RandomChooser>;
     using LookaheadStrategy = ChoosingStrategy<LookaheadChooser>;
+    using PrincessMovingStrategy = ChoosingStrategy<PrincessMovingChooser>;
+    using PrincessMovingLookaheadStrategy =
+            ChoosingStrategy<PrincessMovingLookaheadChooser>;
+
     return {RandomStrategy{RandomChooser{rng}},
-            LookaheadStrategy{LookaheadChooser{RandomChooser{rng}}}};
+            LookaheadStrategy{LookaheadChooser{RandomChooser{rng}}},
+            PrincessMovingStrategy{PrincessMovingChooser{RandomChooser{rng}}},
+            PrincessMovingLookaheadStrategy{PrincessMovingLookaheadChooser{
+                    PrincessMovingChooser{RandomChooser{rng}}}}};
 }
 
-int main(int argc, char* argv[]) {
-    unsigned int seed;
-    if (argc > 1) {
-        seed = boost::lexical_cast<int>(argv[1]);
-    } else {
-        seed = std::random_device{}();
-    }
-    Rng rng{seed};
-
+void runGame(Rng& rng, std::vector<PlayerState>& playerStates, bool print) {
     GameState gameState = generateGame(rng);
-    std::vector<PlayerState> playerStates;
-
-    std::vector<Strategy> strategies = createStrategies(rng);
-
-    for (int i = 0; i < static_cast<int>(numPlayers); ++i) {
-        playerStates.emplace_back(strategies[i % strategies.size()]);
-        GameState& state = playerStates.back().gameState;
+    for (std::size_t i = 0; i < playerStates.size(); ++i) {
+        GameState& state = playerStates[i].gameState;
         state = gameState;
         state.playerId = i;
         state.targetMonitor = getRandomMonitor(rng, state);
@@ -125,51 +126,94 @@ int main(int argc, char* argv[]) {
             int targetMonitor = playerState.gameState.targetMonitor;
             Track& track = gameState.track;
 
-            std::cout
-                    << "Tick " << gameState.currentTick
-                    << " monitors " << track.getRemainingMonitors()
-                    << "\n" << setColor(defaultColor, playerColors[playerId])
-                    << "Player " << playerId
-                    << " score " << playerState.score
-                    << " target " << track.getMonitor(targetMonitor)
-                    << clearColor()
-                    << "\n" << gameState.track;
+            if (print) {
+                std::cout
+                        << "Tick " << gameState.currentTick
+                        << " monitors " << track.getRemainingMonitors()
+                        << "\n" << setColor(defaultColor,
+                                playerColors[playerId])
+                        << "Player " << playerId
+                        << " score " << playerState.score
+                        << " target " << track.getMonitor(targetMonitor)
+                        << clearColor()
+                        << "\n" << gameState.track;
+            }
 
             playerState.gameState.track = track;
             playerState.gameState.currentTick = gameState.currentTick;
 
+            clock_t start = ::clock();
             Step step = playerState.strategy(playerState.gameState);
-            std::cout << "Step: push " << step.pushDirection
-                    << " " << step.pushPosition
-                    << " " << fieldTypes[step.pushFieldType]
-                    << " princess=" << step.princessTarget << "\n";
+            clock_t end = ::clock();
+            playerState.time += end - start;
+            if (print) {
+                std::cout << "Step: push " << step.pushDirection
+                        << " " << step.pushPosition
+                        << " " << fieldTypes[step.pushFieldType]
+                        << " princess=" << step.princessTarget << "\n";
+            }
             playerState.gameState.extraField = executeStep(track, playerId,
                     step);
 
             if (track.getPrincess(playerId) ==
                     track.getMonitor(targetMonitor)) {
                 ++playerState.score;
-                std::cout << "Monitor removed: " << targetMonitor
-                        << " " << track.getMonitor(targetMonitor)
-                        << " Remaining: " << track.getRemainingMonitors()
-                        << "\n"
-                        << setColor(defaultColor, playerColors[playerId])
-                        << "Score awarded to player " << playerId
-                        << clearColor() << "\n";
+                if (print) {
+                    std::cout << "Monitor removed: " << targetMonitor
+                            << " " << track.getMonitor(targetMonitor)
+                            << " Remaining: " << track.getRemainingMonitors()
+                            << "\n"
+                            << setColor(defaultColor, playerColors[playerId])
+                            << "Score awarded to player " << playerId
+                            << clearColor() << "\n";
+                }
                 track.removeMonitor(targetMonitor);
                 if (track.getRemainingMonitors() == 0) {
                     break;
                 }
                 setPlayerMonitors(rng, playerStates, gameState);
             }
-            std::cout << "\n" << std::endl;
+            if (print) {
+                std::cout << "\n" << std::endl;
+            }
         }
     }
+}
+
+int main(int argc, char* argv[]) {
+    unsigned int seed;
+    if (argc > 1) {
+        seed = boost::lexical_cast<int>(argv[1]);
+    } else {
+        seed = std::random_device{}();
+    }
+    Rng rng{seed};
+
+    int numRuns = 1;
+    if (argc > 2) {
+        numRuns = boost::lexical_cast<int>(argv[2]);
+    }
+
+    std::vector<PlayerState> playerStates;
+
+    std::vector<Strategy> strategies = createStrategies(rng);
+
+    for (int i = 0; i < static_cast<int>(numPlayers); ++i) {
+        playerStates.emplace_back(strategies[i % strategies.size()]);
+    }
+
+    for (int i = 0; i < numRuns; ++i) {
+        std::cout << "Run #" << i << "\n";
+        runGame(rng, playerStates, numRuns == 1);
+    }
+
     std::cout << "Game over.\n";
     for (const PlayerState& playerState : playerStates) {
         int playerId = playerState.gameState.playerId;
         std::cout << setColor(defaultColor, playerColors[playerId])
                 << "Player " << playerId << " final score "
-                << playerState.score << std::endl;
+                << playerState.score << " Total time spent: "
+                << static_cast<double>(playerState.time) / CLOCKS_PER_SEC
+                << clearColor() << std::endl;
     }
 }

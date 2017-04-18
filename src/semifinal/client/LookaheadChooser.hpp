@@ -6,6 +6,7 @@
 #include "Track.hpp"
 
 #include <algorithm>
+#include <iostream>
 #include <numeric>
 #include <unordered_map>
 
@@ -26,7 +27,7 @@ public:
             processStep(stepValues, step);
         }
         if (stepValues.empty()) {
-            std::cerr << "No good step is found.\n";
+            std::cerr << "LookaheadChooser: No good step is found.\n";
             return chooser.chooseBadStep(potentialSteps);
         }
 
@@ -42,7 +43,7 @@ public:
             }
             goodSteps.push_back(record.step);
         }
-        std::cerr << "Found " << goodSteps.size()
+        std::cerr << "LookaheadChooser: Found " << goodSteps.size()
                 << " good steps with value " << stepValues.front().value
                 << "\n";
         return chooser.chooseGoodStep(goodSteps);
