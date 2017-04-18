@@ -710,9 +710,9 @@ BOOST_AUTO_TEST_CASE(OneField) {
 R"foo(
        0    
    ┏━━━━━━━┓
-   ┃       ┃
-0  ┃       ┣
-   ┃       ┃
+   ┃       ┗
+0  ┃        
+   ┃       ┏
    ┗━━━━━━━┛
 )foo";
     std::string expected(tmp.begin() + 1, tmp.end());
@@ -726,9 +726,9 @@ BOOST_AUTO_TEST_CASE(OneRow) {
 R"foo(
        0         1    
    ┏━━━━━━━┓ ┏━━━━━━━┓
-   ┃       ┃ ┃       ┃
-0  ┃       ┣━┫       ┃
-   ┃       ┃ ┃       ┃
+   ┃       ┗ ┛       ┃
+0  ┃                 ┃
+   ┃       ┏ ┓       ┃
    ┗━━━━━━━┛ ┗━━━━━━━┛
 )foo";
     std::string expected(tmp.begin() + 1, tmp.end());
@@ -742,11 +742,11 @@ BOOST_AUTO_TEST_CASE(Test4x4) {
 R"foo(
        0         1    
    ┏━━━━━━━┓ ┏━━━━━━━┓
-   ┃       ┃ ┃       ┃
-0  ┃       ┣━┫       ┃
-   ┃       ┃ ┃       ┃
-   ┗━━━┳━━━┛ ┗━━━┳━━━┛
-   ┏━━━┻━━━┓ ┏━━━┻━━━┓
+   ┃       ┗ ┛       ┃
+0  ┃                 ┃
+   ┃       ┏ ┓       ┃
+   ┗━┓   ┏━┛ ┗━┓   ┏━┛
+   ┏━┛   ┗━┓ ┏━┛   ┗━┓
    ┃       ┃ ┃       ┃
 1  ┃       ┃ ┃       ┃
    ┃       ┃ ┃       ┃
