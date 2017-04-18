@@ -149,22 +149,7 @@ void Track::resetReachability() {
 }
 
 std::ostream& operator<<(std::ostream& os, const Track& track) {
-    os << "  ";
-    for (std::size_t i = 0; i < track.width(); ++i) {
-        os << i % 10 << " ";
-    }
-    os << "\n";
-    Point p;
-    for (p.y = 0; p.y < static_cast<int>(track.height()); ++p.y) {
-        os << p.y % 10 << " ";
-        for (p.x = 0; p.x < static_cast<int>(track.width()); ++p.x) {
-            if (p.x != 0) {
-                os << "─";
-            }
-            os << track.getField(p);
-        }
-        os << "\n";
-    }
+    os << toBox(track);
     return os;
 }
 
