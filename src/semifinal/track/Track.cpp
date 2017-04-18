@@ -11,12 +11,12 @@ Track::Track(std::size_t width, std::size_t height,
         princesses(std::move(princesses)),
         reachability{width, height} {
     std::transform(fieldTypes.begin(), fieldTypes.end(), fields.begin(),
-            [](int type) { return Field{type, -1, -1}; });
+            [](int type) { return Field{type, -1, {}}; });
     for (std::size_t i = 0; i < this->monitors.size(); ++i) {
         fields[this->monitors[i]].monitor = i;
     }
     for (std::size_t i = 0; i < this->princesses.size(); ++i) {
-        fields[this->princesses[i]].princess = i;
+        fields[this->princesses[i]].princess.push_back(i);
     }
 }
 
@@ -32,18 +32,19 @@ const std::vector<Point>& Track::getReachablePoints(Point source) const {
 
 bool Track::canMovePrincess(int player, Point target) const {
     return isReachableFrom(princesses[player], target)
-            && fields[target].princess == -1;
+            && fields[target].princess.empty();
 }
 
 void Track::movePrincess(int player, Point target) {
-    int& fromPrincess = fields[princesses[player]].princess;
-    int& toPrincess = fields[target].princess;
-    assert(fromPrincess == player);
-    assert(toPrincess == -1);
-    // canMove() is not checked: it's expe
+    auto& from = fields[princesses[player]];
+    auto& to = fields[target];
 
-    fromPrincess = -1;
-    toPrincess = player;
+    assert(from.hasPrincess(player));
+    assert(!to.hasPrincess(player));
+
+    from.removePrincess(player);
+    to.addPrincess(player);
+
     princesses[player] = target;
 }
 

@@ -97,7 +97,7 @@ R"foo(
 
 BOOST_AUTO_TEST_CASE(Princess) {
     Field field; field.type = 8;
-    field.princess = 3;
+    field.princess = {3};
     std::string tmp =
 R"foo(
 ┏━━━━━━━┓

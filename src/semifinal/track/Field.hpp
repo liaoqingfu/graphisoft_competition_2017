@@ -29,7 +29,20 @@ constexpr const Neighbors& getNeighbors(Point) {
 struct Field {
     int type = 0;
     int monitor = -1; // monitor ID, -1 = none
-    int princess = -1; // player ID, -1 = none
+
+    std::vector<int> princess;
+    void removePrincess(int p) {
+        princess.erase(std::remove(princess.begin(), princess.end(), p),
+                       princess.end());
+    }
+    void addPrincess(int p) { princess.push_back(p); }
+    bool hasPrincess(int p) const {
+        return std::find(princess.begin(), princess.end(), p) != princess.end();
+    }
+    bool noPrincess() const {
+        return princess.empty();
+    }
+    const std::vector<int>& getPrincess() const { return princess; }
 };
 
 inline

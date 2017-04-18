@@ -42,17 +42,17 @@ std::string setColor(int background, int foreground) {
     return result;
 }
 
-std::string to_string(const Field& field)
-{
-    assert(field.princess <= static_cast<int>(numPlayers));
-    assert(field.type >= 0);
-    assert(field.type < static_cast<int>(numFieldTypes));
-    return setColor(field.monitor >= 0 ? monitorColor : defaultColor,
-                    field.princess >= 0 ? playerColors[field.princess]
-                            : defaultColor)
-            + fieldTypes[field.type]
-            + clearColor();
-}
+//std::string to_string(const Field& field)
+//{
+    //assert(field.princess <= static_cast<int>(numPlayers));
+    //assert(field.type >= 0);
+    //assert(field.type < static_cast<int>(numFieldTypes));
+    //return setColor(field.monitor >= 0 ? monitorColor : defaultColor,
+                    //field.princess >= 0 ? playerColors[field.princess]
+                            //: defaultColor)
+            //+ fieldTypes[field.type]
+            //+ clearColor();
+//}
 
 const std::vector<int>& getIsomorphs(int fieldType) {
     assert(fieldType >= 1);
@@ -114,11 +114,19 @@ auto getLowerLine(const Field& field) {
 }
 std::string get2ndLine(const Field& field) {
     auto result = std::string(getLeftUChar(field));
-    if (field.princess == -1) {
+    if (field.noPrincess()) {
         result.append("       ");
     } else {
-        result.append(" K").append(std::to_string(field.princess));
-        result.append("    ");
+        auto Kstr = std::string(" ");
+        for (const auto& p : field.getPrincess()) {
+            Kstr.append("K").append(std::to_string(p));
+        }
+        result.append(Kstr);
+        for (std::size_t j = 0; j < 7 - Kstr.size(); ++j) {
+            result.append(" ");
+        }
+        //result.append(" K").append(std::to_string(field.princess));
+        //result.append("    ");
     }
     return result.append(getRightUChar(field));
 }
