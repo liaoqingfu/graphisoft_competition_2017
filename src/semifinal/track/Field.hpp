@@ -3,6 +3,7 @@
 
 #include "Point.hpp"
 
+#include <algorithm>
 #include <array>
 #include <assert.h>
 #include <vector>
