@@ -1,6 +1,7 @@
 #include "Field.hpp"
 
 #include <algorithm>
+#include <boost/algorithm/string/join.hpp>
 
 namespace {
 
@@ -112,27 +113,49 @@ auto getUpperLine(const Field& field) {
 auto getLowerLine(const Field& field) {
     return BigFieldLines::lower[(0b0100 & field.type) >> 2];
 }
+
+std::string getPrincesses(const Field field, unsigned begin, unsigned end) {
+    std::array<std::string, 2> Ks;
+    for (unsigned i = begin, to = 0; i < end && i < field.getPrincesses().size();
+            ++i, ++to) {
+        Ks[to] = std::string("K")
+            .append(std::to_string(field.getPrincesses().at(i)));
+    }
+    return boost::algorithm::join(Ks, " ");
+}
+
+// Adds the linePrefix to the actual line and padds it to match the field end
+void addPadded(std::string& result, const std::string& linePrefix) {
+    result.append(linePrefix);
+    for (std::size_t j = 0; j < 7 - linePrefix.size(); ++j) {
+        result.append(" ");
+    }
+}
+
 std::string get2ndLine(const Field& field) {
     auto result = std::string(getLeftUChar(field));
     if (field.noPrincess()) {
         result.append("       ");
     } else {
-        auto Kstr = std::string(" ");
-        for (const auto& p : field.getPrincesses()) {
-            Kstr.append("K").append(std::to_string(p));
-        }
-        result.append(Kstr);
-        for (std::size_t j = 0; j < 7 - Kstr.size(); ++j) {
-            result.append(" ");
-        }
-        //result.append(" K").append(std::to_string(field.princess));
-        //result.append("    ");
+        // Add the first two princesses
+        auto Kstr = std::string(" ").append(getPrincesses(field,0,2));
+        addPadded(result, Kstr);
     }
     return result.append(getRightUChar(field));
 }
+
 std::string getMiddleLine(const Field& field) {
-    return std::string().append(getLeftMChar(field)).append("       ").append(getRightMChar(field));
+    auto result = std::string(getLeftMChar(field));
+    if (field.noPrincess()) {
+        result.append("       ");
+    } else {
+        // Add the last two princesses if there is any
+        auto Kstr = std::string(" ").append(getPrincesses(field,2,4));
+        addPadded(result, Kstr);
+    }
+    return result.append(getRightMChar(field));
 }
+
 std::string get4thLine(const Field& field) {
     auto result = std::string(getLeftDChar(field));
     if (field.monitor == -1) {

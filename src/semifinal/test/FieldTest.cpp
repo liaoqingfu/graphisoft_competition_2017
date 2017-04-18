@@ -110,6 +110,40 @@ R"foo(
     BOOST_CHECK_EQUAL(toBox(field), expected);
 }
 
+BOOST_AUTO_TEST_CASE(TwoPrincesses) {
+    Field field; field.type = 8;
+    field.addPrincess(3);
+    field.addPrincess(2);
+    std::string tmp =
+R"foo(
+┏━━━━━━━┓
+┃ K3 K2 ┗
+┃        
+┃       ┏
+┗━━━━━━━┛
+)foo";
+    std::string expected(tmp.begin() + 1, tmp.end());
+    BOOST_CHECK_EQUAL(toBox(field), expected);
+}
+
+BOOST_AUTO_TEST_CASE(FourPrincesses) {
+    Field field; field.type = 8;
+    field.addPrincess(3);
+    field.addPrincess(2);
+    field.addPrincess(1);
+    field.addPrincess(0);
+    std::string tmp =
+R"foo(
+┏━━━━━━━┓
+┃ K3 K2 ┗
+┃ K1 K0  
+┃       ┏
+┗━━━━━━━┛
+)foo";
+    std::string expected(tmp.begin() + 1, tmp.end());
+    BOOST_CHECK_EQUAL(toBox(field), expected);
+}
+
 BOOST_AUTO_TEST_CASE(Monitor) {
     Field field; field.type = 8;
     field.monitor = 3;
