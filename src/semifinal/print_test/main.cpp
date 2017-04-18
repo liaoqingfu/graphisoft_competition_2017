@@ -13,5 +13,5 @@ int main() {
              9, 10, 10, 11, 10, 10,  3},
           {Point{3, 3}, Point{0, 0}},
           {Point{0, 0}, Point{6, 0}, Point{0, 6}, Point{6, 6}}};
-    std::cout << track;
+    std::cout << toBox(track);
 }
