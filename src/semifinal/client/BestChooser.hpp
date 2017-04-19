@@ -7,7 +7,7 @@
 
 class BestChooser : public DelegatingChooser {
 public:
-    BestChooser(std::unique_ptr<IChooser>&& chooser, double tolerance = 0.1) :
+    BestChooser(std::shared_ptr<IChooser> chooser, double tolerance = 0.1) :
             DelegatingChooser(std::move(chooser)),
             tolerance(tolerance) {}
 

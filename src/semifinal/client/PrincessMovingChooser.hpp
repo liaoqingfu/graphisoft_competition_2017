@@ -13,7 +13,7 @@
 
 class PrincessMovingChooser : public DelegatingChooser {
 public:
-    PrincessMovingChooser(std::unique_ptr<IChooser>&& chooser,
+    PrincessMovingChooser(std::shared_ptr<IChooser> chooser,
             double weightMultiplier) :
             DelegatingChooser(std::move(chooser)),
             weightMultiplier(weightMultiplier) {}

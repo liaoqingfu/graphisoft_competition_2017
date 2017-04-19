@@ -7,7 +7,7 @@
 
 class DelegatingChooser : public IChooser {
 public:
-    DelegatingChooser(std::unique_ptr<IChooser>&& chooser) :
+    DelegatingChooser(std::shared_ptr<IChooser> chooser) :
             chooser(std::move(chooser)) {}
 
     Step chooseGoodStep(
@@ -24,7 +24,7 @@ protected:
     IChooser& getDelegatedChooser() { return *chooser; }
 
 private:
-    std::unique_ptr<IChooser> chooser;
+    std::shared_ptr<IChooser> chooser;
 };
 
 #endif // SEMIFINAL_CLIENT_DELEGATINGCHOOSER_HPP

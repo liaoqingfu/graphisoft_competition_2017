@@ -1,11 +1,9 @@
 #include "ChoosingStrategy.hpp"
 #include "GameState.hpp"
-#include "LookaheadChooser.hpp"
-#include "PrincessMovingChooser.hpp"
-#include "BestChooser.hpp"
-#include "RandomChooser.hpp"
+#include "StrategyParser.hpp"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/program_options.hpp>
 
 #include <iostream>
 #include <random>
@@ -13,6 +11,12 @@
 #include <time.h>
 
 using Rng = std::mt19937;
+
+struct Options {
+    int numRuns = 1;
+    int seed = 0;
+    std::vector<std::string> strategyStrings;
+};
 
 std::vector<Point> generatePoints(Rng& rng, int width, int height,
         std::size_t number) {
@@ -70,7 +74,7 @@ int getRandomMonitor(Rng& rng, const GameState& gameState) {
 }
 
 struct PlayerState {
-    PlayerState(ChoosingStrategy&& strategy) : strategy{std::move(strategy)} {}
+    PlayerState(ChoosingStrategy strategy) : strategy{std::move(strategy)} {}
 
     PlayerState(const PlayerState&) = delete;
     PlayerState& operator=(const PlayerState&) = delete;
@@ -96,21 +100,12 @@ void setPlayerMonitors(Rng& rng, std::vector<PlayerState>& playerStates,
     }
 }
 
-std::vector<ChoosingStrategy> createStrategies(Rng& rng) {
+std::vector<ChoosingStrategy> createStrategies(Rng& rng,
+        const Options& options) {
     std::vector<ChoosingStrategy> result;
-    result.emplace_back(std::make_unique<RandomChooser>(rng));
-    result.emplace_back(std::make_unique<LookaheadChooser>(
-            std::make_unique<BestChooser>(std::make_unique<RandomChooser>(rng)),
-            1.0));
-    result.emplace_back(std::make_unique<PrincessMovingChooser>(
-            std::make_unique<BestChooser>(std::make_unique<RandomChooser>(rng)),
-            1.0));
-    result.emplace_back(std::make_unique<LookaheadChooser>(
-            std::make_unique<PrincessMovingChooser>(
-                    std::make_unique<BestChooser>(
-                            std::make_unique<RandomChooser>(rng)),
-                    1.0),
-            1000.0));
+    for (const std::string& strategyString : options.strategyStrings) {
+        result.push_back(parseStrategy(strategyString, rng));
+    }
     return result;
 }
 
@@ -185,33 +180,57 @@ void runGame(Rng& rng, std::vector<PlayerState>& playerStates, bool print) {
     }
 }
 
-int main(int argc, char* argv[]) {
-    unsigned int seed;
-    if (argc > 1) {
-        seed = boost::lexical_cast<int>(argv[1]);
-    } else {
-        seed = std::random_device{}();
-    }
-    Rng rng{seed};
+namespace po = boost::program_options;
 
-    int numRuns = 1;
-    if (argc > 2) {
-        numRuns = boost::lexical_cast<int>(argv[2]);
+template <typename T>
+po::typed_value<T>* defaultValue(T& v) {
+    return po::value(&v)->default_value(v);
+}
+
+Options parseOptions(int argc, const char* argv[]) {
+    po::options_description optionsDescription;
+    Options options;
+    bool help = false;
+    optionsDescription.add_options()
+        ("help,h", po::bool_switch(&help))
+        ("num-runs,n", defaultValue(options.numRuns))
+        ("seed", defaultValue(options.seed))
+        ("strategy,s", po::value(&options.strategyStrings)->multitoken())
+        ;
+
+    po::variables_map vm;
+    po::store(po::command_line_parser(argc, argv).
+            options(optionsDescription).
+            run(), vm);
+    po::notify(vm);
+
+    if (help) {
+        std::cerr << optionsDescription << "\n";
+        exit(0);
     }
+    return options;
+}
+
+int main(int argc, const char* argv[]) {
+    Options options = parseOptions(argc, argv);
+    if (options.seed == 0) {
+        options.seed = std::random_device{}();
+    }
+    Rng rng{options.seed};
 
     std::vector<PlayerState> playerStates;
 
     {
-        std::vector<ChoosingStrategy> strategies = createStrategies(rng);
+        std::vector<ChoosingStrategy> strategies = createStrategies(rng,
+                options);
         for (int i = 0; i < static_cast<int>(numPlayers); ++i) {
-            playerStates.emplace_back(std::move(
-                    strategies[i % strategies.size()]));
+            playerStates.emplace_back(strategies[i % strategies.size()]);
         }
     }
 
-    for (int i = 0; i < numRuns; ++i) {
+    for (int i = 0; i < options.numRuns; ++i) {
         std::cout << "Run #" << i << "\n";
-        runGame(rng, playerStates, numRuns == 1);
+        runGame(rng, playerStates, options.numRuns == 1);
     }
 
     std::cout << "Game over.\n";

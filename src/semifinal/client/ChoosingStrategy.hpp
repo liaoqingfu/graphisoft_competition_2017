@@ -11,11 +11,13 @@
 
 class ChoosingStrategy {
 public:
-    ChoosingStrategy(std::unique_ptr<IChooser>&& chooser) :
+    ChoosingStrategy() = default;
+
+    ChoosingStrategy(std::shared_ptr<IChooser> chooser) :
             chooser(std::move(chooser)) {}
 
-    ChoosingStrategy(const ChoosingStrategy&) = delete;
-    ChoosingStrategy& operator=(const ChoosingStrategy&) = delete;
+    ChoosingStrategy(const ChoosingStrategy&) = default;
+    ChoosingStrategy& operator=(const ChoosingStrategy&) = default;
 
     ChoosingStrategy(ChoosingStrategy&&) noexcept = default;
     ChoosingStrategy& operator=(ChoosingStrategy&&) noexcept = default;
@@ -57,7 +59,7 @@ private:
         return chooser->chooseGoodStep(goodSteps);
     }
 
-    std::unique_ptr<IChooser> chooser;
+    std::shared_ptr<IChooser> chooser;
     GameState gameState;
 };
 

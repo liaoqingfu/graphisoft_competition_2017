@@ -12,7 +12,7 @@
 
 class LookaheadChooser : public DelegatingChooser {
 public:
-    LookaheadChooser(std::unique_ptr<IChooser>&& chooser,
+    LookaheadChooser(std::shared_ptr<IChooser> chooser,
             double weightMultiplier) :
             DelegatingChooser(std::move(chooser)),
             weightMultiplier(weightMultiplier) {}
