@@ -32,3 +32,9 @@ MonitorDefendingChooser (decorator):
     bad: Olyan lépést keres, amivel meg tudja akadályozni, hogy az ellenfelek
          elérjék a monitorunkat. Ha több azonos minőségű van, akkor ezek közül
          választ delegálással.
+
+LookaheadMonitorDefendingChooser (decorator):
+    good/bad: Hasonlóan mint a sima MonitorDefendingChoosernél, 
+        de az ellenfél nehezitő lépéseknél előrenézünk plusz egy lépést.
+        Azt a lépést (lépés sorozatot) válassszuk,
+        amely meglépése után a lehető legtöbb ellenfél a lehető legkevesebb úton ér el monitort.
