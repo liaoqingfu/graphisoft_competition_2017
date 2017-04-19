@@ -19,6 +19,10 @@ public:
             const std::vector<PotentialStep>& potentialSteps) override {
         return chooser->chooseBadStep(potentialSteps);
     }
+
+protected:
+    IChooser& getDelegatedChooser() { return *chooser; }
+
 private:
     std::unique_ptr<IChooser> chooser;
 };

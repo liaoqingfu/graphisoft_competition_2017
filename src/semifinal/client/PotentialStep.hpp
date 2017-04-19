@@ -10,6 +10,7 @@ struct PotentialStep {
     Track targetTrack;
     int targetExtraField;
     Step step;
+    double weight;
 };
 
 std::vector<PotentialStep> calculatePotentialSteps(const GameState& gameState);
