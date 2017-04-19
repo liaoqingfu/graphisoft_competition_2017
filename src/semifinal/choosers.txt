@@ -12,13 +12,13 @@ LookaheadChooser (decorator):
          következő lépésben eljutni a célba, és ezek közül választ a dekorált
          chooser good-jával. Ha nem talál, akkor delegál bad-re.
 
-
-Not yet implemented:
-
 PrincessMovingChooser (decorator):
     good: delegál
     bad: Keres egy olyan lépést, amivel a királylányt a lehető legközelebb
          tudja vinni a célhoz. A legjobbak közül választ a dekorált good-jával.
+
+
+Not yet implemented:
 
 OpponentMovingChooser (decorator):
     good/bad: Olyan lépést keres, amivel minél jobban elmozgatja az ellenfelet.
