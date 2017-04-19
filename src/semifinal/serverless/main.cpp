@@ -2,6 +2,7 @@
 #include "GameState.hpp"
 #include "LookaheadChooser.hpp"
 #include "PrincessMovingChooser.hpp"
+#include "BestChooser.hpp"
 #include "RandomChooser.hpp"
 
 #include <boost/lexical_cast.hpp>
@@ -99,12 +100,17 @@ std::vector<ChoosingStrategy> createStrategies(Rng& rng) {
     std::vector<ChoosingStrategy> result;
     result.emplace_back(std::make_unique<RandomChooser>(rng));
     result.emplace_back(std::make_unique<LookaheadChooser>(
-            std::make_unique<RandomChooser>(rng)));
+            std::make_unique<BestChooser>(std::make_unique<RandomChooser>(rng)),
+            1.0));
     result.emplace_back(std::make_unique<PrincessMovingChooser>(
-            std::make_unique<RandomChooser>(rng)));
+            std::make_unique<BestChooser>(std::make_unique<RandomChooser>(rng)),
+            1.0));
     result.emplace_back(std::make_unique<LookaheadChooser>(
             std::make_unique<PrincessMovingChooser>(
-                    std::make_unique<RandomChooser>(rng))));
+                    std::make_unique<BestChooser>(
+                            std::make_unique<RandomChooser>(rng)),
+                    1.0),
+            1000.0));
     return result;
 }
 

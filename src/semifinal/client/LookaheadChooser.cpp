@@ -46,7 +46,7 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
         }
 
         step.step.princessTarget = element.first;
-        step.weight = element.second;
+        step.weight = element.second * weightMultiplier;
         stepValues.push_back(step);
     }
 }

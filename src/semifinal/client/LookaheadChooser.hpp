@@ -12,8 +12,10 @@
 
 class LookaheadChooser : public DelegatingChooser {
 public:
-    LookaheadChooser(std::unique_ptr<IChooser>&& chooser) :
-            DelegatingChooser(std::move(chooser)) {}
+    LookaheadChooser(std::unique_ptr<IChooser>&& chooser,
+            double weightMultiplier) :
+            DelegatingChooser(std::move(chooser)),
+            weightMultiplier(weightMultiplier) {}
 
     Step chooseBadStep(
             const std::vector<PotentialStep>& potentialSteps) override;
@@ -21,6 +23,8 @@ public:
 private:
     void processStep(std::vector<PotentialStep>& stepValues,
             PotentialStep step);
+
+    double weightMultiplier;
 };
 
 #endif // SEMIFINAL_CLIENT_LOOKAHEADCHOOSER_HPP

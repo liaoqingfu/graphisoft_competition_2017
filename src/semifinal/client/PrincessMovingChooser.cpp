@@ -18,8 +18,8 @@ void PrincessMovingChooser::processStep(std::vector<PotentialStep>& stepValues,
     int size = track.width() + track.height();
     for (Point p : track.getReachablePoints(track.getPrincess(playerId))) {
         step.step.princessTarget = p;
-        step.weight = size - (std::abs(p.x - target.x)
-                + std::abs(p.y - target.y));
+        step.weight = (size - (std::abs(p.x - target.x)
+                + std::abs(p.y - target.y))) * weightMultiplier;
         stepValues.push_back(step);
     }
 }

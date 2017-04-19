@@ -19,22 +19,8 @@ Step processPotentialSteps(const std::vector<PotentialStep>& potentialSteps,
         return delegatedChooser.chooseBadStep(potentialSteps);
     }
 
-    std::sort(recordedSteps.begin(), recordedSteps.end(),
-            [](const PotentialStep& lhs, const PotentialStep& rhs) {
-                return lhs.weight > rhs.weight;
-            });
-
-    std::vector<PotentialStep> goodSteps;
-    for (const PotentialStep& record : recordedSteps) {
-        if (record.weight < recordedSteps.front().weight - 0.1) {
-            break;
-        }
-        goodSteps.push_back(record);
-    }
-    std::cerr << name << ": Found " << goodSteps.size()
-            << " good steps with value " << recordedSteps.front().weight
-            << "\n";
-    return delegatedChooser.chooseGoodStep(goodSteps);
+    std::cerr << name << ": Found " << recordedSteps.size() << " good steps\n";
+    return delegatedChooser.chooseGoodStep(recordedSteps);
 }
 
 #endif // SEMIFINAL_CLIENT_CHOOSERHELPER_HPP
