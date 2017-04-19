@@ -32,23 +32,27 @@ private:
         std::remove_copy_if(potentialSteps.begin(), potentialSteps.end(),
                 std::back_inserter(goodSteps),
                 [](const PotentialStep& step) {
-                    return !step.targetTrack.canMovePrincess(
+                    return !step.targetTrack->canMovePrincess(
                             step.sourceState->playerId,
-                            step.targetTrack.getMonitor(
+                            step.targetTrack->getMonitor(
                                     step.sourceState->targetMonitor));
                 });
         if (goodSteps.empty()) {
             return chooser->chooseBadStep(potentialSteps);
         }
+        potentialSteps.clear();
         for (PotentialStep& step : goodSteps) {
-            Point target = step.targetTrack.getMonitor(gameState.targetMonitor);
+            Point target = step.targetTrack->getMonitor(gameState.targetMonitor);
             step.step.princessTarget = target;
             // std::cerr << "Good step: " << step.step.pushDirection
             //         << " " << step.step.pushPosition
             //         << " " << fieldTypes[step.step.pushFieldType]
             //         << " " << step.step.princessTarget
             //         << "\n";
-            step.targetTrack.movePrincess(gameState.playerId, target);
+
+            assert(step.targetTrack.use_count() == 1);
+            const_cast<Track&>(*step.targetTrack).movePrincess(
+                    gameState.playerId, target);
         }
         return chooser->chooseGoodStep(goodSteps);
     }

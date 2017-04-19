@@ -3,8 +3,8 @@
 namespace {
 
 PotentialStep createPotentialStep(const GameState& gameState, Step step) {
-    Track targetTrack{gameState.track};
-    int extraField = executeStep(targetTrack, gameState.playerId, step);
+    auto targetTrack = std::make_shared<Track>(gameState.track);
+    int extraField = executeStep(*targetTrack, gameState.playerId, step);
     return PotentialStep{&gameState, targetTrack, extraField, std::move(step),
             1.0};
 }

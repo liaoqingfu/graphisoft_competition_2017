@@ -3,11 +3,13 @@
 
 #include "GameState.hpp"
 
+#include <memory>
 #include <vector>
 
 struct PotentialStep {
     const GameState* sourceState;
-    Track targetTrack;
+    // The track should be const because it may be shared between objects.
+    std::shared_ptr<const Track> targetTrack;
     int targetExtraField;
     Step step;
     double weight;

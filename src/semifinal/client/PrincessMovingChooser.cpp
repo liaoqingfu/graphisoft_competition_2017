@@ -11,7 +11,7 @@ Step PrincessMovingChooser::chooseBadStep(
 
 void PrincessMovingChooser::processStep(std::vector<PotentialStep>& stepValues,
         PotentialStep step) {
-    const Track& track = step.targetTrack;
+    const Track& track = *step.targetTrack;
     int playerId = step.sourceState->playerId;
     Point target = track.getMonitor(playerId);
 
