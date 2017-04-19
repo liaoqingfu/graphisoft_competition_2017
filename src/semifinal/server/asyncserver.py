@@ -88,6 +88,21 @@ class PlayerStepRequest(object):
         parts = message.split('\n')
         assert(parts[0].startswith('PUSH'))
         assert(len(parts) == 1 or parts[1].startswith('GOTO'))
+        goto = parts[0].split(' ')
+        _, self.is_row, self.is_positive, self.number, self.field = goto
+        self.number = int(self.number)
+        self.field = int(self.field)
+        if len(parts) > 1 and parts[1].startswith('GOTO'):
+            _, self.x, self.y = parts[1].split(' ')
+
+
+class EndGameMessage(object):
+
+    def __init__(self, points):
+        self.__points = points
+
+    def __str__(self):
+        return 'END {}\n'.format(self.__points)
 
 
 def parse_authentication(message):
@@ -154,7 +169,7 @@ class GameServer(object):
             client_id = yield from self.__connect_cb(auth_msg, sender)
             while True:
                 message = yield from self.__extract_message(client.reader)
-                self.__receive_cb(client_id, message, sender)
+                yield from self.__receive_cb(client_id, message, sender)
         except EOFError as error:
             logging.error(error)
 
@@ -181,7 +196,7 @@ class GameController(object):
 
     __LEVEL = 1  # FIXME: hardcoded
     __MAX_TICK = 5  # FIXME: hardcoded
-    __STARTING_POSITION = (0, 0)  # FIXME: hardcoded
+    __STARTING_POSITION = (3, 2)  # FIXME: hardcoded
     __STARTING_FIELD = 15
     __STARTING_DISPLAY = 0  # FIXME: hardcoded
 
@@ -190,6 +205,7 @@ class GameController(object):
         self.__maze = Maze()
         self.__players = {}
         self.__player_turn = 0
+        self.__tick = 0
 
     def add_player(self, auth_msg, message_sender):
         # TODO: check auth_msg
@@ -209,12 +225,37 @@ class GameController(object):
         return player_number
 
     def player_step_requested(self, client_id, message, message_sender):
+        assert(client_id == self.__player_turn)
         print(message)
         req = PlayerStepRequest(message)
-        print(req)
+        print(req.__dict__)
+        print(self.__maze)
+        player = self.__players[client_id][0]
+        field = self.__maze.push(req.is_row, req.is_positive, req.number,
+                                 req.field)
+        player.field = field
+        print(self.__maze)
+        new_position = (int(req.x), int(req.y))
+        if self.__maze.goto(player.position, new_position) is not None:
+            player.position = new_position
+            print(self.__maze.get_display_position(player.target))
+            print(new_position)
+            if self.__maze.get_display_position(player.target) == \
+               new_position:
+                next_target = self.__maze.get_next_display(player.target)
+                player.add_point(next_target)
+                if next_target is None:
+                    yield from self.__end_game()
+                    return
+        if self.__tick <= GameController.__MAX_TICK:
+            yield from self.__next_player_turn()
+        else:
+            yield from self.__end_game()
 
     def __next_player_turn(self):
         logging.debug('next player turn: {}'.format(self.__player_turn))
+        if self.__tick > GameController.__MAX_TICK:
+            return
         for player_number in self.__players:
             positions = {}
             for player_number in self.__players:
@@ -227,7 +268,17 @@ class GameController(object):
                 step_msg.field = player.field
             msg = str(self.__maze) + str(step_msg)
             yield from message_sender(msg)
-            self.__player_turn = (self.__player_turn + 1) % len(self.__players)
+        self.__player_turn += 1
+        if self.__player_turn == len(self.__players):
+            self.__tick += 1
+            self.__player_turn = 0
+        # TODO: add timer, do not wait forever for the client
+
+    def __end_game(self):
+        for player_number in self.__players:
+            player, sender = self.__players[player_number]
+            msg = EndGameMessage(player.points)
+            yield from sender(str(msg))
 
 
 def main():

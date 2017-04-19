@@ -19,7 +19,7 @@ class GameData:
         self.target = None
 
     def get_display_position(self, number_of_display):
-        display = self.displays[number_of_display-1]
+        display = self.displays[number_of_display]
         return display
 
 
@@ -53,10 +53,11 @@ def main():
             turninfo = yield from read_message(reader)
             turninfo = turninfo.split('\n')[:-2]
             print('turninfo:\n', turninfo)
-            game_data.displays = []
+            game_data.displays = {}
             for disp in turninfo[1:1+game_data.number_of_displays]:
                 disp_parts = disp.split(' ')
-                game_data.displays.append((disp_parts[1], disp_parts[2]))
+                game_data.displays[int(disp_parts[1])] = (disp_parts[2],
+                                                          disp_parts[3])
             print('displays: ', game_data.displays)
             field = (turninfo[-1].split(' '))[1]
             print('field: {}'.format(field))
