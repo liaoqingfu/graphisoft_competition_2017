@@ -34,10 +34,10 @@ private:
         for (; i < potentialSteps.size() &&
                 potentialSteps[i].weight >= potentialSteps[0].weight - tolerance;
                 ++i) {
-            std::cerr << "-> " << potentialSteps[i].step.pushDirection << " "
-                    << potentialSteps[i].step.pushPosition << " "
-                    << potentialSteps[i].step.princessTarget << ": "
-                    << potentialSteps[i].weight << "\n";
+            // std::cerr << "-> " << potentialSteps[i].step.pushDirection << " "
+            //         << potentialSteps[i].step.pushPosition << " "
+            //         << potentialSteps[i].step.princessTarget << ": "
+            //         << potentialSteps[i].weight << "\n";
         }
         potentialSteps.resize(i);
         std::cerr << "Filtered out the " << i << " best steps\n";
