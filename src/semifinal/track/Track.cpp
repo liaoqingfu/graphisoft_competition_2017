@@ -31,8 +31,7 @@ const std::vector<Point>& Track::getReachablePoints(Point source) const {
 }
 
 bool Track::canMovePrincess(int player, Point target) const {
-    return isReachableFrom(princesses[player], target)
-            && fields[target].noPrincess();
+    return isReachableFrom(princesses[player], target);
 }
 
 void Track::movePrincess(int player, Point target) {
@@ -40,7 +39,6 @@ void Track::movePrincess(int player, Point target) {
     auto& to = fields[target];
 
     assert(from.hasPrincess(player));
-    assert(!to.hasPrincess(player));
 
     from.removePrincess(player);
     to.addPrincess(player);
@@ -154,9 +152,16 @@ std::ostream& operator<<(std::ostream& os, const Track& track) {
     return os;
 }
 
-std::string toBox(const Track& track) {
+std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
     std::string result;
 
+    int colorId = 0;
+    std::string color, noColor;
+    if (currentPrincess >= 0) {
+        colorId = playerColors[currentPrincess];
+        color = setColor(defaultColor, colorId);
+        noColor = clearColor();
+    }
     // header for X axis
     result.append("   "); /*Y axis offset*/
     for (std::size_t i = 0; i < track.width(); ++i) {
@@ -192,7 +197,19 @@ std::string toBox(const Track& track) {
 
         p.y = y / BOXHEIGHT;
         for (p.x = 0; p.x < static_cast<int>(track.width()); ++p.x) {
-            line.append(getBoxLine(track.getField(p), y % BOXHEIGHT));
+            bool drawColor = currentPrincess >= 0
+                    && track.canMovePrincess(currentPrincess, p);
+            if (drawColor) {
+                line.append(color);
+            }
+
+            line.append(getBoxLine(track.getField(p), y % BOXHEIGHT,
+                    targetMonitor >= 0 && track.getMonitor(targetMonitor) == p
+                            ? (drawColor ? colorId : 0) : -1));
+
+            if (drawColor) {
+                line.append(noColor);
+            }
 
             // additional horizontal connection
             Point next{p.x + 1, p.y};

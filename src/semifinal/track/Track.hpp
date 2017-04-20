@@ -60,7 +60,8 @@ private:
 
 std::ostream& operator<<(std::ostream& os, const Track& track);
 
-std::string toBox(const Track& track);
+std::string toBox(const Track& track, int currentPrincess = -1,
+        int targetMonitor = -1);
 
 struct TransformedPoint {
     Point original;

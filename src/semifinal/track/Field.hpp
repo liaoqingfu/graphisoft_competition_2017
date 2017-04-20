@@ -64,7 +64,7 @@ constexpr std::size_t numPlayers = 4;
 constexpr std::array<int, numPlayers> playerColors {{31, 32, 33, 34}};
 
 constexpr int defaultColor = 0;
-constexpr int monitorColor = 46;
+constexpr int monitorColor = 36;
 
 std::string setColor(int background, int foreground);
 
@@ -83,7 +83,9 @@ const std::vector<int>& getIsomorphs(int fieldType);
 
 constexpr int BOXHEIGHT = 5;
 constexpr int BOXWIDTH = 9;
-std::string getBoxLine(const Field& field, unsigned i);
+std::string getBoxLine(const Field& field, unsigned i,
+        int color = -1);
+
 std::string toBox(const Field& field);
 
 #endif // SEMIFINAL_TRACK_FIELD_HPP

@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(StraightLineHorizontal) {
             {Point{0, 0}, Point{5, 0}}};
     BOOST_TEST_MESSAGE(track);
 
-    BOOST_TEST(!track.canMovePrincess(0, Point{0, 0}));
+    BOOST_TEST(track.canMovePrincess(0, Point{0, 0}));
     BOOST_TEST(track.canMovePrincess(0, Point{1, 0}));
     BOOST_TEST(track.canMovePrincess(0, Point{2, 0}));
     BOOST_TEST(!track.canMovePrincess(0, Point{3, 0}));
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(StraightLineHorizontal) {
     BOOST_TEST(!track.canMovePrincess(1, Point{2, 0}));
     BOOST_TEST(track.canMovePrincess(1, Point{3, 0}));
     BOOST_TEST(track.canMovePrincess(1, Point{4, 0}));
-    BOOST_TEST(!track.canMovePrincess(1, Point{5, 0}));
+    BOOST_TEST(track.canMovePrincess(1, Point{5, 0}));
 }
 
 BOOST_AUTO_TEST_CASE(HalfFitHorizontal) {
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(TCrossHorizontal) {
             {Point{0, 0}, Point{5, 0}}};
     BOOST_TEST_MESSAGE(track);
 
-    BOOST_TEST(!track.canMovePrincess(0, Point{0, 0}));
+    BOOST_TEST(track.canMovePrincess(0, Point{0, 0}));
     BOOST_TEST(track.canMovePrincess(0, Point{1, 0}));
     BOOST_TEST(track.canMovePrincess(0, Point{2, 0}));
     BOOST_TEST(!track.canMovePrincess(0, Point{3, 0}));
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(TCrossHorizontal) {
     BOOST_TEST(!track.canMovePrincess(1, Point{2, 0}));
     BOOST_TEST(track.canMovePrincess(1, Point{3, 0}));
     BOOST_TEST(track.canMovePrincess(1, Point{4, 0}));
-    BOOST_TEST(!track.canMovePrincess(1, Point{5, 0}));
+    BOOST_TEST(track.canMovePrincess(1, Point{5, 0}));
     BOOST_TEST(!track.canMovePrincess(1, Point{0, 1}));
     BOOST_TEST(!track.canMovePrincess(1, Point{1, 1}));
     BOOST_TEST(!track.canMovePrincess(1, Point{2, 1}));
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(StraightLineVertical) {
             {Point{0, 0}, Point{0, 5}}};
     BOOST_TEST_MESSAGE(track);
 
-    BOOST_TEST(!track.canMovePrincess(0, Point{0, 0}));
+    BOOST_TEST(track.canMovePrincess(0, Point{0, 0}));
     BOOST_TEST(track.canMovePrincess(0, Point{0, 1}));
     BOOST_TEST(track.canMovePrincess(0, Point{0, 2}));
     BOOST_TEST(!track.canMovePrincess(0, Point{0, 3}));
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(StraightLineVertical) {
     BOOST_TEST(!track.canMovePrincess(1, Point{0, 2}));
     BOOST_TEST(track.canMovePrincess(1, Point{0, 3}));
     BOOST_TEST(track.canMovePrincess(1, Point{0, 4}));
-    BOOST_TEST(!track.canMovePrincess(1, Point{0, 5}));
+    BOOST_TEST(track.canMovePrincess(1, Point{0, 5}));
 }
 
 BOOST_AUTO_TEST_CASE(HalfFitVertical) {
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(TCrossVertical) {
             {Point{0, 0}, Point{0, 5}}};
     BOOST_TEST_MESSAGE(track);
 
-    BOOST_TEST(!track.canMovePrincess(0, Point{0, 0}));
+    BOOST_TEST(track.canMovePrincess(0, Point{0, 0}));
     BOOST_TEST(track.canMovePrincess(0, Point{0, 1}));
     BOOST_TEST(track.canMovePrincess(0, Point{0, 2}));
     BOOST_TEST(!track.canMovePrincess(0, Point{0, 3}));
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(TCrossVertical) {
     BOOST_TEST(!track.canMovePrincess(1, Point{0, 2}));
     BOOST_TEST(track.canMovePrincess(1, Point{0, 3}));
     BOOST_TEST(track.canMovePrincess(1, Point{0, 4}));
-    BOOST_TEST(!track.canMovePrincess(1, Point{0, 5}));
+    BOOST_TEST(track.canMovePrincess(1, Point{0, 5}));
     BOOST_TEST(!track.canMovePrincess(1, Point{1, 0}));
     BOOST_TEST(!track.canMovePrincess(1, Point{1, 1}));
     BOOST_TEST(!track.canMovePrincess(1, Point{1, 2}));
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(Curves) {
             {Point{0, 0}, Point{3, 0}, Point{0, 9}, Point{3, 9}}};
     BOOST_TEST_MESSAGE(track);
 
-    BOOST_TEST(!track.canMovePrincess(0, Point{0, 0}));
+    BOOST_TEST(track.canMovePrincess(0, Point{0, 0}));
     BOOST_TEST(track.canMovePrincess(0, Point{1, 0}));
     BOOST_TEST(!track.canMovePrincess(0, Point{2, 0}));
     BOOST_TEST(!track.canMovePrincess(0, Point{3, 0}));
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(Curves) {
     BOOST_TEST(!track.canMovePrincess(1, Point{0, 0}));
     BOOST_TEST(!track.canMovePrincess(1, Point{1, 0}));
     BOOST_TEST(track.canMovePrincess(1, Point{2, 0}));
-    BOOST_TEST(!track.canMovePrincess(1, Point{3, 0}));
+    BOOST_TEST(track.canMovePrincess(1, Point{3, 0}));
     BOOST_TEST(!track.canMovePrincess(1, Point{0, 1}));
     BOOST_TEST(!track.canMovePrincess(1, Point{1, 1}));
     BOOST_TEST(track.canMovePrincess(1, Point{2, 1}));
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE(Curves) {
     BOOST_TEST(!track.canMovePrincess(2, Point{1, 8}));
     BOOST_TEST(!track.canMovePrincess(2, Point{2, 8}));
     BOOST_TEST(!track.canMovePrincess(2, Point{3, 8}));
-    BOOST_TEST(!track.canMovePrincess(2, Point{0, 9}));
+    BOOST_TEST(track.canMovePrincess(2, Point{0, 9}));
     BOOST_TEST(track.canMovePrincess(2, Point{1, 9}));
     BOOST_TEST(!track.canMovePrincess(2, Point{2, 9}));
     BOOST_TEST(!track.canMovePrincess(2, Point{3, 9}));
@@ -343,7 +343,7 @@ BOOST_AUTO_TEST_CASE(Curves) {
     BOOST_TEST(!track.canMovePrincess(3, Point{0, 9}));
     BOOST_TEST(!track.canMovePrincess(3, Point{1, 9}));
     BOOST_TEST(track.canMovePrincess(3, Point{2, 9}));
-    BOOST_TEST(!track.canMovePrincess(3, Point{3, 9}));
+    BOOST_TEST(track.canMovePrincess(3, Point{3, 9}));
 }
 
 BOOST_AUTO_TEST_CASE(Crosses) {
@@ -355,7 +355,7 @@ BOOST_AUTO_TEST_CASE(Crosses) {
             {Point{0, 0}, Point{1, 1}}};
     BOOST_TEST_MESSAGE(track);
 
-    BOOST_TEST(!track.canMovePrincess(0, Point{0, 0}));
+    BOOST_TEST(track.canMovePrincess(0, Point{0, 0}));
     BOOST_TEST(track.canMovePrincess(0, Point{1, 0}));
     BOOST_TEST(track.canMovePrincess(0, Point{2, 0}));
     BOOST_TEST(track.canMovePrincess(0, Point{3, 0}));
@@ -377,7 +377,7 @@ BOOST_AUTO_TEST_CASE(Crosses) {
     BOOST_TEST(!track.canMovePrincess(1, Point{2, 0}));
     BOOST_TEST(!track.canMovePrincess(1, Point{3, 0}));
     BOOST_TEST(!track.canMovePrincess(1, Point{0, 1}));
-    BOOST_TEST(!track.canMovePrincess(1, Point{1, 1}));
+    BOOST_TEST(track.canMovePrincess(1, Point{1, 1}));
     BOOST_TEST(track.canMovePrincess(1, Point{2, 1}));
     BOOST_TEST(!track.canMovePrincess(1, Point{3, 1}));
     BOOST_TEST(!track.canMovePrincess(1, Point{0, 2}));
@@ -708,10 +708,10 @@ BOOST_AUTO_TEST_CASE(OneField) {
     std::cout << toBox(track);
     std::string tmp =
 R"foo(
-       0    
+       0
    ┏━━━━━━━┓
    ┃       ┗
-0  ┃        
+0  ┃
    ┃       ┏
    ┗━━━━━━━┛
 )foo";
@@ -724,7 +724,7 @@ BOOST_AUTO_TEST_CASE(OneRow) {
     std::cout << toBox(track);
     std::string tmp =
 R"foo(
-       0         1    
+       0         1
    ┏━━━━━━━┓ ┏━━━━━━━┓
    ┃       ┗━┛       ┃
 0  ┃                 ┃
@@ -740,7 +740,7 @@ BOOST_AUTO_TEST_CASE(Test4x4) {
     std::cout << toBox(track);
     std::string tmp =
 R"foo(
-       0         1    
+       0         1
    ┏━━━━━━━┓ ┏━━━━━━━┓
    ┃       ┗━┛       ┃
 0  ┃                 ┃

@@ -136,7 +136,8 @@ void runGame(Rng& rng, std::vector<PlayerState>& playerStates, bool print) {
                         << " score " << playerState.score
                         << " target " << track.getMonitor(targetMonitor)
                         << clearColor()
-                        << "\n" << gameState.track;
+                        << "\n" << toBox(gameState.track, playerId,
+                                targetMonitor);
             }
 
             playerState.gameState.track = track;

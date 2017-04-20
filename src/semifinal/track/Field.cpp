@@ -1,6 +1,7 @@
 #include "Field.hpp"
 
 #include <algorithm>
+#include <iostream>
 #include <boost/algorithm/string/join.hpp>
 
 namespace {
@@ -156,13 +157,22 @@ std::string getMiddleLine(const Field& field) {
     return result.append(getRightMChar(field));
 }
 
-std::string get4thLine(const Field& field) {
+std::string get4thLine(const Field& field, int color) {
     auto result = std::string(getLeftDChar(field));
     if (field.monitor == -1) {
         result.append("       ");
     } else {
-        auto Mstr = std::string(" M").append(std::to_string(field.monitor));
+        std::string Mstr;
+        Mstr.append(" M").append(std::to_string(field.monitor));
+        if (color >= 0) {
+            result.append(setColor(defaultColor, monitorColor));
+        }
         result.append(Mstr);
+        if (color == 0) {
+            result.append(clearColor());
+        } else if (color > 0) {
+            result.append(setColor(defaultColor, color));
+        }
         for (std::size_t j = 0; j < 7 - Mstr.size(); ++j) {
             result.append(" ");
         }
@@ -172,7 +182,7 @@ std::string get4thLine(const Field& field) {
 
 } // unnamed
 
-std::string getBoxLine(const Field& field, unsigned i) {
+std::string getBoxLine(const Field& field, unsigned i, int color) {
     switch(i) {
         case 0:
             return getUpperLine(field);
@@ -181,7 +191,7 @@ std::string getBoxLine(const Field& field, unsigned i) {
         case 2:
             return getMiddleLine(field);
         case 3:
-            return get4thLine(field);
+            return get4thLine(field, color);
         case 4:
             return getLowerLine(field);
         default: return "";
