@@ -15,6 +15,9 @@ struct PotentialStep {
     double weight;
 };
 
+std::vector<PotentialStep> calculatePotentialSteps(const GameState& gameState,
+                                                   int playerId,
+                                                   int extraField);
 std::vector<PotentialStep> calculatePotentialSteps(const GameState& gameState);
 
 #endif // SEMIFINAL_CLIENT_POTENTIALSTEP_HPP
