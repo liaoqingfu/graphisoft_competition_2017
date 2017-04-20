@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import asyncio
 import logging
 from collections import namedtuple
@@ -195,14 +196,15 @@ class GameServer(object):
 class GameController(object):
 
     __LEVEL = 1  # FIXME: hardcoded
-    __MAX_TICK = 5  # FIXME: hardcoded
-    __STARTING_POSITION = (3, 2)  # FIXME: hardcoded
     __STARTING_FIELD = 15
-    __STARTING_DISPLAY = 0  # FIXME: hardcoded
 
-    def __init__(self, number_of_players):
+    def __init__(self, number_of_players, seed=None):
         self.__NUMBER_OF_PLAYERS = number_of_players
-        self.__maze = Maze()
+        self.__seed = seed
+        self.__reset(self.__seed)
+
+    def __reset(self, seed):
+        self.__maze = Maze(seed)
         self.__players = {}
         self.__player_turn = 0
         self.__tick = 0
@@ -212,16 +214,16 @@ class GameController(object):
         auth_reply = AuthReply(AuthReply.accepted)
         player_number = len(self.__players)
         self.__players[player_number] = (
-            Player(player_number, GameController.__STARTING_POSITION,
+            Player(player_number, self.__maze.get_random_position(),
                    GameController.__STARTING_FIELD,
-                   GameController.__STARTING_DISPLAY),
+                   self.__maze.get_next_display()),
             message_sender)
         assert(len(self.__players) <= self.__NUMBER_OF_PLAYERS)
         game_info = self.__maze.get_info_as_str(
-            GameController.__LEVEL, player_number, GameController.__MAX_TICK)
+            GameController.__LEVEL, player_number, self.__maze.max_tick)
         yield from message_sender(str(auth_reply) + game_info)
         if len(self.__players) == self.__NUMBER_OF_PLAYERS:
-            yield from self.__next_player_turn()  # TODO: start game
+            yield from self.__next_player_turn()
         return player_number
 
     def player_step_requested(self, client_id, message, message_sender):
@@ -247,31 +249,31 @@ class GameController(object):
                 if next_target is None:
                     yield from self.__end_game()
                     return
-        if self.__tick <= GameController.__MAX_TICK:
+        self.__player_turn += 1
+        if self.__player_turn == len(self.__players):
+            self.__tick += 1
+            self.__player_turn = 0
+        if self.__tick <= self.__maze.max_tick:
             yield from self.__next_player_turn()
         else:
             yield from self.__end_game()
 
     def __next_player_turn(self):
         logging.debug('next player turn: {}'.format(self.__player_turn))
-        if self.__tick > GameController.__MAX_TICK:
+        if self.__tick > self.__maze.max_tick:
             return
+        positions = {}
         for player_number in self.__players:
-            positions = {}
-            for player_number in self.__players:
-                positions[player_number] = self.__players[
-                    player_number][0].position
+            positions[player_number] = self.__players[
+                player_number][0].position
+        for player_number in self.__players:
             step_msg = PlayerStepMsg(positions, self.__player_turn)
-            (player, message_sender) = self.__players[player_number]
+            player, message_sender = self.__players[player_number]
             if player_number == self.__player_turn:
                 step_msg.target = player.target
                 step_msg.field = player.field
             msg = str(self.__maze) + str(step_msg)
             yield from message_sender(msg)
-        self.__player_turn += 1
-        if self.__player_turn == len(self.__players):
-            self.__tick += 1
-            self.__player_turn = 0
         # TODO: add timer, do not wait forever for the client
 
     def __end_game(self):
@@ -279,14 +281,25 @@ class GameController(object):
             player, sender = self.__players[player_number]
             msg = EndGameMessage(player.points)
             yield from sender(str(msg))
+        self.__reset(self.__seed)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Semifinal Server')
+    parser.add_argument('-s', '--seed', help='Ramdom seed to use',
+                        metavar='seed', type=int)
+    parser.add_argument('-p', '--players', help='Number of players',
+                        metavar='players', type=int, default=1)
+    args = parser.parse_args()
+    return args
 
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
     IP_ADDRESS, TCP_PORT = '127.0.0.1', 32323
+    args = parse_args()
     loop = asyncio.get_event_loop()
-    NUMBER_OF_PLAYERS = 1   # FIXME: hardcoded
-    game_controller = GameController(NUMBER_OF_PLAYERS)
+    game_controller = GameController(args.players, args.seed)
     server = GameServer(
         partial(GameController.add_player, game_controller),
         partial(GameController.player_step_requested, game_controller),

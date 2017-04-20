@@ -59,15 +59,16 @@ def main():
                 game_data.displays[int(disp_parts[1])] = (disp_parts[2],
                                                           disp_parts[3])
             print('displays: ', game_data.displays)
-            field = (turninfo[-1].split(' '))[1]
-            print('field: {}'.format(field))
-            target_parts = turninfo[-2].split(' ')
-            target = game_data.get_display_position(int(target_parts[1]))
-            print('target: ', target)
-            msg = step_msg.format(1, 1, 0, field, target[0], target[1]) +\
-                '\n.\n'
-            writer.write(msg.encode('utf-8'))
-            yield from writer.drain()
+            if turninfo[-1].split(' ')[0] == 'EXTRAFIELD':
+                field = (turninfo[-1].split(' '))[1]
+                print('field: {}'.format(field))
+                target_parts = turninfo[-2].split(' ')
+                target = game_data.get_display_position(int(target_parts[1]))
+                print('target: ', target)
+                msg = step_msg.format(1, 1, 0, field, target[0], target[1]) +\
+                      '\n.\n'
+                writer.write(msg.encode('utf-8'))
+                yield from writer.drain()
 
     print('hello')
     loop = asyncio.get_event_loop()

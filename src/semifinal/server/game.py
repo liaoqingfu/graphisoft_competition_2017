@@ -1,4 +1,5 @@
 import itertools
+import random
 
 
 class Player(object):
@@ -47,8 +48,8 @@ class MazeGraph(object):
 
     def __init__(self, maze):
         self.__g = {}
-        for i in range(1, len(maze)):
-            for j in range(1, len(maze[0])):
+        for i in range(0, len(maze)):
+            for j in range(0, len(maze[0])):
                 self.__g[(i, j)] = self.__get_neighbors(maze, i, j)
 
     def __get_neighbors(self, maze, i, j):
@@ -93,9 +94,29 @@ class Maze(object):
         [10, 7, 2, 2, 1]
     ]
 
-    def __init__(self):
-        self.__fields = Maze.FIELDS
-        self.__displays = {0: (2, 2), 1: (5, 5), 2: (4, 2)}
+    def __init__(self, seed=None):
+        self.__seed = random.seed(seed)
+        m, n = random.randint(6, 15), random.randint(6, 15)
+        self.__fields = []
+        for i in range(0, m):
+            row = []
+            for j in range(0, n):
+                row.append(random.randint(1, 15))
+            self.__fields.append(row)
+        self.__displays = {}
+        self.__remaining_displays = set()
+        for i in range(0, random.randint(1, int(m * n / 2))):
+            self.__displays[i] = (random.randint(0, m), random.randint(0, n))
+            self.__remaining_displays.add(i)
+        self.__max_tick = random.randint(3, 15)
+
+    @property
+    def max_tick(self):
+        return self.__max_tick
+
+    def get_random_position(self):
+        return (random.randint(0, len(self.__fields)),
+                random.randint(0, len(self.__fields[0])))
 
     def push(self, is_row, is_positive, number, field):
         if is_row and is_positive:
@@ -144,9 +165,11 @@ class Maze(object):
     def get_display_position(self, display_number):
         return self.__displays[display_number]
 
-    def get_next_display(self, current_display_number):
-        if current_display_number + 1 < len(self.__displays):
-            return current_display_number + 1
+    def get_next_display(self, current_display_number=None):
+        if current_display_number is not None:
+            self.__remaining_displays.remove(current_display_number)
+        if len(self.__remaining_displays) > 0:
+            return random.choice(list(self.__remaining_displays))
         return None
 
     def get_info_as_str(self, level, player_number, max_tick):
@@ -169,9 +192,5 @@ class Maze(object):
             lines.append('DISPLAY {} {} {}'.format(
                 display, self.__displays[display][0],
                 self.__displays[display][1]))
-        # for player in self.__players:
-        #     lines.append('POSITION {} {} {}'.format(
-        #         player, self.__players[player].position[0],
-        #         self.__players[player].position[1]))
         lines.append('')
         return '\n'.join(lines)
