@@ -14,17 +14,22 @@
 class PrincessMovingChooser : public DelegatingChooser {
 public:
     PrincessMovingChooser(std::shared_ptr<IChooser> chooser,
-            double weightMultiplier) :
+            double weightMultiplier, bool overrideGoodSteps) :
             DelegatingChooser(std::move(chooser)),
-            weightMultiplier(weightMultiplier) {}
+            weightMultiplier(weightMultiplier),
+            overrideGoodSteps(overrideGoodSteps) {}
 
+    Step chooseGoodStep(
+            const std::vector<PotentialStep>& potentialSteps) override;
     Step chooseBadStep(
             const std::vector<PotentialStep>& potentialSteps) override;
 
 private:
     void processStep(std::vector<PotentialStep>& stepValues, PotentialStep step);
+    void setWeight(PotentialStep& step);
 
     double weightMultiplier;
+    bool overrideGoodSteps;
 };
 
 #endif // SEMIFINAL_CLIENT_PRINCESSMOVINGCHOOSER_HPP

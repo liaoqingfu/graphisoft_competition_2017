@@ -1,6 +1,19 @@
 #include "PrincessMovingChooser.hpp"
 #include "ChooserHelper.hpp"
 
+Step PrincessMovingChooser::chooseGoodStep(
+        const std::vector<PotentialStep>& potentialSteps) {
+    if (overrideGoodSteps) {
+        auto steps = potentialSteps;
+        for (PotentialStep& step : steps) {
+            setWeight(step);
+        }
+        return DelegatingChooser::chooseGoodStep(steps);
+    } else {
+        return DelegatingChooser::chooseGoodStep(potentialSteps);
+    }
+}
+
 Step PrincessMovingChooser::chooseBadStep(
         const std::vector<PotentialStep>& potentialSteps) {
     return processPotentialSteps(potentialSteps,
@@ -13,13 +26,22 @@ void PrincessMovingChooser::processStep(std::vector<PotentialStep>& stepValues,
         PotentialStep step) {
     const Track& track = *step.targetTrack;
     int playerId = step.sourceState->playerId;
+
+    for (Point p : track.getReachablePoints(track.getPrincess(playerId))) {
+        step.step.princessTarget = p;
+        setWeight(step);
+        stepValues.push_back(step);
+    }
+}
+
+void PrincessMovingChooser::setWeight(PotentialStep& step) {
+    const Track& track = *step.targetTrack;
+    int playerId = step.sourceState->playerId;
     Point target = track.getMonitor(playerId);
 
     int size = track.width() + track.height();
-    for (Point p : track.getReachablePoints(track.getPrincess(playerId))) {
-        step.step.princessTarget = p;
-        step.weight = (size - (std::abs(p.x - target.x)
-                + std::abs(p.y - target.y))) * weightMultiplier;
-        stepValues.push_back(step);
-    }
+    step.weight += (size - (std::abs(step.step.princessTarget.x - target.x)
+                + std::abs(step.step.princessTarget.y - target.y)))
+                        * weightMultiplier;
+
 }
