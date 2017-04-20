@@ -16,6 +16,10 @@ struct Options {
     int numRuns = 1;
     unsigned seed = 0;
     std::vector<std::string> strategyStrings;
+    int width = 10;
+    int height = 10;
+    int numDisplays = 20;
+    int maxTick = 40;
 };
 
 std::vector<Point> generatePoints(Rng& rng, int width, int height,
@@ -31,12 +35,12 @@ std::vector<Point> generatePoints(Rng& rng, int width, int height,
     return std::vector<Point>(result.begin(), result.end());
 }
 
-GameState generateGame(Rng& rng) {
+GameState generateGame(Rng& rng, const Options& options) {
     GameState result;
-    result.width = 15;
-    result.height = 6;
-    result.numDisplays = 20;
-    result.maxTick = 40;
+    result.width = options.width;
+    result.height = options.height;
+    result.numDisplays = options.numDisplays;
+    result.maxTick = options.maxTick;
     result.currentTick = 0;
     result.extraField = 15;
 
@@ -109,8 +113,9 @@ std::vector<ChoosingStrategy> createStrategies(Rng& rng,
     return result;
 }
 
-void runGame(Rng& rng, std::vector<PlayerState>& playerStates, bool print) {
-    GameState gameState = generateGame(rng);
+void runGame(Rng& rng, const Options& options,
+        std::vector<PlayerState>& playerStates, bool print) {
+    GameState gameState = generateGame(rng, options);
     for (std::size_t i = 0; i < playerStates.size(); ++i) {
         GameState& state = playerStates[i].gameState;
         state = gameState;
@@ -197,6 +202,10 @@ Options parseOptions(int argc, const char* argv[]) {
         ("num-runs,n", defaultValue(options.numRuns))
         ("seed", defaultValue(options.seed))
         ("strategy,s", po::value(&options.strategyStrings)->multitoken())
+        ("width,w", defaultValue(options.width))
+        ("height,h", defaultValue(options.height))
+        ("num-displays,m", defaultValue(options.numDisplays))
+        ("time-limit,t", defaultValue(options.maxTick))
         ;
 
     po::variables_map vm;
@@ -231,7 +240,7 @@ int main(int argc, const char* argv[]) {
 
     for (int i = 0; i < options.numRuns; ++i) {
         std::cout << "Run #" << i << "\n";
-        runGame(rng, playerStates, options.numRuns == 1);
+        runGame(rng, options, playerStates, options.numRuns == 1);
     }
 
     std::cout << "Game over.\n";
