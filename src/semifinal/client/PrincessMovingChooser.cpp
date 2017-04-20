@@ -40,8 +40,9 @@ void PrincessMovingChooser::setWeight(PotentialStep& step) {
     Point target = track.getMonitor(playerId);
 
     int size = track.width() + track.height();
-    step.weight += (size - (std::abs(step.step.princessTarget.x - target.x)
-                + std::abs(step.step.princessTarget.y - target.y)))
-                        * weightMultiplier;
+    step.weight += (1.0 - (std::abs(step.step.princessTarget.x - target.x)
+                + std::abs(step.step.princessTarget.y - target.y))
+                        / static_cast<double>(size))
+                * weightMultiplier;
 
 }
