@@ -14,7 +14,7 @@ using Rng = std::mt19937;
 
 struct Options {
     int numRuns = 1;
-    int seed = 0;
+    unsigned seed = 0;
     std::vector<std::string> strategyStrings;
 };
 
