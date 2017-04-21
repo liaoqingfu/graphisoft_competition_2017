@@ -17,8 +17,8 @@ std::vector<std::string> split(const std::string& line) {
 
 using std::stoi;
 
-GameState parseInitialGameState(const std::vector<std::string>& input) {
-    GameState result;
+GameInfo parseInitial(const std::vector<std::string>& input) {
+    GameInfo result;
     for (const auto& line : input) {
         auto tokens = split(line);
 
@@ -54,8 +54,9 @@ GameState parseInitialGameState(const std::vector<std::string>& input) {
 void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
 
     std::vector<int> fields;
-    Track::Monitors monitors(gs.numDisplays);
-    Track::Princesses princesses(gs.numPlayers);
+    const auto& gi = gs.gameInfo;
+    Track::Monitors monitors(gi.numDisplays);
+    Track::Princesses princesses(gi.numPlayers);
     for (const auto& line : input) {
         auto tokens = split(line);
 
@@ -74,7 +75,7 @@ void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
         } else if (tokens.at(0) == "TICK") {
             gs.currentTick = stoi(tokens.at(1));
         } else if (tokens.at(0) == "FIELDS") {
-            if ((int)tokens.size() - 1 != gs.width * gs.height) {
+            if ((int)tokens.size() - 1 != gi.width * gi.height) {
                 throw std::runtime_error("incorrect number of fields");
             }
             for (std::size_t i = 1; i < tokens.size(); ++i) {
@@ -90,7 +91,7 @@ void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
             gs.activePlayerId = stoi(tokens.at(1));
         } else if (tokens.at(0) == "TARGET") {
             auto i = stoi(tokens.at(1));
-            if (i > gs.numDisplays -1) {
+            if (i > gi.numDisplays -1) {
                 throw std::runtime_error("incorrect target");
             }
             gs.targetMonitor = i;
@@ -98,7 +99,7 @@ void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
             gs.extraField = stoi(tokens.at(1));
         }
     } // for
-    gs.track = Track(gs.width, gs.height, fields, monitors, princesses);
+    gs.track = Track(gi.width, gi.height, fields, monitors, princesses);
 }
 
 std::vector<std::string> createOutput(const Step& step) {

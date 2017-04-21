@@ -6,36 +6,46 @@
 #include <string>
 #include <vector>
 
-struct GameState {
-    Track track;
+// Static data, does not change during a game
+struct GameInfo {
     int width = -1;
     int height = -1;
     int numDisplays = -1;
     int maxTick = -1;
-    int currentTick = -1;
     int numPlayers = 4; // in semifinal this is const
     int playerId = -1;
+};
+
+// Dynamic data, might change with every tick
+struct GameState {
+
+    const GameInfo gameInfo;
+
+    int currentTick = -1;
     int activePlayerId = -1;
     int targetMonitor = -1;
     int extraField = -1;
 
+    Track track;
+
     GameState() = default;
-    GameState(Track track) : track(std::move(track)) {}
+    GameState(GameInfo gameInfo) : gameInfo(std::move(gameInfo)) {}
+    //GameState(Track track) : track(std::move(track)) {}
     GameState(const GameState& other, Track track) :
-        track(std::move(track)),
-        width(other.width),
-        height(other.height),
-        numDisplays(other.numDisplays),
-        maxTick(other.maxTick),
+        gameInfo(other.gameInfo),
         currentTick(other.currentTick),
-        numPlayers(other.numPlayers),
-        playerId(other.playerId),
         activePlayerId(other.activePlayerId),
         targetMonitor(other.targetMonitor),
-        extraField(other.extraField) {}
+        extraField(other.extraField),
+        track(std::move(track)) {}
 
-    bool ourTurn() { return playerId == activePlayerId; }
+    bool ourTurn() { return gameInfo.playerId == activePlayerId; }
 };
+
+//struct GameDesc {
+    //GameInfo gameInfo;
+    //GameState gameState;
+//};
 
 struct Step {
     Directions pushDirection;
@@ -44,10 +54,10 @@ struct Step {
     Point princessTarget;
 };
 
-GameState parseInitialGameState(const std::vector<std::string>& input); // TODO
+GameInfo parseInitial(const std::vector<std::string>& input);
 void parseTickInfo(GameState& gameState,
-        const std::vector<std::string>& input); // TODO
-std::vector<std::string> createOutput(const Step& step); // TODO
+        const std::vector<std::string>& input);
+std::vector<std::string> createOutput(const Step& step);
 
 inline
 int executeStep(Track& track, int playerId, const Step& step) {

@@ -4,7 +4,7 @@
 
 BOOST_AUTO_TEST_SUITE(GameStateParse)
 
-BOOST_AUTO_TEST_SUITE(ParseInitialGameState)
+BOOST_AUTO_TEST_SUITE(ParseInitial)
 
 BOOST_AUTO_TEST_CASE(OK) {
     std::vector<std::string> input = {
@@ -15,12 +15,12 @@ BOOST_AUTO_TEST_CASE(OK) {
         "PLAYER 0",
         "MAXTICK 300"
     };
-    auto gs = parseInitialGameState(input);
-    BOOST_CHECK_EQUAL(gs.width, 4);
-    BOOST_CHECK_EQUAL(gs.height, 3);
-    BOOST_CHECK_EQUAL(gs.numDisplays, 2);
-    BOOST_CHECK_EQUAL(gs.playerId, 0);
-    BOOST_CHECK_EQUAL(gs.maxTick, 300);
+    auto gi = parseInitial(input);
+    BOOST_CHECK_EQUAL(gi.width, 4);
+    BOOST_CHECK_EQUAL(gi.height, 3);
+    BOOST_CHECK_EQUAL(gi.numDisplays, 2);
+    BOOST_CHECK_EQUAL(gi.playerId, 0);
+    BOOST_CHECK_EQUAL(gi.maxTick, 300);
 }
 
 BOOST_AUTO_TEST_CASE(Shall_throw_on_wrong_number_format) {
@@ -32,17 +32,17 @@ BOOST_AUTO_TEST_CASE(Shall_throw_on_wrong_number_format) {
         "PLAYER 0",
         "MAXTICK 300"
     };
-    BOOST_CHECK_THROW(parseInitialGameState(input), std::invalid_argument);
+    BOOST_CHECK_THROW(parseInitial(input), std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(Shall_throw_on_MESSAGE) {
     std::vector<std::string> input = {
         "MESSAGE"
     };
-    BOOST_CHECK_THROW(parseInitialGameState(input), std::runtime_error);
+    BOOST_CHECK_THROW(parseInitial(input), std::runtime_error);
 }
 
-BOOST_AUTO_TEST_SUITE_END() // ParseInitialGameState
+BOOST_AUTO_TEST_SUITE_END() // parseInitial
 
 BOOST_AUTO_TEST_SUITE(ParseTickInfo)
 
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(OK) {
         "PLAYER 0",
         "MAXTICK 300"
     };
-    auto gs = parseInitialGameState(input);
+    auto gi = parseInitial(input);
     input = {
         "TICK 0",
         "FIELDS 5 5 5 5 5 5 2 10 12 12 10 11",
@@ -72,6 +72,7 @@ BOOST_AUTO_TEST_CASE(OK) {
         "TARGET 2",
         "EXTRAFIELD 7"
     };
+    GameState gs{gi};
     parseTickInfo(gs, input);
     BOOST_CHECK_EQUAL(gs.currentTick, 0);
     BOOST_CHECK_EQUAL(gs.activePlayerId, 0);
@@ -80,8 +81,8 @@ BOOST_AUTO_TEST_CASE(OK) {
 
     BOOST_CHECK_EQUAL(gs.track.height(), 3);
     BOOST_CHECK_EQUAL(gs.track.width(), 4);
-    BOOST_CHECK_EQUAL(gs.track.height(), gs.height);
-    BOOST_CHECK_EQUAL(gs.track.width(), gs.width);
+    BOOST_CHECK_EQUAL(gs.track.height(), gi.height);
+    BOOST_CHECK_EQUAL(gs.track.width(), gi.width);
 
     BOOST_CHECK_EQUAL(gs.track.getField(Point(0,0)).type, 5);
     BOOST_CHECK_EQUAL(gs.track.getField(Point(3,2)).type, 11);
@@ -105,7 +106,7 @@ BOOST_AUTO_TEST_CASE(IncorrectFields) {
         "PLAYER 0",
         "MAXTICK 300"
     };
-    auto gs = parseInitialGameState(input);
+    auto gs = GameState(parseInitial(input));
     input = {
         "FIELDS 1 2 3 4 5 6 7 8 9 10 11", // one less
     };
@@ -121,7 +122,7 @@ BOOST_AUTO_TEST_CASE(IncorrectTarget) {
         "PLAYER 0",
         "MAXTICK 300"
     };
-    auto gs = parseInitialGameState(input);
+    auto gs = GameState(parseInitial(input));
     input = {
         "TARGET 5"
     };
@@ -137,7 +138,7 @@ BOOST_AUTO_TEST_CASE(MessageError) {
         "PLAYER 0",
         "MAXTICK 300"
     };
-    auto gs = parseInitialGameState(input);
+    auto gs = GameState(parseInitial(input));
     input = {
         "MESSAGE ErrorString"
     };
