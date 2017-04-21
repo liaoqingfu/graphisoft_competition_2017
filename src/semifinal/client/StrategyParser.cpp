@@ -3,6 +3,7 @@
 #include "PrincessMovingChooser.hpp"
 #include "RandomChooser.hpp"
 #include "StrategyParser.hpp"
+#include "MonitorDefendingChooser.hpp"
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
@@ -44,7 +45,7 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
                 (-(lit(',') >> lit("override")))[_val = true];
 
         chooser %= randomChooser | lookaheadChooser | princessMovingChooser
-                | bestChooser;
+                | bestChooser | monitorDefendingChooser;
         randomChooser = (lit("RandomChooser") >> lit('(') >> lit(')'))[
                 _val = make_shared_<RandomChooser>(phoenix::ref(rng))];
         lookaheadChooser = (lit("LookaheadChooser") >> lit('(')
@@ -56,6 +57,9 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
         bestChooser = (lit("BestChooser") >> lit('(')
                 >> chooser >> lit(')'))[
                         _val = make_shared_<BestChooser>(_1)];
+        monitorDefendingChooser =
+            (lit("MonitorDefendingChooser") >> lit('(') >> chooser >>
+             lit(')'))[_val = make_shared_<MonitorDefendingChooser>(_1)];
     }
 
     qi::rule<Iterator, ChoosingStrategy(), ascii::space_type> start;
@@ -70,6 +74,8 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
             ascii::space_type> princessMovingChooser;
     qi::rule<Iterator, std::shared_ptr<BestChooser>(),
             ascii::space_type> bestChooser;
+    qi::rule<Iterator, std::shared_ptr<MonitorDefendingChooser>(),
+             ascii::space_type> monitorDefendingChooser;
 };
 
 
