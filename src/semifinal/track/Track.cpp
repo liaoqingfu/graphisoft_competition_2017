@@ -152,6 +152,18 @@ std::ostream& operator<<(std::ostream& os, const Track& track) {
     return os;
 }
 
+struct ColorDrawer {
+    ColorDrawer(std::string& line, bool drawColor, const std::string& color)
+        : line(line), drawColor(drawColor) {
+        if (drawColor) line.append(color);
+    }
+    ~ColorDrawer() {
+        if (drawColor) line.append(clearColor());
+    }
+    std::string& line;
+    bool drawColor;
+};
+
 std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
     std::string result;
 
@@ -160,7 +172,6 @@ std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
     if (currentPrincess >= 0) {
         colorId = playerColors[currentPrincess];
         color = setColor(defaultColor, colorId);
-        noColor = clearColor();
     }
     // header for X axis
     result.append("   "); /*Y axis offset*/
@@ -199,16 +210,15 @@ std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
         for (p.x = 0; p.x < static_cast<int>(track.width()); ++p.x) {
             bool drawColor = currentPrincess >= 0
                     && track.canMovePrincess(currentPrincess, p);
-            if (drawColor) {
-                line.append(color);
-            }
 
-            line.append(getBoxLine(track.getField(p), y % BOXHEIGHT,
+            {
+                ColorDrawer colorizer{line, drawColor, color};
+
+                line.append(getBoxLine(
+                    track.getField(p), y % BOXHEIGHT,
                     targetMonitor >= 0 && track.getMonitor(targetMonitor) == p
-                            ? (drawColor ? colorId : 0) : -1));
-
-            if (drawColor) {
-                line.append(noColor);
+                        ? (drawColor ? colorId : 0)
+                        : -1));
             }
 
             // additional horizontal connection
@@ -217,6 +227,7 @@ std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
                 next.x < (int)track.width() &&
                 (track.getField(p).type & 0b1000) >> 3 &&
                 (track.getField(next).type & 0b0010) >> 1) {
+                ColorDrawer colorizer{line, drawColor, color};
                 line.append("━");
             } else if (p.x < (int)track.width() -
                                  1) { // do not append space after the last col
