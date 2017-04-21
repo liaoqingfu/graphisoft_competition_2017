@@ -19,7 +19,7 @@ struct GameInfo {
 // Dynamic data, might change with every tick
 struct GameState {
 
-    const GameInfo gameInfo;
+    GameInfo gameInfo; // TODO should be const
 
     int currentTick = -1;
     int activePlayerId = -1;

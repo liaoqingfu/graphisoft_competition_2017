@@ -40,16 +40,17 @@ void MonitorDefendingChooser::processStep(PotentialStep step) {
 
     GameState newGameState{*step.sourceState, *step.targetTrack};
     newGameState.extraField = step.targetExtraField;
+    const auto& gi = newGameState.gameInfo;
 
     // TODO deduce from gameState what is the opponent's extraField
     constexpr int opponentExtraField = 15;
 
     double weight = 0;
-    for (int opponentId = 0; opponentId < newGameState.numPlayers;
+    for (int opponentId = 0; opponentId < gi.numPlayers;
          ++opponentId) {
 
         // skip ourself
-        if (opponentId == newGameState.playerId) continue;
+        if (opponentId == gi.playerId) continue;
 
         double opponentWeight = 0.0;
         auto nextSteps = calculatePotentialSteps(newGameState, opponentId,
@@ -66,14 +67,14 @@ void MonitorDefendingChooser::processStep(PotentialStep step) {
                     ++reachableMonitors;
                 }
             }
-            opponentWeight += reachableMonitors / newGameState.numDisplays;
+            opponentWeight += reachableMonitors / gi.numDisplays;
         }
         assert(!nextSteps.empty());
         opponentWeight /= nextSteps.size();
 
         weight += opponentWeight;
     }
-    weight /= newGameState.numPlayers;
+    weight /= gi.numPlayers;
 
     // TODO how to evaluate weights if we get steps from e.g. lookahedChooser
     step.weight *= (1.0 - weight);

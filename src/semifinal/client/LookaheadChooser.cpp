@@ -16,7 +16,7 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
     std::unordered_map<Point, int> reachablePointValues;
     // Collect the points reachable in the current step.
     const auto& reachablePoints = step.targetTrack->getReachablePoints(
-            step.targetTrack->getPrincess(step.sourceState->playerId));
+            step.targetTrack->getPrincess(step.sourceState->gameInfo.playerId));
     for (Point p : reachablePoints) {
         reachablePointValues.emplace(p, 0);
     }

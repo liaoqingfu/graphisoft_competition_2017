@@ -20,7 +20,7 @@ public:
     ChoosingStrategy& operator=(const ChoosingStrategy&) = default;
 
     ChoosingStrategy(ChoosingStrategy&&) noexcept = default;
-    ChoosingStrategy& operator=(ChoosingStrategy&&) noexcept = default;
+    ChoosingStrategy& operator=(ChoosingStrategy&&) = default;
 
     Step operator()(GameState gameState) {
         this->gameState = std::move(gameState);
@@ -35,7 +35,7 @@ private:
                 std::back_inserter(goodSteps),
                 [](const PotentialStep& step) {
                     return !step.targetTrack->canMovePrincess(
-                            step.sourceState->playerId,
+                            step.sourceState->gameInfo.playerId,
                             step.targetTrack->getMonitor(
                                     step.sourceState->targetMonitor));
                 });
@@ -54,7 +54,7 @@ private:
 
             assert(step.targetTrack.use_count() == 1);
             const_cast<Track&>(*step.targetTrack).movePrincess(
-                    gameState.playerId, target);
+                    gameState.gameInfo.playerId, target);
         }
         return chooser->chooseGoodStep(goodSteps);
     }

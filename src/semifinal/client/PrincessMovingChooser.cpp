@@ -25,7 +25,7 @@ Step PrincessMovingChooser::chooseBadStep(
 void PrincessMovingChooser::processStep(std::vector<PotentialStep>& stepValues,
         PotentialStep step) {
     const Track& track = *step.targetTrack;
-    int playerId = step.sourceState->playerId;
+    int playerId = step.sourceState->gameInfo.playerId;
 
     for (Point p : track.getReachablePoints(track.getPrincess(playerId))) {
         step.step.princessTarget = p;
@@ -36,7 +36,7 @@ void PrincessMovingChooser::processStep(std::vector<PotentialStep>& stepValues,
 
 void PrincessMovingChooser::setWeight(PotentialStep& step) {
     const Track& track = *step.targetTrack;
-    int playerId = step.sourceState->playerId;
+    int playerId = step.sourceState->gameInfo.playerId;
     Point target = track.getMonitor(playerId);
 
     int size = track.width() + track.height();

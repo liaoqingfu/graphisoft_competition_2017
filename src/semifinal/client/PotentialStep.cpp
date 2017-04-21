@@ -41,7 +41,7 @@ std::vector<PotentialStep> calculatePotentialSteps(const GameState& gameState,
 }
 
 std::vector<PotentialStep> calculatePotentialSteps(const GameState& gameState) {
-    return calculatePotentialSteps(gameState, gameState.playerId,
+    return calculatePotentialSteps(gameState, gameState.gameInfo.playerId,
                                    gameState.extraField);
 }
 
