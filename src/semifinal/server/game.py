@@ -93,15 +93,16 @@ class Maze(object):
         self.__seed = random.seed(seed)
         m, n = random.randint(6, 15), random.randint(6, 15)
         self.__fields = []
-        for i in range(0, m):
+        for i in range(0, n):
             row = []
-            for j in range(0, n):
+            for j in range(0, m):
                 row.append(random.randint(1, 15))
             self.__fields.append(row)
         self.__displays = {}
         self.__remaining_displays = set()
         for i in range(0, random.randint(1, int(m * n / 2))):
-            self.__displays[i] = (random.randint(0, m), random.randint(0, n))
+            self.__displays[i] = (random.randint(0, m - 1),
+                                  random.randint(0, n - 1))
             self.__remaining_displays.add(i)
         self.__max_tick = random.randint(3, 15)
 
@@ -110,15 +111,15 @@ class Maze(object):
         return self.__max_tick
 
     def get_random_position(self):
-        return (random.randint(0, len(self.__fields)),
-                random.randint(0, len(self.__fields[0])))
+        return (random.randint(0, len(self.__fields[0])),
+                random.randint(0, len(self.__fields)))
 
-    def push(self, is_row, is_positive, number, field):
-        if is_row and is_positive:
+    def push(self, is_col, is_positive, number, field):
+        if not is_col and is_positive:
             return self.__push_row_positive(number, field)
-        elif is_row:
+        elif not is_col:
             return self.__push_row_negative(number, field)
-        elif not is_row and is_positive:
+        elif is_col and is_positive:
             return self.__push_col_positive(number, field)
         else:
             return self.__push_col_negative(number, field)

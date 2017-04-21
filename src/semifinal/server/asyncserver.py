@@ -90,7 +90,9 @@ class PlayerStepRequest(object):
         assert(parts[0].startswith('PUSH'))
         assert(len(parts) == 1 or parts[1].startswith('GOTO'))
         goto = parts[0].split(' ')
-        _, self.is_row, self.is_positive, self.number, self.field = goto
+        _, self.is_col, self.is_positive, self.number, self.field = goto
+        self.is_col = self.is_col == '1'
+        self.is_positive = self.is_positive == '1'
         self.number = int(self.number)
         self.field = int(self.field)
         if len(parts) > 1 and parts[1].startswith('GOTO'):
@@ -233,7 +235,7 @@ class GameController(object):
         print(req.__dict__)
         print(self.__maze)
         player = self.__players[client_id][0]
-        field = self.__maze.push(req.is_row, req.is_positive, req.number,
+        field = self.__maze.push(req.is_col, req.is_positive, req.number,
                                  req.field)
         player.field = field
         print(self.__maze)
