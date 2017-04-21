@@ -244,6 +244,11 @@ class GameController(object):
             print(new_position)
             if self.__maze.get_display_position(player.target) == \
                new_position:
+                for player_number in self.__players:
+                    other_player = self.__players[player_number][0]
+                    if other_player.target == player.target:
+                        other_player.reset_target(
+                            self.__maze.get_next_display())
                 next_target = self.__maze.get_next_display(player.target)
                 player.add_point(next_target)
                 if next_target is None:
@@ -286,7 +291,7 @@ class GameController(object):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Semifinal Server')
-    parser.add_argument('-s', '--seed', help='Ramdom seed to use',
+    parser.add_argument('-s', '--seed', help='Random seed to use',
                         metavar='seed', type=int)
     parser.add_argument('-p', '--players', help='Number of players',
                         metavar='players', type=int, default=1)

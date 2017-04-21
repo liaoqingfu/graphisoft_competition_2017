@@ -43,6 +43,9 @@ class Player(object):
         self.__points += 1
         self.__target = new_target
 
+    def reset_target(self, new_target):
+        self.__target = new_target
+
 
 class MazeGraph(object):
 
