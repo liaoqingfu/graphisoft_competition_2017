@@ -9,6 +9,7 @@
 #include <sstream>
 #include <vector>
 #include <cstdlib>
+#include <stdexcept>
 
 template<typename solver>
 class client {
@@ -17,9 +18,8 @@ class client {
 	solver your_solver;
 public:
 	client(const char host_name[], unsigned short port,
-		const char team_name[], const char password[], int task_id,
-		solver your_solver = solver{}) :
-				your_solver{std::move(your_solver)} {
+            const char team_name[], const char password[], int task_id,
+            solver your_solver) : your_solver(std::move(your_solver)) {
 
 		if(!socket_handler.valid()) {
 			throw std::runtime_error("Error: Cannot open a socket!");
@@ -73,7 +73,24 @@ public:
 	}
 
 	std::vector<std::string> receive_message() {
-		std::string buffer(512, '\0');
+		std::vector<std::string> result;
+		std::string buffer;
+
+		std::stringstream consumer(received_buffer);
+		while(std::getline(consumer, buffer)) {
+			if(buffer == ".") {
+                if(consumer.tellg() == -1) {
+                    received_buffer.clear();
+                } else {
+				    received_buffer = consumer.str().substr(consumer.tellg());
+				}
+                return result;
+			} else if(!buffer.empty()) {
+				result.push_back(buffer);
+			}
+		}
+
+		buffer = std::string(512, '\0');
 
 		int received_bytes = recv(socket_handler.get_handler(), &buffer[0], 512, 0);
 
@@ -86,20 +103,7 @@ public:
 			return std::vector<std::string>();
 		}
 
-		std::vector<std::string> result;
-
-		std::stringstream consumer(received_buffer + buffer.c_str());
-		while(std::getline(consumer, buffer)) {
-            std::cerr << "received: " << std::string{buffer} << std::endl;
-			if(buffer == ".") {
-				received_buffer = consumer.str().substr(consumer.tellg());
-				return result;
-			} else if(!buffer.empty()) {
-				result.push_back(buffer);
-			}
-		}
-
-		received_buffer = consumer.str();
+		received_buffer += buffer.c_str();
 		return receive_message();
 	}
 public:
@@ -127,6 +131,5 @@ public:
 		std::cerr << "Game over" << std::endl;
 	}
 };
-
 
 #endif // SEMIFINAL_CLIENT_CLIENT_HPP
