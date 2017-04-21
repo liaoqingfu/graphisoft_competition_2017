@@ -89,14 +89,6 @@ class MazeGraph(object):
 
 class Maze(object):
 
-    FIELDS = [
-        [4, 6, 7, 10, 5],
-        [6, 7, 2, 14, 2],
-        [13, 8, 2, 4, 10],
-        [6, 5, 2, 1, 11],
-        [10, 7, 2, 2, 1]
-    ]
-
     def __init__(self, seed=None):
         self.__seed = random.seed(seed)
         m, n = random.randint(6, 15), random.randint(6, 15)
@@ -178,7 +170,7 @@ class Maze(object):
     def get_info_as_str(self, level, player_number, max_tick):
         lines = [
             'LEVEL {}'.format(level),
-            'SIZE 5 5',
+            'SIZE {} {}'.format(len(self.__fields), len(self.__fields[0])),
             'DISPLAYS {}'.format(len(self.__displays)),
             'PLAYER {}'.format(player_number),
             'MAXTICK {}'.format(max_tick),
