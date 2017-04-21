@@ -39,6 +39,8 @@ public:
     bool canMovePrincess(int player, Point target) const;
     bool isReachableFrom(Point source, Point target) const;
     const std::vector<Point>& getReachablePoints(Point source) const;
+    // returns the playerIds who can move to target
+    std::vector<int> canMoveAnyPrincess(Point target) const;
 
     void movePrincess(int player, Point target);
     void removeMonitor(int id);

@@ -34,6 +34,16 @@ bool Track::canMovePrincess(int player, Point target) const {
     return isReachableFrom(princesses[player], target);
 }
 
+std::vector<int> Track::canMoveAnyPrincess(Point target) const {
+    std::vector<int> result;
+    int player = 0;
+    for (auto p : this->princesses) {
+        if (isReachableFrom(p, target)) result.push_back(player);
+        ++player;
+    }
+    return result;
+}
+
 void Track::movePrincess(int player, Point target) {
     auto& from = fields[princesses[player]];
     auto& to = fields[target];
@@ -164,15 +174,41 @@ struct ColorDrawer {
     bool drawColor;
 };
 
+std::tuple<bool, int> getColor(Point p, const Track& track,
+                                       int currentPrincess, int targetMonitor) {
+    (void)targetMonitor;
+
+    auto getColorId = [currentPrincess](int playerId) {
+        int colorId = 0;
+        std::string color;
+        colorId = playerColors[playerId];
+        //color = setColor(defaultColor, colorId);
+        return colorId;
+    };
+
+    bool drawColor = currentPrincess >= 0;
+
+    // those players who can step into this field
+    std::vector<int> players = track.canMoveAnyPrincess(p);
+
+    int colorId;
+    if (!players.empty()) {
+        colorId = getColorId(players[0]);
+        drawColor = drawColor && true;
+    }
+
+    // Favorize the color of the current player
+    auto it = std::find(players.begin(), players.end(), currentPrincess);
+    if (it != players.end()) {
+        colorId = getColorId(*it);
+    }
+
+    return {drawColor, colorId};
+}
+
 std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
     std::string result;
 
-    int colorId = 0;
-    std::string color, noColor;
-    if (currentPrincess >= 0) {
-        colorId = playerColors[currentPrincess];
-        color = setColor(defaultColor, colorId);
-    }
     // header for X axis
     result.append("   "); /*Y axis offset*/
     for (std::size_t i = 0; i < track.width(); ++i) {
@@ -208,8 +244,12 @@ std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
 
         p.y = y / BOXHEIGHT;
         for (p.x = 0; p.x < static_cast<int>(track.width()); ++p.x) {
-            bool drawColor = currentPrincess >= 0
-                    && track.canMovePrincess(currentPrincess, p);
+
+            int colorId;
+            bool drawColor = false;
+            std::tie(drawColor, colorId) =
+                getColor(p, track, currentPrincess, targetMonitor);
+            std::string color = setColor(defaultColor, colorId);
 
             {
                 ColorDrawer colorizer{line, drawColor, color};
