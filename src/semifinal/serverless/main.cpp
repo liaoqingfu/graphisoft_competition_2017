@@ -155,10 +155,7 @@ void runGame(Rng& rng, const Options& options,
             clock_t end = ::clock();
             playerState.time += end - start;
             if (print) {
-                std::cout << "Step: push " << step.pushDirection
-                        << " " << step.pushPosition
-                        << " " << fieldTypes[step.pushFieldType]
-                        << " princess=" << step.princessTarget << "\n";
+                std::cout << "Step: " << step << "\n";
             }
             playerState.gameState.extraField = executeStep(track, playerId,
                     step);

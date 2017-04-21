@@ -3,6 +3,7 @@
 
 #include "Track.hpp"
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -58,6 +59,13 @@ struct Step {
     int pushFieldType;
     Point princessTarget;
 };
+
+inline
+std::ostream& operator<<(std::ostream& os, const Step& step) {
+    os << "push " << step.pushDirection << " " << step.pushPosition << " "
+       << fieldTypes[step.pushFieldType] << " princess=" << step.princessTarget;
+    return os;
+}
 
 GameInfo parseInitial(const std::vector<std::string>& input);
 void parseTickInfo(GameState& gameState,

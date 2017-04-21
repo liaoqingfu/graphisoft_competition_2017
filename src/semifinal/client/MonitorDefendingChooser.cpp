@@ -28,10 +28,7 @@ Step MonitorDefendingChooser::chooseGoodStep(
         [](const auto& s1, const auto& s2) { return s1.weight < s2.weight; });
     std::cerr << "MonitorDefendingChooser: step with greatest weight ("
               << it->weight << ") "
-              << "push " << it->step.pushDirection << " "
-              << it->step.pushPosition << " "
-              << fieldTypes[it->step.pushFieldType]
-              << " princess=" << it->step.princessTarget << "\n";
+              << it->step << "\n";
 
     return getDelegatedChooser().chooseGoodStep(changedPotentialSteps);
 }
