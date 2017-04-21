@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-// Static data, does not change during a game
+// Static data, does not change during a game for a player
 struct GameInfo {
     int width = -1;
     int height = -1;
@@ -19,6 +19,11 @@ struct GameInfo {
 // Dynamic data, might change with every tick
 struct GameState {
 
+    // TODO We might rather have this structure
+    //struct GameDesc {
+        //const GameInfo gameInfo;
+        //GameState gameState;
+    //};
     GameInfo gameInfo; // TODO should be const
 
     int currentTick = -1;

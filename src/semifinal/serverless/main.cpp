@@ -37,15 +37,16 @@ std::vector<Point> generatePoints(Rng& rng, int width, int height,
 
 GameState generateGame(Rng& rng, const Options& options) {
     GameState result;
-    result.width = options.width;
-    result.height = options.height;
-    result.numDisplays = options.numDisplays;
-    result.maxTick = options.maxTick;
+    auto& gi = result.gameInfo;
+    gi.width = options.width;
+    gi.height = options.height;
+    gi.numDisplays = options.numDisplays;
+    gi.maxTick = options.maxTick;
     result.currentTick = 0;
     result.extraField = 15;
 
     std::uniform_int_distribution<int> fieldDistribution{1, 15};
-    int numFields = result.width * result.height;
+    int numFields = gi.width * gi.height;
     std::vector<int> fields;
     fields.reserve(numFields);
     for (int i = 0; i < numFields; ++i) {
@@ -53,23 +54,23 @@ GameState generateGame(Rng& rng, const Options& options) {
     }
 
     auto monitors =
-            generatePoints(rng, result.width, result.height,
-                    result.numDisplays);
+            generatePoints(rng, gi.width, gi.height,
+                    gi.numDisplays);
     std::cerr << "Monitors: ";
     for (Point p : monitors) {
         std::cerr << p << " ";
     }
     std::cerr << "\n";
 
-    result.track = Track(result.width, result.height, fields, monitors,
-            generatePoints(rng, result.width, result.height, numPlayers));
+    result.track = Track(gi.width, gi.height, fields, monitors,
+            generatePoints(rng, gi.width, gi.height, numPlayers));
 
     return result;
 }
 
 int getRandomMonitor(Rng& rng, const GameState& gameState) {
     std::uniform_int_distribution<int> distribution{0,
-            gameState.numDisplays - 1};
+            gameState.gameInfo.numDisplays - 1};
     int result;
     do {
         result = distribution(rng);
@@ -119,15 +120,16 @@ void runGame(Rng& rng, const Options& options,
     for (std::size_t i = 0; i < playerStates.size(); ++i) {
         GameState& state = playerStates[i].gameState;
         state = gameState;
-        state.playerId = i;
+        state.gameInfo.playerId = i;
         state.targetMonitor = getRandomMonitor(rng, state);
     }
 
-    for (gameState.currentTick = 0; gameState.currentTick < gameState.maxTick
-            && gameState.track.getRemainingMonitors() != 0;
-            ++gameState.currentTick) {
+    for (gameState.currentTick = 0;
+         gameState.currentTick < gameState.gameInfo.maxTick &&
+         gameState.track.getRemainingMonitors() != 0;
+         ++gameState.currentTick) {
         for (PlayerState& playerState : playerStates) {
-            int playerId = playerState.gameState.playerId;
+            int playerId = playerState.gameState.gameInfo.playerId;
             int targetMonitor = playerState.gameState.targetMonitor;
             Track& track = gameState.track;
 
@@ -245,7 +247,7 @@ int main(int argc, const char* argv[]) {
 
     std::cout << "Game over.\n";
     for (const PlayerState& playerState : playerStates) {
-        int playerId = playerState.gameState.playerId;
+        int playerId = playerState.gameState.gameInfo.playerId;
         std::cout << setColor(defaultColor, playerColors[playerId])
                 << "Player " << playerId << " final score "
                 << playerState.score << " Total time spent: "

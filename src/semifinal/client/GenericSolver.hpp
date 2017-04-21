@@ -9,7 +9,7 @@ public:
     GenericSolver(Strategy strategy) : strategy(std::move(strategy)) {}
 
     void init(const std::vector<std::string>& fieldInfos) {
-        gameState = parseInitialGameState(fieldInfos);
+        gameState = GameState(parseInitial(fieldInfos));
     }
 
     std::vector<std::string> process(
