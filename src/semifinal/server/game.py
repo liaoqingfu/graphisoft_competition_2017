@@ -114,7 +114,8 @@ class Maze(object):
         return (random.randint(0, len(self.__fields[0])),
                 random.randint(0, len(self.__fields)))
 
-    def push(self, is_col, is_positive, number, field):
+    def push(self, is_col, is_positive, number, field, orig_field):
+        assert(self.__fields_are_equivalent(field, orig_field))
         if not is_col and is_positive:
             return self.__push_row_positive(number, field)
         elif not is_col:
@@ -123,6 +124,15 @@ class Maze(object):
             return self.__push_col_positive(number, field)
         else:
             return self.__push_col_negative(number, field)
+
+    def __fields_are_equivalent(self, new_field, orig_field):
+        equivalent_classes = [
+            [1, 2, 4, 8], [3, 6, 9, 12], [7, 11, 13, 14], [5, 10], [15]
+        ]
+        for eq_class in equivalent_classes:
+            if orig_field in eq_class:
+                return new_field in eq_class
+        assert(False)
 
     def __push_row_positive(self, row_num, field):
         row = self.__fields[row_num]

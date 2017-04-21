@@ -236,7 +236,7 @@ class GameController(object):
         print(self.__maze)
         player = self.__players[client_id][0]
         field = self.__maze.push(req.is_col, req.is_positive, req.number,
-                                 req.field)
+                                 req.field, player.field)
         player.field = field
         print(self.__maze)
         new_position = (int(req.x), int(req.y))
