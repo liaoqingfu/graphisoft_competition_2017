@@ -48,11 +48,6 @@ struct GameState {
     bool ourTurn() { return gameInfo.playerId == activePlayerId; }
 };
 
-//struct GameDesc {
-    //GameInfo gameInfo;
-    //GameState gameState;
-//};
-
 struct Step {
     Directions pushDirection;
     int pushPosition;
