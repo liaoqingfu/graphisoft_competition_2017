@@ -57,9 +57,9 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
         bestChooser = (lit("BestChooser") >> lit('(')
                 >> chooser >> lit(')'))[
                         _val = make_shared_<BestChooser>(_1)];
-        monitorDefendingChooser =
-            (lit("MonitorDefendingChooser") >> lit('(') >> chooser >>
-             lit(')'))[_val = make_shared_<MonitorDefendingChooser>(_1)];
+        monitorDefendingChooser = (lit("MonitorDefendingChooser") >> lit('(')
+                >> chooser >> ',' >> double_ >> lit(')'))[
+                        _val = make_shared_<MonitorDefendingChooser>(_1, _2)];
     }
 
     qi::rule<Iterator, ChoosingStrategy(), ascii::space_type> start;

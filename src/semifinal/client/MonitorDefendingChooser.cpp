@@ -24,7 +24,7 @@ Step MonitorDefendingChooser::chooseGoodStep(
     return getDelegatedChooser().chooseGoodStep(changedPotentialSteps);
 }
 
-void MonitorDefendingChooser::processStep(PotentialStep step) {
+void MonitorDefendingChooser::processStep(PotentialStep& step) {
 
     GameState newGameState{*step.sourceState, *step.targetTrack};
     newGameState.extraField = step.targetExtraField;
@@ -65,5 +65,5 @@ void MonitorDefendingChooser::processStep(PotentialStep step) {
     weight /= gi.numPlayers;
 
     // TODO how to evaluate weights if we get steps from e.g. lookahedChooser
-    step.weight *= (1.0 - weight);
+    step.weight += (1.0 - weight) * weightMultiplier;
 }
