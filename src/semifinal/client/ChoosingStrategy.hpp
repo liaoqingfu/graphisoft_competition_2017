@@ -22,7 +22,8 @@ public:
 
     Step ourTurn(GameState gameState) {
         this->gameState = std::move(gameState);
-        updateOpponentsInfo(gameState.track, gameState.gameInfo.playerId);
+        updateOpponentsInfo(this->gameState.track, 
+                this->gameState.gameInfo.playerId);
         return calculateStep();
     }
 
