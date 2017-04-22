@@ -234,22 +234,21 @@ class GameController(object):
         if hasattr(req, 'x') and hasattr(req, 'y'):
             new_position = (int(req.x), int(req.y))
             move_result = self.__maze.goto(player.number, new_position)
-            print('executing player step with result: ', move_result)
             if move_result is not None:
-                player.position = new_position
                 print(self.__maze.get_display_position(player.target))
                 print(new_position)
                 if move_result is True:
-                    for player_number in self.__players:
-                        other_player = self.__players[player_number]
-                        if other_player.target == player.target:
-                            other_player.reset_target(
-                                self.__maze.get_next_display())
+                    prev_target = player.target
                     next_target = self.__maze.get_next_display(player.target)
                     player.add_point(next_target)
                     if next_target is None:
                         yield from self.__end_game()
                         return
+                    for player_number in self.__players:
+                        other_player = self.__players[player_number]
+                        if other_player.target == prev_target:
+                            other_player.reset_target(
+                                self.__maze.get_next_display())
         self.__player_turn += 1
         if self.__player_turn == len(self.__players):
             self.__tick += 1

@@ -220,7 +220,6 @@ class Maze(object):
                     position = (x, y)
         assert(position is not None)
         g = MazeGraph(self.__zones)
-        print('moving to: ', target, ' from: ' , position)
         if g.find_path(position, target) is not None:
             self.__zones[position[1]][position[0]].remove_player(player_number)
             target_zone = self.__zones[target[1]][target[0]]
