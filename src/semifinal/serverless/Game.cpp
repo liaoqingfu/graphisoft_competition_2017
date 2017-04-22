@@ -94,6 +94,9 @@ void Game::run(bool print) {
             int playerId = playerState.gameState.gameInfo.playerId;
             int targetMonitor = playerState.gameState.targetMonitor;
             Track& track = gameState.track;
+            int extraField = playerState.gameState.extraField;
+            const OpponentsInfo& opponentsInfo =
+                playerState.strategy.getOpponentsInfo();
 
             if (print) {
                 std::cerr
@@ -104,6 +107,7 @@ void Game::run(bool print) {
                         << "Player " << playerId
                         << " score " << playerState.score->score
                         << " target " << track.getMonitor(targetMonitor)
+                        << " extraField  " << extraField
                         << clearColor()
                         << "\n" << toBox(gameState.track, playerId,
                                 targetMonitor);
@@ -127,7 +131,8 @@ void Game::run(bool print) {
                 actualPlayer.score->time += end - start;
             }
             if (print) {
-                std::cerr << "Step: " << step << "\n";
+                std::cerr << "Step: " << step << "\n"
+                          << "opponentsInfo:\n" << opponentsInfo;
             }
             playerState.gameState.extraField = executeStep(track, playerId,
                     step);
