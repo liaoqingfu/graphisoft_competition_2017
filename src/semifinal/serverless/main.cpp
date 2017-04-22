@@ -1,5 +1,6 @@
 #include "ChoosingStrategy.hpp"
 #include "GameState.hpp"
+#include "Options.hpp"
 #include "StrategyParser.hpp"
 
 #include <boost/lexical_cast.hpp>
@@ -11,16 +12,6 @@
 #include <time.h>
 
 using Rng = std::mt19937;
-
-struct Options {
-    int numRuns = 1;
-    unsigned seed = 0;
-    std::vector<std::string> strategyStrings;
-    int width = 10;
-    int height = 10;
-    int numDisplays = 20;
-    int maxTick = 40;
-};
 
 std::vector<Point> generatePoints(Rng& rng, int width, int height,
         std::size_t number) {
@@ -193,41 +184,6 @@ void runGame(Rng& rng, const Options& options,
             }
         }
     }
-}
-
-namespace po = boost::program_options;
-
-template <typename T>
-po::typed_value<T>* defaultValue(T& v) {
-    return po::value(&v)->default_value(v);
-}
-
-Options parseOptions(int argc, const char* argv[]) {
-    po::options_description optionsDescription;
-    Options options;
-    bool help = false;
-    optionsDescription.add_options()
-        ("help,h", po::bool_switch(&help))
-        ("num-runs,n", defaultValue(options.numRuns))
-        ("seed", defaultValue(options.seed))
-        ("strategy,s", po::value(&options.strategyStrings)->multitoken())
-        ("width,w", defaultValue(options.width))
-        ("height,h", defaultValue(options.height))
-        ("num-displays,m", defaultValue(options.numDisplays))
-        ("time-limit,t", defaultValue(options.maxTick))
-        ;
-
-    po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv).
-            options(optionsDescription).
-            run(), vm);
-    po::notify(vm);
-
-    if (help) {
-        std::cerr << optionsDescription << "\n";
-        exit(0);
-    }
-    return options;
 }
 
 int main(int argc, const char* argv[]) {
