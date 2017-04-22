@@ -17,8 +17,10 @@ public:
         parseTickInfo(gameState, tickInfos);
 
         if (gameState.ourTurn()) {
-            return createOutput(strategy(gameState), gameState.ourPosition());
+            return createOutput(strategy.ourTurn(gameState),
+                    gameState.ourPosition());
         } else {
+            strategy.opponentsTurn(gameState.track, gameState.activePlayerId);
             return {};
         }
     }

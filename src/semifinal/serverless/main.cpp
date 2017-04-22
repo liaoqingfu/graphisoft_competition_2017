@@ -150,10 +150,20 @@ void runGame(Rng& rng, const Options& options,
             playerState.gameState.track = track;
             playerState.gameState.currentTick = gameState.currentTick;
 
-            clock_t start = ::clock();
-            Step step = playerState.strategy(playerState.gameState);
-            clock_t end = ::clock();
-            playerState.time += end - start;
+            Step step;
+            for (PlayerState& actualPlayer : playerStates) {
+                clock_t start = ::clock();
+                if (actualPlayer.gameState.gameInfo.playerId
+                        == playerState.gameState.gameInfo.playerId) {
+                    step = actualPlayer.strategy.ourTurn(
+                            actualPlayer.gameState);
+                } else {
+                    actualPlayer.strategy.opponentsTurn(track,
+                            actualPlayer.gameState.gameInfo.playerId);
+                }
+                clock_t end = ::clock();
+                actualPlayer.time += end - start;
+            }
             if (print) {
                 std::cout << "Step: " << step << "\n";
             }

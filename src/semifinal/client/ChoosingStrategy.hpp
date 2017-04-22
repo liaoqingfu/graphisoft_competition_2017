@@ -22,9 +22,13 @@ public:
     ChoosingStrategy(ChoosingStrategy&&) noexcept = default;
     ChoosingStrategy& operator=(ChoosingStrategy&&) = default;
 
-    Step operator()(GameState gameState) {
+    Step ourTurn(GameState gameState) {
         this->gameState = std::move(gameState);
         return calculateStep();
+    }
+
+    void opponentsTurn(const Track& /*track*/, int /*playerId*/) {
+        // TODO implement
     }
 
 private:
