@@ -4,7 +4,6 @@
 Step MonitorDefendingChooser::chooseBadStep(
     const std::vector<PotentialStep>& potentialSteps) {
 
-    // TODO why chooseBadStep takes it's param as const& ?
     auto changedPotentialSteps = potentialSteps;
 
     for (PotentialStep& step : changedPotentialSteps) {
@@ -16,7 +15,6 @@ Step MonitorDefendingChooser::chooseBadStep(
 Step MonitorDefendingChooser::chooseGoodStep(
     const std::vector<PotentialStep>& potentialSteps) {
 
-    // TODO why chooseGoodStep takes it's param as const& ?
     auto changedPotentialSteps = potentialSteps;
 
     for (PotentialStep& step : changedPotentialSteps) {
