@@ -17,7 +17,17 @@ public:
         parseTickInfo(gameState, tickInfos);
 
         if (gameState.ourTurn()) {
-            return createOutput(strategy(gameState), gameState.ourPosition());
+            std::cout << toBox(gameState.track, gameState.gameInfo.playerId,
+                               gameState.targetMonitor);
+            auto step = strategy(gameState);
+            std::cout << "Step: " << step << "\n";
+            auto trackAfter = gameState.track;
+            executeStep(trackAfter, gameState.gameInfo.playerId, step);
+            std::cout << toBox(trackAfter,
+                               gameState.gameInfo.playerId,
+                               gameState.targetMonitor);
+
+            return createOutput(step, gameState.ourPosition());
         } else {
             return {};
         }
