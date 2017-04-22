@@ -36,6 +36,7 @@ Options parseOptions(int argc, const char* argv[]) {
         ("help,h", po::bool_switch(&help))
         ("port,P", defaultValue(options.port))
         ("host,H", defaultValue(options.hostname))
+        ("task-id,t", defaultValue(options.taskId))
         ("team-name", defaultValue(options.teamName))
         ("password", defaultValue(options.password))
         ("seed,S", defaultValue(options.seed))
