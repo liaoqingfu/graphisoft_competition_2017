@@ -121,7 +121,7 @@ void Game::run(bool print) {
                             actualPlayer.gameState);
                 } else {
                     actualPlayer.strategy.opponentsTurn(track,
-                            actualPlayer.gameState.gameInfo.playerId);
+                            playerId);
                 }
                 clock_t end = ::clock();
                 actualPlayer.score->time += end - start;
