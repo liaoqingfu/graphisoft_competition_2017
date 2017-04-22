@@ -3,6 +3,7 @@
 
 #include "IChooser.hpp"
 #include "GameState.hpp"
+#include "OpponentsInfo.hpp"
 
 #include <memory>
 
@@ -21,18 +22,27 @@ public:
 
     Step ourTurn(GameState gameState) {
         this->gameState = std::move(gameState);
+        updateOpponentsInfo(gameState.track, gameState.gameInfo.playerId);
         return calculateStep();
     }
 
-    void opponentsTurn(const Track& /*track*/, int /*playerId*/) {
-        // TODO implement
-    }
+    void opponentsTurn(const Track& track, int playerId);
 
 private:
     Step calculateStep();
 
+    friend struct OpponentsInfoTestFixture;
+    void updateOpponentsInfo(const Track& track, int playerId);
+
     std::shared_ptr<IChooser> chooser;
     GameState gameState;
+
+    OpponentsInfo opponentsInfo;
+
+    struct PrevState {
+        Track track;
+        int playerId = -1;
+    } prevSt;
 };
 
 #endif // SEMIFINAL_CLIENT_CHOOSINGSTRATEGY_HPP
