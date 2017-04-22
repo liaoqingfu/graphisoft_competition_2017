@@ -103,7 +103,6 @@ void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
 }
 
 std::vector<std::string> createOutput(const Step& step, Point ourPosition) {
-    std::cout << "createOutpu: Step: " << step << "\n";
     std::string c =
         (step.pushDirection == left || step.pushDirection == right) ? "0" : "1";
     std::string p =
