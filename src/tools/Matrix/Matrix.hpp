@@ -36,9 +36,22 @@ public:
         width_(width), height_(height), data_(width * height, defValue)
     {}
     Matrix(const Matrix& ) = default;
-    Matrix(Matrix&& ) = default;
+    Matrix(Matrix&& other) noexcept : width_(other.width_), height_(other.height_),
+            data_(std::move(other.data_)) {
+        other.width_ = 0;
+        other.height_ = 0;
+        other.data_.clear();
+    }
     Matrix& operator=(const Matrix& ) = default;
-    Matrix& operator=(Matrix&& ) = default;
+    Matrix& operator=(Matrix&& other) noexcept {
+        this->width_ = other.width_;
+        this->height_ = other.height_;
+        this->data_ = std::move(other.data_);
+        other.width_ = 0;
+        other.height_ = 0;
+        other.data_.clear();
+        return *this;
+    }
 
     reference operator[](std::size_t pos) {
         return data_[pos];
