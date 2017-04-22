@@ -137,7 +137,9 @@ class Maze(object):
             x, y = random.randint(0, m - 1), random.randint(0, n - 1)
             if self.__zones[y][x].display is None:
                 self.__zones[y][x].display = i
-        self.__max_tick = random.randint(3, 15)
+        self.__max_tick = random.randint(
+            self.__starting_number_of_displays,
+            2 * self.__starting_number_of_displays)
 
     @property
     def max_tick(self):
