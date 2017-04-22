@@ -58,20 +58,13 @@ class AuthReply(object):
 
 class PlayerStepMsg(object):
 
-    def __init__(self, positions, player_turn, target=None, field=None):
-        self.positions = positions
+    def __init__(self, player_turn, target=None, field=None):
         self.player_turn = player_turn
         self.target = target
         self.field = field
 
     def __str__(self):
-        lines = [
-            'POSITION {} {} {}'.format(player,
-                                       self.positions[player][0],
-                                       self.positions[player][1])
-            for player in self.positions
-        ]
-        lines.append('PLAYER {}'.format(self.player_turn))
+        lines = ['PLAYER {}'.format(self.player_turn)]
         if self.target is not None:
             assert(self.field is not None)
             lines.extend([
@@ -215,14 +208,13 @@ class GameController(object):
         # TODO: check auth_msg
         auth_reply = AuthReply(AuthReply.accepted)
         player_number = len(self.__players)
-        self.__players[player_number] = (
-            Player(player_number, self.__maze.get_random_position(),
-                   GameController.__STARTING_FIELD,
-                   self.__maze.get_next_display()),
-            message_sender)
+        self.__players[player_number] = Player(
+            player_number, GameController.__STARTING_FIELD,
+            self.__maze.get_next_display(), message_sender)
+        self.__maze.add_player(player_number)
         assert(len(self.__players) <= self.__NUMBER_OF_PLAYERS)
         game_info = self.__maze.get_info_as_str(
-            GameController.__LEVEL, player_number, self.__maze.max_tick)
+            GameController.__LEVEL, player_number)
         yield from message_sender(str(auth_reply) + game_info)
         if len(self.__players) == self.__NUMBER_OF_PLAYERS:
             yield from self.__next_player_turn()
@@ -234,28 +226,29 @@ class GameController(object):
         req = PlayerStepRequest(message)
         print(req.__dict__)
         print(self.__maze)
-        player = self.__players[client_id][0]
+        player = self.__players[client_id]
         field = self.__maze.push(req.is_col, req.is_positive, req.number,
                                  req.field, player.field)
         player.field = field
         print(self.__maze)
-        new_position = (int(req.x), int(req.y))
-        if self.__maze.goto(player.position, new_position) is not None:
-            player.position = new_position
-            print(self.__maze.get_display_position(player.target))
-            print(new_position)
-            if self.__maze.get_display_position(player.target) == \
-               new_position:
-                for player_number in self.__players:
-                    other_player = self.__players[player_number][0]
-                    if other_player.target == player.target:
-                        other_player.reset_target(
-                            self.__maze.get_next_display())
-                next_target = self.__maze.get_next_display(player.target)
-                player.add_point(next_target)
-                if next_target is None:
-                    yield from self.__end_game()
-                    return
+        if hasattr(req, 'x') and hasattr(req, 'y'):
+            new_position = (int(req.x), int(req.y))
+            move_result = self.__maze.goto(player.number, new_position)
+            if move_result is not None:
+                player.position = new_position
+                print(self.__maze.get_display_position(player.target))
+                print(new_position)
+                if move_result is True:
+                    for player_number in self.__players:
+                        other_player = self.__players[player_number]
+                        if other_player.target == player.target:
+                            other_player.reset_target(
+                                self.__maze.get_next_display())
+                    next_target = self.__maze.get_next_display(player.target)
+                    player.add_point(next_target)
+                    if next_target is None:
+                        yield from self.__end_game()
+                        return
         self.__player_turn += 1
         if self.__player_turn == len(self.__players):
             self.__tick += 1
@@ -269,13 +262,10 @@ class GameController(object):
         logging.debug('next player turn: {}'.format(self.__player_turn))
         if self.__tick > self.__maze.max_tick:
             return
-        positions = {}
         for player_number in self.__players:
-            positions[player_number] = self.__players[
-                player_number][0].position
-        for player_number in self.__players:
-            step_msg = PlayerStepMsg(positions, self.__player_turn)
-            player, message_sender = self.__players[player_number]
+            step_msg = PlayerStepMsg(self.__player_turn)
+            player = self.__players[player_number]
+            message_sender = player.data
             if player_number == self.__player_turn:
                 step_msg.target = player.target
                 step_msg.field = player.field
@@ -285,7 +275,8 @@ class GameController(object):
 
     def __end_game(self):
         for player_number in self.__players:
-            player, sender = self.__players[player_number]
+            player = self.__players[player_number]
+            sender = player.data
             msg = EndGameMessage(player.points)
             yield from sender(str(msg))
         self.__reset(self.__seed)
