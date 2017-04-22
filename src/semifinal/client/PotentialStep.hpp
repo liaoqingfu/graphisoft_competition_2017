@@ -2,12 +2,14 @@
 #define SEMIFINAL_CLIENT_POTENTIALSTEP_HPP
 
 #include "GameState.hpp"
+#include "OpponentsInfo.hpp"
 
 #include <memory>
 #include <vector>
 
 struct PotentialStep {
     const GameState* sourceState;
+    const OpponentsInfo* opponentsInfo;
     // The track should be const because it may be shared between objects.
     std::shared_ptr<const Track> targetTrack;
     int targetExtraField;
@@ -15,9 +17,10 @@ struct PotentialStep {
     double weight;
 };
 
-std::vector<PotentialStep> calculatePotentialSteps(const GameState& gameState,
-                                                   int playerId,
-                                                   int extraField);
-std::vector<PotentialStep> calculatePotentialSteps(const GameState& gameState);
+std::vector<PotentialStep> calculatePotentialSteps(
+    const GameState& gameState, const OpponentsInfo& opponentsInfo,
+    int playerId, int extraField);
+std::vector<PotentialStep> calculatePotentialSteps(
+    const GameState& gameState, const OpponentsInfo& opponentsInfo);
 
 #endif // SEMIFINAL_CLIENT_POTENTIALSTEP_HPP

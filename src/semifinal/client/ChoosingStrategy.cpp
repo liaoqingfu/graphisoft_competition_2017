@@ -6,7 +6,7 @@
 #include <vector>
 
 Step ChoosingStrategy::calculateStep() {
-    auto potentialSteps = calculatePotentialSteps(gameState);
+    auto potentialSteps = calculatePotentialSteps(gameState, getOpponentsInfo());
     std::vector<PotentialStep> goodSteps;
     std::remove_copy_if(potentialSteps.begin(), potentialSteps.end(),
             std::back_inserter(goodSteps),

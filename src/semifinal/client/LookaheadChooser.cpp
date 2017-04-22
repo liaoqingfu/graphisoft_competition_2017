@@ -25,7 +25,7 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
     newGameState.extraField = step.targetExtraField;
     // Iterate through the next steps.
     for (const PotentialStep& nextStep :
-            calculatePotentialSteps(newGameState)) {
+            calculatePotentialSteps(newGameState, *step.opponentsInfo)) {
         // Transform reachablePoints (save both original and transformed points)
         auto transformedPoints = transformPoints(*nextStep.targetTrack,
                 reachablePoints, nextStep.step.pushDirection,

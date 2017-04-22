@@ -29,9 +29,7 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
     GameState newGameState{*step.sourceState, *step.targetTrack};
     newGameState.extraField = step.targetExtraField;
     const auto& gi = newGameState.gameInfo;
-
-    // TODO deduce from gameState what is the opponent's extraField
-    constexpr int opponentExtraField = 15;
+    const auto& opponentsInfo = *step.opponentsInfo;
 
     double weight = 0;
     for (int opponentId = 0; opponentId < gi.numPlayers;
@@ -40,9 +38,10 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
         // skip ourself
         if (opponentId == gi.playerId) continue;
 
+        int opponentExtraField = opponentsInfo[opponentId].extraField;
         double opponentWeight = 0.0;
-        auto nextSteps = calculatePotentialSteps(newGameState, opponentId,
-                                                 opponentExtraField);
+        auto nextSteps = calculatePotentialSteps(
+            newGameState, opponentsInfo, opponentId, opponentExtraField);
         for (const PotentialStep& nextStep : nextSteps) {
             const auto& reachablePoints =
                 nextStep.targetTrack->getReachablePoints(

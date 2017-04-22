@@ -4,7 +4,7 @@
 #include <ostream>
 
 struct OpponentData {
-    int extraField = -1;
+    int extraField = 15;
 };
 
 using OpponentsInfo = std::array<OpponentData, 4>;
