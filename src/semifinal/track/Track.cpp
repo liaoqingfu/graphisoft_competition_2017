@@ -162,6 +162,8 @@ std::ostream& operator<<(std::ostream& os, const Track& track) {
     return os;
 }
 
+namespace {
+
 struct ColorDrawer {
     ColorDrawer(std::string& line, bool drawColor, const std::string& color)
         : line(line), drawColor(drawColor) {
@@ -191,20 +193,22 @@ std::tuple<bool, int> getColor(Point p, const Track& track,
     // those players who can step into this field
     std::vector<int> players = track.canMoveAnyPrincess(p);
 
-    int colorId;
-    if (!players.empty()) {
-        colorId = getColorId(players[0]);
-        drawColor = drawColor && true;
-    }
+    int colorId = 0;
 
     // Favorize the color of the current player
     auto it = std::find(players.begin(), players.end(), currentPrincess);
     if (it != players.end()) {
         colorId = getColorId(*it);
+    } else if (!players.empty()) {
+        colorId = getColorId(players[0]);
+    } else {
+        drawColor = false;
     }
 
     return {drawColor, colorId};
 }
+
+} // unnamed namespace
 
 std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
     std::string result;
@@ -245,10 +249,10 @@ std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
         p.y = y / BOXHEIGHT;
         for (p.x = 0; p.x < static_cast<int>(track.width()); ++p.x) {
 
-            int colorId;
+            int colorId = 0;
             bool drawColor = false;
             std::tie(drawColor, colorId) =
-                getColor(p, track, currentPrincess, targetMonitor);
+                    getColor(p, track, currentPrincess, targetMonitor);
             std::string color = setColor(defaultColor, colorId);
 
             {
