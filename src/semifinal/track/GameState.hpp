@@ -46,6 +46,7 @@ struct GameState {
         track(std::move(track)) {}
 
     bool ourTurn() { return gameInfo.playerId == activePlayerId; }
+    Point ourPosition() { return track.getPrincess(gameInfo.playerId); }
 };
 
 struct Step {
@@ -65,7 +66,7 @@ std::ostream& operator<<(std::ostream& os, const Step& step) {
 GameInfo parseInitial(const std::vector<std::string>& input);
 void parseTickInfo(GameState& gameState,
         const std::vector<std::string>& input);
-std::vector<std::string> createOutput(const Step& step);
+std::vector<std::string> createOutput(const Step& step, Point ourPosition);
 
 inline
 int executeStep(Track& track, int playerId, const Step& step) {

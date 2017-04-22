@@ -15,7 +15,12 @@ public:
     std::vector<std::string> process(
             const std::vector<std::string>& tickInfos) {
         parseTickInfo(gameState, tickInfos);
-        return createOutput(strategy(gameState));
+
+        if (gameState.ourTurn()) {
+            return createOutput(strategy(gameState), gameState.ourPosition());
+        } else {
+            return {};
+        }
     }
 
     void end(const std::string& message) {

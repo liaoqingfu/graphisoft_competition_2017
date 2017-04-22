@@ -102,7 +102,7 @@ void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
     gs.track = Track(gi.width, gi.height, fields, monitors, princesses);
 }
 
-std::vector<std::string> createOutput(const Step& step) {
+std::vector<std::string> createOutput(const Step& step, Point ourPosition) {
     std::string c =
         (step.pushPosition == left || step.pushPosition == right) ? "0" : "1";
     std::string p =
@@ -117,6 +117,11 @@ std::vector<std::string> createOutput(const Step& step) {
                        .append(k)
                        .append(" ")
                        .append(t);
+
+    // skip GOTO at identity
+    if (ourPosition == step.princessTarget) {
+        return {pushMsg};
+    }
 
     auto gotoMsg = std::string("GOTO ")
                        .append(std::to_string(step.princessTarget.x))

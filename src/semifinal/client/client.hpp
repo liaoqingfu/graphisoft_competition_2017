@@ -11,6 +11,12 @@
 #include <cstdlib>
 #include <stdexcept>
 
+void print(std::ostream& os, const std::vector<std::string> msg, const char* prefix) {
+	for (const auto& m : msg) {
+		os << prefix << m << std::endl;
+	}
+}
+
 template<typename solver>
 class client {
 	platform_dep::tcp_socket socket_handler;
@@ -102,13 +108,14 @@ public:
 			socket_handler.invalidate();
 			return std::vector<std::string>();
 		}
-
 		received_buffer += buffer.c_str();
+
 		return receive_message();
 	}
 public:
 	void run() {
 		std::vector<std::string> tmp = receive_message();
+		print(std::cerr,tmp,"received: ");
 
 		if(socket_handler.valid()) {
 			your_solver.init(tmp);
@@ -116,6 +123,7 @@ public:
 
 		while(socket_handler.valid()) {
 			tmp = receive_message();
+			print(std::cerr,tmp,"received: ");
 			if(socket_handler.valid()) {
 				if(tmp.size() == 1 && tmp[0].find("END") == 0) {
 					your_solver.end(tmp[0]);
@@ -125,6 +133,7 @@ public:
 
 				if(!tmp.empty()) {
 					send_messages(tmp);
+					print(std::cerr,tmp,"sent: ");
 				}
 			}
 		}
