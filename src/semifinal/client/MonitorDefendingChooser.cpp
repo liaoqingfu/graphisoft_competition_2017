@@ -21,13 +21,6 @@ Step MonitorDefendingChooser::chooseGoodStep(
         processStep(step);
     }
 
-    auto it = std::max_element(
-        changedPotentialSteps.begin(), changedPotentialSteps.end(),
-        [](const auto& s1, const auto& s2) { return s1.weight < s2.weight; });
-    std::cerr << "MonitorDefendingChooser: step with greatest weight ("
-              << it->weight << ") "
-              << it->step << "\n";
-
     return getDelegatedChooser().chooseGoodStep(changedPotentialSteps);
 }
 
