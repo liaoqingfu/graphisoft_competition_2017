@@ -6,8 +6,9 @@ Game::Game(Rng& rng, Options options,
     const std::vector<ChoosingStrategy>& strategies) :
         rng(&rng), options(std::move(options)) {
     for (int i = 0; i < static_cast<int>(numPlayers); ++i) {
-        playerStates.emplace_back(strategies[i % strategies.size()]);
+        playerStates.emplace_back(strategies[i % strategies.size()], i);
     }
+
 }
 
 void Game::setPlayerMonitors(GameState& globalState) {
@@ -95,13 +96,13 @@ void Game::run(bool print) {
             Track& track = gameState.track;
 
             if (print) {
-                std::cout
+                std::cerr
                         << "Tick " << gameState.currentTick
                         << " monitors " << track.getRemainingMonitors()
                         << "\n" << setColor(defaultColor,
                                 playerColors[playerId])
                         << "Player " << playerId
-                        << " score " << playerState.score
+                        << " score " << playerState.score->score
                         << " target " << track.getMonitor(targetMonitor)
                         << clearColor()
                         << "\n" << toBox(gameState.track, playerId,
@@ -123,19 +124,19 @@ void Game::run(bool print) {
                             actualPlayer.gameState.gameInfo.playerId);
                 }
                 clock_t end = ::clock();
-                actualPlayer.time += end - start;
+                actualPlayer.score->time += end - start;
             }
             if (print) {
-                std::cout << "Step: " << step << "\n";
+                std::cerr << "Step: " << step << "\n";
             }
             playerState.gameState.extraField = executeStep(track, playerId,
                     step);
 
             if (track.getPrincess(playerId) ==
                     track.getMonitor(targetMonitor)) {
-                ++playerState.score;
+                ++playerState.score->score;
                 if (print) {
-                    std::cout << "Monitor removed: " << targetMonitor
+                    std::cerr << "Monitor removed: " << targetMonitor
                             << " " << track.getMonitor(targetMonitor)
                             << " Remaining: " << track.getRemainingMonitors()
                             << "\n"
@@ -150,7 +151,7 @@ void Game::run(bool print) {
                 setPlayerMonitors(gameState);
             }
             if (print) {
-                std::cout << "\n" << std::endl;
+                std::cerr << "\n" << std::endl;
             }
         }
     }
@@ -161,8 +162,8 @@ void Game::printScores() const {
         int playerId = playerState.gameState.gameInfo.playerId;
         std::cout << setColor(defaultColor, playerColors[playerId])
                 << "Player " << playerId << " final score "
-                << playerState.score << " Total time spent: "
-                << static_cast<double>(playerState.time) / CLOCKS_PER_SEC
+                << playerState.score->score << " Total time spent: "
+                << static_cast<double>(playerState.score->time) / CLOCKS_PER_SEC
                 << " s" << clearColor() << std::endl;
     }
 }

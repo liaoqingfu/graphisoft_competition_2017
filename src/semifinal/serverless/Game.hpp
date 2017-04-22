@@ -6,10 +6,13 @@
 #include "Options.hpp"
 #include "Random.hpp"
 
+
+#include <atomic>
 #include <time.h>
+#include <memory>
 #include <vector>
 
-struct Game {
+struct Game : public std::enable_shared_from_this<Game> {
 public:
     Game(Rng& rng, Options options,
             const std::vector<ChoosingStrategy>& strategies);
@@ -17,20 +20,34 @@ public:
     void setRng(Rng& rng) { this->rng = &rng; }
     void printScores() const;
 private:
+    struct Score {
+        std::atomic<int> score{0};
+        std::atomic<clock_t> time{0};
+
+        Score() = default;
+        Score(const Score&) = delete;
+        Score& operator=(const Score&) = delete;
+        Score(Score&&) = delete;
+        Score& operator=(Score&&) = delete;
+
+    };
+
     struct PlayerState {
-        PlayerState(ChoosingStrategy strategy) : strategy{std::move(strategy)} {
+        PlayerState(ChoosingStrategy strategy, int playerId) :
+                strategy{std::move(strategy)},
+                score{std::make_shared<Score>()} {
+            gameState.gameInfo.playerId = playerId;
         }
 
-        PlayerState(const PlayerState&) = delete;
-        PlayerState& operator=(const PlayerState&) = delete;
+        PlayerState(const PlayerState&) = default;
+        PlayerState& operator=(const PlayerState&) = default;
 
         PlayerState(PlayerState&&) noexcept = default;
         PlayerState& operator=(PlayerState&&) noexcept = default;
 
         ChoosingStrategy strategy;
         GameState gameState;
-        int score = 0;
-        clock_t time = 0;
+        std::shared_ptr<Score> score;
     };
 
     GameState generateGame();
