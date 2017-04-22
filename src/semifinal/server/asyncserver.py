@@ -88,7 +88,7 @@ class PlayerStepRequest(object):
         self.is_positive = self.is_positive == '1'
         self.number = int(self.number)
         self.field = int(self.field)
-        if len(parts) > 1 and parts[1].startswith('GOTO'):
+        if len(parts) > 3 and parts[1].startswith('GOTO'):
             _, self.x, self.y = parts[1].split(' ')
 
 
@@ -234,6 +234,7 @@ class GameController(object):
         if hasattr(req, 'x') and hasattr(req, 'y'):
             new_position = (int(req.x), int(req.y))
             move_result = self.__maze.goto(player.number, new_position)
+            print('executing player step with result: ', move_result)
             if move_result is not None:
                 player.position = new_position
                 print(self.__maze.get_display_position(player.target))

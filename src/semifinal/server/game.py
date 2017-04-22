@@ -54,16 +54,20 @@ class MazeGraph(object):
         neighbors = []
         maxY = len(maze) - 1
         maxX = len(maze[0]) - 1
-        if x > 0 and maze[y][x].field & 1 and maze[y][x-1].field & 4:
+        # Connected to the left
+        if x > 0 and maze[y][x].field & 2 and maze[y][x-1].field & 8:
             neighbors.append((x-1, y))
 
-        if x < maxX and maze[y][x].field & 4 and maze[y][x+1].field & 1:
+        # Connected to the right
+        if x < maxX and maze[y][x].field & 8 and maze[y][x+1].field & 2:
             neighbors.append((x+1, y))
 
-        if y > 0 and maze[y][x].field & 2 and maze[y-1][x].field & 8:
+        # Connected to the top
+        if y > 0 and maze[y][x].field & 1 and maze[y-1][x].field & 4:
             neighbors.append((x, y-1))
 
-        if y < maxY and maze[y][x].field & 8 and maze[y+1][x].field & 2:
+        # Connected to the bottom
+        if y < maxY and maze[y][x].field & 4 and maze[y+1][x].field & 1:
             neighbors.append((x, y+1))
 
         return neighbors
@@ -216,6 +220,7 @@ class Maze(object):
                     position = (x, y)
         assert(position is not None)
         g = MazeGraph(self.__zones)
+        print('moving to: ', target, ' from: ' , position)
         if g.find_path(position, target) is not None:
             self.__zones[position[1]][position[0]].remove_player(player_number)
             target_zone = self.__zones[target[1]][target[0]]
