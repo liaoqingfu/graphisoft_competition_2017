@@ -100,7 +100,7 @@ class Maze(object):
             self.__fields.append(row)
         self.__displays = {}
         self.__remaining_displays = set()
-        for i in range(0, random.randint(1, int(m * n / 2))):
+        for i in range(0, random.randint(4, int(m * n / 4))):
             self.__displays[i] = (random.randint(0, m - 1),
                                   random.randint(0, n - 1))
             self.__remaining_displays.add(i)
