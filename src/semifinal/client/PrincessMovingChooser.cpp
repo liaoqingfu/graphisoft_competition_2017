@@ -6,7 +6,7 @@ Step PrincessMovingChooser::chooseGoodStep(
     if (overrideGoodSteps) {
         auto steps = potentialSteps;
         for (PotentialStep& step : steps) {
-            setWeight(step);
+            step.weight += calculateWeight(step);
         }
         return DelegatingChooser::chooseGoodStep(steps);
     } else {
@@ -27,22 +27,26 @@ void PrincessMovingChooser::processStep(std::vector<PotentialStep>& stepValues,
     const Track& track = *step.targetTrack;
     int playerId = step.sourceState->gameInfo.playerId;
 
+    double baseWeight = step.weight;
     for (Point p : track.getReachablePoints(track.getPrincess(playerId))) {
         step.step.princessTarget = p;
-        setWeight(step);
+        step.weight = baseWeight + calculateWeight(step);
         stepValues.push_back(step);
     }
 }
 
-void PrincessMovingChooser::setWeight(PotentialStep& step) {
+double PrincessMovingChooser::calculateWeight(const PotentialStep& step) {
     const Track& track = *step.targetTrack;
-    int playerId = step.sourceState->gameInfo.playerId;
-    Point target = track.getMonitor(playerId);
+    Point target = track.getMonitor(step.sourceState->targetMonitor);
 
     int size = track.width() + track.height();
-    step.weight += (1.0 - (std::abs(step.step.princessTarget.x - target.x)
-                + std::abs(step.step.princessTarget.y - target.y))
-                        / static_cast<double>(size))
-                * weightMultiplier;
+    double d = std::abs(step.step.princessTarget.x - target.x)
+                + std::abs(step.step.princessTarget.y - target.y);
+    // std::cerr << "|" << step.step.princessTarget << " - " << target << "| = "
+    //         << d << "\n";
+    double result = (1.0 - d / static_cast<double>(size)) * weightMultiplier;
+    // std::cerr << step.step << ": (1 - " << d << " / " << size << ") * "
+    //         << weightMultiplier << " = " << result << "\n";
+    return result;
 
 }

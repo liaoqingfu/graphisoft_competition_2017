@@ -66,7 +66,8 @@ std::ostream& operator<<(std::ostream& os, const Step& step) {
 GameInfo parseInitial(const std::vector<std::string>& input);
 void parseTickInfo(GameState& gameState,
         const std::vector<std::string>& input);
-std::vector<std::string> createOutput(const Step& step, Point ourPosition);
+std::vector<std::string> createOutput(const Track& track,
+        const Step& step, Point ourPosition);
 
 inline
 int executeStep(Track& track, int playerId, const Step& step) {

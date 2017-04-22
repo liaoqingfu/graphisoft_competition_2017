@@ -290,7 +290,8 @@ std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
     return result;
 }
 
-std::vector<TransformedPoint> transformPoints(const Track& track,
+std::vector<TransformedPoint> transformPoints(
+        std::size_t width, std::size_t height,
         const std::vector<Point>& points, Directions direction, int position) {
     Point delta = neighbors[direction];
     std::vector<TransformedPoint> result;
@@ -300,11 +301,11 @@ std::vector<TransformedPoint> transformPoints(const Track& track,
             };
     if (delta.y == 0) {
         rotatePoints(points, &Point::y, &Point::x, position, delta.x,
-                track.width(), action);
+                width, action);
     } else {
         assert(delta.x == 0);
         rotatePoints(points, &Point::x, &Point::y, position, delta.y,
-                track.height(), action);
+                height, action);
     }
     return result;
 }

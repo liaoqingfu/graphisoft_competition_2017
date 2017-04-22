@@ -190,18 +190,41 @@ BOOST_AUTO_TEST_SUITE_END() // ParseTickInfo
 BOOST_AUTO_TEST_SUITE(CreateOutput)
 
 BOOST_AUTO_TEST_CASE(OK) {
+    Point princessPosition{0, 0};
+    Track track{4, 4, {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, {}, {princessPosition}};
     Step step = {left, 1, 3, {2,3}};
-    auto output = createOutput(step, {0, 0});
+    auto output = createOutput(track, step, princessPosition);
     BOOST_CHECK_EQUAL(output.size(), 2);
     BOOST_CHECK_EQUAL(output.at(0), "PUSH 0 0 1 3");
     BOOST_CHECK_EQUAL(output.at(1), "GOTO 2 3");
 }
 
 BOOST_AUTO_TEST_CASE(DoNotGotoOnIdentical) {
+    Point princessPosition{2, 3};
+    Track track{4, 4, {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, {}, {princessPosition}};
     Step step = {left, 1, 3, {2,3}};
-    auto output = createOutput(step, {2, 3});
+    auto output = createOutput(track, step, princessPosition);
     BOOST_CHECK_EQUAL(output.size(), 1);
     BOOST_CHECK_EQUAL(output.at(0), "PUSH 0 0 1 3");
+}
+
+BOOST_AUTO_TEST_CASE(DoNotGotoOnIdenticalIfPushed) {
+    Point princessPosition{2, 1};
+    Track track{4, 4, {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, {}, {princessPosition}};
+    Step step = {left, 1, 3, {1,1}};
+    auto output = createOutput(track, step, princessPosition);
+    BOOST_CHECK_EQUAL(output.size(), 1);
+    BOOST_CHECK_EQUAL(output.at(0), "PUSH 0 0 1 3");
+}
+
+BOOST_AUTO_TEST_CASE(GotoIfPrincessMovesBack) {
+    Point princessPosition{2, 1};
+    Track track{4, 4, {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, {}, {princessPosition}};
+    Step step = {left, 1, 3, {2,1}};
+    auto output = createOutput(track, step, princessPosition);
+    BOOST_CHECK_EQUAL(output.size(), 2);
+    BOOST_CHECK_EQUAL(output.at(0), "PUSH 0 0 1 3");
+    BOOST_CHECK_EQUAL(output.at(1), "GOTO 2 1");
 }
 
 BOOST_AUTO_TEST_SUITE_END() // CreateOutput

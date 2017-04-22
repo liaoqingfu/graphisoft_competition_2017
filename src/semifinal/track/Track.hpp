@@ -92,8 +92,16 @@ private:
     Point TransformedPoint::* fieldToCompare;
 };
 
-std::vector<TransformedPoint> transformPoints(const Track& track,
+std::vector<TransformedPoint> transformPoints(
+        std::size_t width, std::size_t height,
         const std::vector<Point>& points, Directions direction, int position);
+
+inline
+std::vector<TransformedPoint> transformPoints(const Track& track,
+        const std::vector<Point>& points, Directions direction, int position) {
+    return transformPoints(track.width(), track.height(),
+            points, direction, position);
+}
 
 int getExtraField(const Track& track, Directions direction, int position);
 

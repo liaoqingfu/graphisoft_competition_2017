@@ -7,7 +7,7 @@
 
 class BestChooser : public DelegatingChooser {
 public:
-    BestChooser(std::shared_ptr<IChooser> chooser, double tolerance = 0.1) :
+    BestChooser(std::shared_ptr<IChooser> chooser, double tolerance = 0.01) :
             DelegatingChooser(std::move(chooser)),
             tolerance(tolerance) {}
 
@@ -31,6 +31,10 @@ private:
                     return lhs.weight > rhs.weight;
                 });
         std::size_t i = 0;
+        // for (const PotentialStep& step : potentialSteps) {
+        //     std::cerr << "Step " << step.step << " weight " << step.weight
+        //             << "\n";
+        // }
         for (; i < potentialSteps.size() &&
                 potentialSteps[i].weight >= potentialSteps[0].weight - tolerance;
                 ++i) {

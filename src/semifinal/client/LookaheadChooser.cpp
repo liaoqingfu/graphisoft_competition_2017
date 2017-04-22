@@ -54,6 +54,7 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
     double valueLimit = *std::max_element(valueRange.begin(),
             valueRange.end()) + 1.0;
 
+    double baseWeight = step.weight;
     for (const auto& element : reachablePointValues) {
         if (element.second == 0) {
             continue;
@@ -62,7 +63,8 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
         step.step.princessTarget = element.first;
         // The value equals the number of possible next steps where the princess
         // can reach the target monitor.
-        step.weight += element.second / valueLimit * weightMultiplier;
+        step.weight = baseWeight
+                + element.second / valueLimit * weightMultiplier;
         stepValues.push_back(step);
     }
 }

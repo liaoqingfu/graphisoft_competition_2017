@@ -27,7 +27,7 @@ public:
                                gameState.gameInfo.playerId,
                                gameState.targetMonitor);
 
-            return createOutput(step, gameState.ourPosition());
+            return createOutput(gameState.track, step, gameState.ourPosition());
         } else {
             strategy.opponentsTurn(gameState.track, gameState.activePlayerId);
             return {};
