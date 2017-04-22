@@ -164,18 +164,6 @@ std::ostream& operator<<(std::ostream& os, const Track& track) {
 
 namespace {
 
-struct ColorDrawer {
-    ColorDrawer(std::string& line, bool drawColor, const std::string& color)
-        : line(line), drawColor(drawColor) {
-        if (drawColor) line.append(color);
-    }
-    ~ColorDrawer() {
-        if (drawColor) line.append(clearColor());
-    }
-    std::string& line;
-    bool drawColor;
-};
-
 std::tuple<bool, int> getColor(Point p, const Track& track,
                                        int currentPrincess, int targetMonitor) {
     (void)targetMonitor;
@@ -231,6 +219,11 @@ std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
     }
     result.append("\n");
 
+    ColorInfo colorInfo;
+    for (int color : playerColors) {
+        colorInfo.princessColors.push_back(setColor(defaultColor, color));
+    }
+
     Point p;
     for (unsigned int y = 0; y < track.height() * BOXHEIGHT; ++y) {
         std::string line;
@@ -256,13 +249,23 @@ std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
             std::string color = setColor(defaultColor, colorId);
 
             {
-                ColorDrawer colorizer{line, drawColor, color};
+                std::unique_ptr<ColorDrawer> colorizer;
+                if (drawColor) {
+                    colorizer = std::make_unique<ColorDrawer>(line, color);
+                    colorInfo.baseColor = color;
+                } else {
+                    colorInfo.baseColor = clearColor();
+                }
+                if (targetMonitor >= 0
+                        && track.getMonitor(targetMonitor) == p) {
+                    colorInfo.monitorColor = setColor(
+                            defaultColor, monitorColor);
+                } else {
+                    colorInfo.monitorColor = clearColor();
+                }
 
                 line.append(getBoxLine(
-                    track.getField(p), y % BOXHEIGHT,
-                    targetMonitor >= 0 && track.getMonitor(targetMonitor) == p
-                        ? (drawColor ? colorId : 0)
-                        : -1));
+                    track.getField(p), y % BOXHEIGHT, colorInfo));
             }
 
             // additional horizontal connection
@@ -271,7 +274,9 @@ std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
                 next.x < (int)track.width() &&
                 (track.getField(p).type & 0b1000) >> 3 &&
                 (track.getField(next).type & 0b0010) >> 1) {
-                ColorDrawer colorizer{line, drawColor, color};
+                auto colorizer = drawColor
+                        ? std::make_unique<ColorDrawer>(line, color)
+                        : nullptr;
                 line.append("━");
             } else if (p.x < (int)track.width() -
                                  1) { // do not append space after the last col

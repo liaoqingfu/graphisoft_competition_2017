@@ -23,8 +23,8 @@ class client {
 	std::string received_buffer;
 	solver your_solver;
 public:
-	client(const char host_name[], unsigned short port,
-            const char team_name[], const char password[], int task_id,
+	client(const char* host_name, unsigned short port,
+            const char* team_name, const char* password, int task_id,
             solver your_solver) : your_solver(std::move(your_solver)) {
 
 		if(!socket_handler.valid()) {

@@ -1,0 +1,12 @@
+include_rules
+
+INCLUDE_DIRS += -I$(MATRIX_DIR) -I$(TRACK_DIR) -I$(CLIENT_DIR)
+LD_FLAGS += -lboost_program_options
+
+include $(COMPILE_TUP)
+
+: foreach *.cpp |> !cxx |>
+
+include $(LINK_TUP)
+
+: *.o $(CLIENT_LIB) $(TRACK_LIB) $(MATRIX_LIB) |> !linker |> strategy_client

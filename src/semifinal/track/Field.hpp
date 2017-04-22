@@ -3,6 +3,8 @@
 
 #include "Point.hpp"
 
+#include <boost/optional.hpp>
+
 #include <algorithm>
 #include <array>
 #include <assert.h>
@@ -83,8 +85,28 @@ const std::vector<int>& getIsomorphs(int fieldType);
 
 constexpr int BOXHEIGHT = 5;
 constexpr int BOXWIDTH = 9;
+
+struct ColorInfo {
+    std::string baseColor;
+    std::string monitorColor;
+    std::vector<std::string> princessColors;
+};
+
+struct ColorDrawer {
+    ColorDrawer(std::string& line, const std::string& color,
+            std::string base = clearColor())
+        : line(line), base(std::move(base)) {
+        line.append(color);
+    }
+    ~ColorDrawer() {
+        line.append(base);
+    }
+    std::string& line;
+    std::string base;
+};
+
 std::string getBoxLine(const Field& field, unsigned i,
-        int color = -1);
+        const boost::optional<ColorInfo>& colorInfo = boost::none);
 
 std::string toBox(const Field& field);
 
