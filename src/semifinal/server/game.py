@@ -181,7 +181,7 @@ class Maze(object):
     def get_info_as_str(self, level, player_number, max_tick):
         lines = [
             'LEVEL {}'.format(level),
-            'SIZE {} {}'.format(len(self.__fields), len(self.__fields[0])),
+            'SIZE {} {}'.format(len(self.__fields[0]), len(self.__fields)),
             'DISPLAYS {}'.format(len(self.__displays)),
             'PLAYER {}'.format(player_number),
             'MAXTICK {}'.format(max_tick),
