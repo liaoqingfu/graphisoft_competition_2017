@@ -1,8 +1,10 @@
 #include "Field.hpp"
 
+#include <boost/algorithm/string/join.hpp>
+
 #include <algorithm>
 #include <iostream>
-#include <boost/algorithm/string/join.hpp>
+#include <memory>
 
 namespace {
 
@@ -115,63 +117,78 @@ auto getLowerLine(const Field& field) {
     return BigFieldLines::lower[(0b0100 & field.type) >> 2];
 }
 
-std::string getPrincesses(const Field field, unsigned begin, unsigned end) {
-    std::array<std::string, 2> Ks;
+template<typename ColorGetter>
+std::unique_ptr<ColorDrawer> makeColorDrawer(
+        std::string& line,
+        const boost::optional<ColorInfo>& colorInfo,
+        const ColorGetter& colorGetter) {
+    if (!colorInfo) {
+        return nullptr;
+    }
+    return std::make_unique<ColorDrawer>(line, colorGetter(*colorInfo),
+            colorInfo->baseColor);
+}
+
+std::string getPrincesses(const Field field, unsigned begin, unsigned end,
+        const boost::optional<ColorInfo>& colorInfo) {
+    std::size_t size = 0;
+    std::string result;
     for (unsigned i = begin, to = 0; i < end && i < field.getPrincesses().size();
             ++i, ++to) {
-        Ks[to] = std::string("K")
-            .append(std::to_string(field.getPrincesses().at(i)));
+        int princess = field.getPrincesses()[i];
+        auto colorizer = makeColorDrawer(result, colorInfo,
+                [princess](const ColorInfo& info) {
+                    return info.princessColors[princess];
+                });
+        std::string s = "K" + std::to_string(princess);
+        size += s.size() + 1;
+        result.append(" ").append(s);
     }
-    return boost::algorithm::join(Ks, " ");
-}
-
-// Adds the linePrefix to the actual line and padds it to match the field end
-void addPadded(std::string& result, const std::string& linePrefix) {
-    result.append(linePrefix);
-    for (std::size_t j = 0; j < 7 - linePrefix.size(); ++j) {
+    for (std::size_t j = 0; j < 7 - size; ++j) {
         result.append(" ");
     }
+    return result;
 }
 
-std::string get2ndLine(const Field& field) {
+std::string get2ndLine(const Field& field,
+        const boost::optional<ColorInfo>& colorInfo) {
     auto result = std::string(getLeftUChar(field));
     if (field.noPrincess()) {
         result.append("       ");
     } else {
         // Add the first two princesses
-        auto Kstr = std::string(" ").append(getPrincesses(field,0,2));
-        addPadded(result, Kstr);
+        result.append(getPrincesses(field, 0, 2, colorInfo));
     }
     return result.append(getRightUChar(field));
 }
 
-std::string getMiddleLine(const Field& field) {
+std::string getMiddleLine(const Field& field,
+        const boost::optional<ColorInfo>& colorInfo) {
     auto result = std::string(getLeftMChar(field));
     if (field.noPrincess()) {
         result.append("       ");
     } else {
         // Add the last two princesses if there is any
-        auto Kstr = std::string(" ").append(getPrincesses(field,2,4));
-        addPadded(result, Kstr);
+        result.append(getPrincesses(field, 2, 4, colorInfo));
     }
     return result.append(getRightMChar(field));
 }
 
-std::string get4thLine(const Field& field, int color) {
+std::string get4thLine(const Field& field,
+        const boost::optional<ColorInfo>& colorInfo) {
     auto result = std::string(getLeftDChar(field));
     if (field.monitor == -1) {
         result.append("       ");
     } else {
         std::string Mstr;
         Mstr.append(" M").append(std::to_string(field.monitor));
-        if (color >= 0) {
-            result.append(setColor(defaultColor, monitorColor));
+        {
+            auto colorizer = makeColorDrawer(result, colorInfo,
+                    [](const ColorInfo& info) { return info.monitorColor; });
+            result.append(Mstr);
         }
-        result.append(Mstr);
-        if (color == 0) {
-            result.append(clearColor());
-        } else if (color > 0) {
-            result.append(setColor(defaultColor, color));
+        if (colorInfo) {
+            result.append(colorInfo->baseColor);
         }
         for (std::size_t j = 0; j < 7 - Mstr.size(); ++j) {
             result.append(" ");
@@ -182,16 +199,17 @@ std::string get4thLine(const Field& field, int color) {
 
 } // unnamed
 
-std::string getBoxLine(const Field& field, unsigned i, int color) {
+std::string getBoxLine(const Field& field, unsigned i,
+        const boost::optional<ColorInfo>& colorInfo) {
     switch(i) {
         case 0:
             return getUpperLine(field);
         case 1:
-            return get2ndLine(field);
+            return get2ndLine(field, colorInfo);
         case 2:
-            return getMiddleLine(field);
+            return getMiddleLine(field, colorInfo);
         case 3:
-            return get4thLine(field, color);
+            return get4thLine(field, colorInfo);
         case 4:
             return getLowerLine(field);
         default: return "";
