@@ -114,11 +114,14 @@ auto getExtraField(const Track& prevTrack, const Track& currentTrack) {
 }
 
 void ChoosingStrategy::updateOpponentsInfo(const Track& track, int playerId) {
-    if (prevSt.playerId != -1 ||
+    if (prevSt.playerId != -1 &&
         prevSt.playerId != gameState.gameInfo.playerId) {
 
         assert(playerId >= 0 && playerId < gameState.gameInfo.numPlayers);
-        opponentsInfo[playerId].extraField = getExtraField(prevSt.track, track);
+        assert(prevSt.playerId >= 0 &&
+               prevSt.playerId < gameState.gameInfo.numPlayers);
+        opponentsInfo[prevSt.playerId].extraField =
+            getExtraField(prevSt.track, track);
     }
     prevSt = {track, playerId};
 }

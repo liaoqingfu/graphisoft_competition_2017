@@ -28,6 +28,16 @@ BOOST_FIXTURE_TEST_CASE(ShiftRight, OpponentsInfoTestFixture) {
     BOOST_CHECK_EQUAL(oppInfo[0].extraField, 3);
 }
 
+BOOST_FIXTURE_TEST_CASE(ShiftRightMiddle, OpponentsInfoTestFixture) {
+    Track prevTrack{3, 3, {1, 2, 3, 4, 5, 6, 7, 8, 9}, monitors, princesses};
+    // ExtraField at {0,0}
+    Track currentTrack{3, 3, {1, 2, 3, 13, 4, 5, 7, 8, 9}, monitors, princesses};
+    updateOpponentsInfo(cs, prevTrack, playerId);
+    updateOpponentsInfo(cs, currentTrack, playerId);
+    auto oppInfo = getOpponentsInfo(cs);
+    BOOST_CHECK_EQUAL(oppInfo[0].extraField, 6);
+}
+
 BOOST_FIXTURE_TEST_CASE(ShiftLeft, OpponentsInfoTestFixture) {
     Track prevTrack{3, 3, {1, 2, 3, 4, 5, 6, 7, 8, 9}, monitors, princesses};
     // ExtraField at {0,0}
@@ -46,6 +56,16 @@ BOOST_FIXTURE_TEST_CASE(ShiftUp, OpponentsInfoTestFixture) {
     updateOpponentsInfo(cs, currentTrack, playerId);
     auto oppInfo = getOpponentsInfo(cs);
     BOOST_CHECK_EQUAL(oppInfo[0].extraField, 1);
+}
+
+BOOST_FIXTURE_TEST_CASE(ShiftUpMiddle, OpponentsInfoTestFixture) {
+    Track prevTrack{3, 3, {1, 2, 3, 4, 5, 6, 7, 8, 9}, monitors, princesses};
+    // ExtraField at {0,0}
+    Track currentTrack{3, 3, {1, 5, 3, 4, 8, 6, 7, 13, 9}, monitors, princesses};
+    updateOpponentsInfo(cs, prevTrack, playerId);
+    updateOpponentsInfo(cs, currentTrack, playerId);
+    auto oppInfo = getOpponentsInfo(cs);
+    BOOST_CHECK_EQUAL(oppInfo[0].extraField, 2);
 }
 
 BOOST_FIXTURE_TEST_CASE(ShiftDown, OpponentsInfoTestFixture) {

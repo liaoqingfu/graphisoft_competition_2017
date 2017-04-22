@@ -27,6 +27,7 @@ public:
     }
 
     void opponentsTurn(const Track& track, int playerId);
+    const OpponentsInfo& getOpponentsInfo() const { return opponentsInfo; }
 
 private:
     Step calculateStep();
