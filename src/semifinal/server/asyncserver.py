@@ -81,7 +81,7 @@ class PlayerStepRequest(object):
     def __init__(self, message):
         parts = message.split('\n')
         assert(parts[0].startswith('PUSH'))
-        assert(len(parts) == 1 or parts[1].startswith('GOTO'))
+        assert(len(parts) == 3 or parts[1].startswith('GOTO'))
         goto = parts[0].split(' ')
         _, self.is_col, self.is_positive, self.number, self.field = goto
         self.is_col = self.is_col == '1'
