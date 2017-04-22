@@ -38,8 +38,8 @@ GameInfo parseInitial(const std::vector<std::string>& input) {
             // TODO check level is the same we requested
             // auto level = stoi(tokens.at(1));
         } else if (tokens.at(0) == "SIZE") {
-            result.height = stoi(tokens.at(1)); // N
-            result.width = stoi(tokens.at(2));  // M
+            result.width = stoi(tokens.at(1));  // N
+            result.height = stoi(tokens.at(2)); // M
         } else if (tokens.at(0) == "DISPLAYS") {
             result.numDisplays = stoi(tokens.at(1));
         } else if (tokens.at(0) == "PLAYER") {

@@ -16,8 +16,8 @@ BOOST_AUTO_TEST_CASE(OK) {
         "MAXTICK 300"
     };
     auto gi = parseInitial(input);
-    BOOST_CHECK_EQUAL(gi.width, 4);
-    BOOST_CHECK_EQUAL(gi.height, 3);
+    BOOST_CHECK_EQUAL(gi.width, 3);
+    BOOST_CHECK_EQUAL(gi.height, 4);
     BOOST_CHECK_EQUAL(gi.numDisplays, 2);
     BOOST_CHECK_EQUAL(gi.playerId, 0);
     BOOST_CHECK_EQUAL(gi.maxTick, 300);
@@ -79,13 +79,14 @@ BOOST_AUTO_TEST_CASE(OK) {
     BOOST_CHECK_EQUAL(gs.targetMonitor, 2);
     BOOST_CHECK_EQUAL(gs.extraField, 7);
 
-    BOOST_CHECK_EQUAL(gs.track.height(), 3);
-    BOOST_CHECK_EQUAL(gs.track.width(), 4);
+    BOOST_CHECK_EQUAL(gs.track.height(), 4);
+    BOOST_CHECK_EQUAL(gs.track.width(), 3);
     BOOST_CHECK_EQUAL(gs.track.height(), gi.height);
     BOOST_CHECK_EQUAL(gs.track.width(), gi.width);
 
     BOOST_CHECK_EQUAL(gs.track.getField(Point(0,0)).type, 5);
-    BOOST_CHECK_EQUAL(gs.track.getField(Point(3,2)).type, 11);
+    BOOST_CHECK_EQUAL(gs.track.getField(Point(0,2)).type, 2);
+    BOOST_CHECK_EQUAL(gs.track.getField(Point(2,2)).type, 12);
 
     BOOST_CHECK_EQUAL(gs.track.getMonitor(0), Point(1, 1));
     BOOST_CHECK_EQUAL(gs.track.getMonitor(1), Point(2, 2));
@@ -95,6 +96,45 @@ BOOST_AUTO_TEST_CASE(OK) {
     BOOST_CHECK_EQUAL(gs.track.getPrincess(1), Point(0, 1));
     BOOST_CHECK_EQUAL(gs.track.getPrincess(2), Point(2, 0));
     BOOST_CHECK_EQUAL(gs.track.getPrincess(3), Point(2, 2));
+}
+
+BOOST_AUTO_TEST_CASE(Graphisoft) {
+    std::vector<std::string> input = {
+        "MESSAGE OK",
+        "PLAYER 0",
+        "LEVEL 1",
+        "SIZE 6 7",
+        "DISPLAYS 7",
+        "MAXTICK 15",
+    };
+    auto gi = parseInitial(input);
+    BOOST_CHECK_EQUAL(gi.width, 6);
+    BOOST_CHECK_EQUAL(gi.height, 7);
+    BOOST_CHECK_EQUAL(gi.numDisplays, 7);
+    BOOST_CHECK_EQUAL(gi.playerId, 0);
+    BOOST_CHECK_EQUAL(gi.maxTick, 15);
+
+    input = {
+        "TICK 0",
+        "FIELDS 7 11 11 10 3 3 7 7 10 5 8 3 3 11 6 2 5 14 6 9 1 3 5 14 7 10 10 3 10 15 6 9 14 8 9 12 3 5 3 1 5 9",
+        "DISPLAY 0 1 2",
+        "DISPLAY 1 5 0",
+        "DISPLAY 2 5 4",
+        "DISPLAY 3 1 6",
+        "DISPLAY 4 4 2",
+        "DISPLAY 5 0 4",
+        "DISPLAY 6 1 0",
+        "POSITION 0 3 5",
+        "POSITION 1 4 1",
+        "POSITION 2 1 3",
+        "POSITION 3 2 0",
+        "PLAYER 0",
+        "MESSAGE OK",
+        "TARGET 5",
+        "EXTRAFIELD 15",
+    };
+    GameState gs{gi};
+    BOOST_CHECK_NO_THROW(parseTickInfo(gs, input));
 }
 
 BOOST_AUTO_TEST_CASE(IncorrectFields) {
