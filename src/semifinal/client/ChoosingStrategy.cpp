@@ -113,22 +113,47 @@ auto getExtraField(const Track& prevTrack, const Track& currentTrack) {
     return defaultExtraField;
 }
 
-void ChoosingStrategy::setTargetMonitors(std::vector<Point>& targetMonitors,
-                                         const Track& currentTrack) {
+Point getRemovedMonitor(const Track::Monitors& prev, const Track::Monitors& current) {
+    assert (prev.size() == current.size());
+    for (unsigned i = 0; i < prev.size(); ++i) {
+        if (prev[i] != current[i]) {
+            return prev[i];
+        }
+    }
+    return -p11;
+}
+
+void ChoosingStrategy::setTargetMonitors(const Track& currentTrack) {
+
+    auto& targetMonitors = opponentsInfo[prevSt.playerId].targetMonitors;
+
     const auto& prevTrack = this->prevSt.gameState.track;
     auto prevPlayerId = prevSt.playerId;
 
     auto monitorDiff = prevTrack.getRemainingMonitors() -
                            currentTrack.getRemainingMonitors();
-    std::cerr << "monitorDiff: " << monitorDiff << std::endl;
     assert(monitorDiff == 0 || monitorDiff == 1);
+
+    auto remove = [](auto& targetMonitors, auto p) {
+        targetMonitors.erase(
+            std::remove(targetMonitors.begin(), targetMonitors.end(), p),
+            targetMonitors.end());
+    };
 
     // one monitor removed
     if (prevTrack.getRemainingMonitors() !=
         currentTrack.getRemainingMonitors()) {
 
         // reset to all monitors which are still on the track
-        targetMonitors = currentTrack.getMonitors();
+        targetMonitors = currentTrack.getAliveMonitors();
+
+        // remove the monitor from all others targets
+        for (int i = 0; i < (int)opponentsInfo.size(); ++i) {
+            if (i == prevSt.playerId) continue;
+            auto p = getRemovedMonitor(prevTrack.getAllMonitors(),
+                                       currentTrack.getAllMonitors());
+            remove(opponentsInfo[i].targetMonitors, p);
+        }
         return;
     }
 
@@ -146,9 +171,7 @@ void ChoosingStrategy::setTargetMonitors(std::vector<Point>& targetMonitors,
         for (Point p : reachablePoints) {
             int monitor = step.targetTrack->getField(p).monitor;
             if (monitor != -1) {
-                targetMonitors.erase(std::remove(targetMonitors.begin(),
-                                                 targetMonitors.end(), p),
-                                     targetMonitors.end());
+                remove(targetMonitors, p);
             }
         }
     }
@@ -158,7 +181,7 @@ void ChoosingStrategy::updateOpponentsInfo(const Track& track, int playerId) {
 
     if (gameState.currentTick == 0) {
         for (auto& oi : opponentsInfo) {
-            oi.targetMonitors = gameState.track.getMonitors();
+            oi.targetMonitors = gameState.track.getAliveMonitors();
         }
     }
 
@@ -172,7 +195,7 @@ void ChoosingStrategy::updateOpponentsInfo(const Track& track, int playerId) {
         opponentsInfo[prevSt.playerId].extraField =
             getExtraField(prevSt.gameState.track, track);
 
-        setTargetMonitors(opponentsInfo[prevSt.playerId].targetMonitors, track);
+        setTargetMonitors(track);
     }
     prevSt = {GameState(this->gameState, track), playerId};
 }

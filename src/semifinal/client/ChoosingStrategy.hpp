@@ -30,8 +30,7 @@ private:
     friend struct OpponentsInfoTestFixture;
     void updateOpponentsInfo(const Track& track, int playerId);
 
-    void setTargetMonitors(std::vector<Point>& targetMonitors,
-                           const Track& currentTrack);
+    void setTargetMonitors(const Track& currentTrack);
 
     std::shared_ptr<IChooser> chooser;
     GameState gameState;

@@ -30,7 +30,8 @@ public:
     std::size_t height() const { return fields.height(); }
     const Field& getField(Point p) const { return fields[p]; }
     Point getMonitor(int id) const { return monitors[id]; }
-    Monitors getMonitors() const;
+    Monitors getAliveMonitors() const;
+    const Monitors& getAllMonitors() const { return monitors; }
     std::size_t getRemainingMonitors() const { return remainingMonitors; }
     Point getPrincess(int player) const { return princesses[player]; }
 
