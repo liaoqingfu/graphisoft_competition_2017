@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <iostream>
 #include <unordered_map>
+#include <tuple>
 
 class MonitorDefendingChooser : public DelegatingChooser {
 public:
@@ -26,5 +27,6 @@ private:
     void processStep(PotentialStep& step);
 
     double weightMultiplier;
+    std::map<std::tuple<Directions, int, int>, double> savedWeights;
 };
 

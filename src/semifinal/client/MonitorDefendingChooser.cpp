@@ -8,6 +8,7 @@ Step MonitorDefendingChooser::chooseBadStep(
 
     auto changedPotentialSteps = potentialSteps;
 
+    savedWeights.clear();
     for (PotentialStep& step : changedPotentialSteps) {
         processStep(step);
     }
@@ -19,6 +20,7 @@ Step MonitorDefendingChooser::chooseGoodStep(
 
     auto changedPotentialSteps = potentialSteps;
 
+    savedWeights.clear();
     for (PotentialStep& step : changedPotentialSteps) {
         processStep(step);
     }
@@ -27,13 +29,21 @@ Step MonitorDefendingChooser::chooseGoodStep(
 }
 
 void MonitorDefendingChooser::processStep(PotentialStep& step) {
+    auto key = std::make_tuple(step.step.pushDirection, step.step.pushPosition,
+            step.step.pushFieldType);
+    auto iterator = savedWeights.find(key);
+    std::cerr << "Step " << step.step << "\n";
+    if (iterator != savedWeights.end()) {
+        std::cerr << "Saved weight: " << iterator->second << "\n";
+        step.weight += iterator->second;
+        return;
+    }
 
     GameState newGameState{*step.sourceState, *step.targetTrack};
     newGameState.extraField = step.targetExtraField;
     const auto& gi = newGameState.gameInfo;
     const auto& opponentsInfo = *step.opponentsInfo;
 
-    std::cerr << "Step " << step.step << "\n";
     double weight = 0;
     for (int opponentId = 0; opponentId < gi.numPlayers;
          ++opponentId) {
@@ -61,8 +71,8 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
 
         double w = static_cast<double>(reachableMonitors.size())
                 / gi.numDisplays;
-        std::cerr << "  Player " << opponentId << ": reachable monitors = "
-                << reachableMonitors.size() << " w=" << w << "\n";
+        // std::cerr << "  Player " << opponentId << ": reachable monitors = "
+        //         << reachableMonitors.size() << " w=" << w << "\n";
         weight += w;
     }
     weight /= gi.numPlayers;
@@ -70,4 +80,5 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
     double w = (1.0 - weight) * weightMultiplier;
     std::cerr << "Total weight = " << w << "\n";
     step.weight += w;
+    savedWeights.emplace(key, w);
 }
