@@ -33,6 +33,7 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
     const auto& gi = newGameState.gameInfo;
     const auto& opponentsInfo = *step.opponentsInfo;
 
+    std::cerr << "Step " << step.step << "\n";
     double weight = 0;
     for (int opponentId = 0; opponentId < gi.numPlayers;
          ++opponentId) {
@@ -41,7 +42,6 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
         if (opponentId == gi.playerId) continue;
 
         int opponentExtraField = opponentsInfo[opponentId].extraField;
-        double opponentWeight = 0.0;
         auto nextSteps = calculatePotentialSteps(
             newGameState, opponentsInfo, opponentId, opponentExtraField);
         std::unordered_set<int> reachableMonitors;
@@ -57,10 +57,9 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
                     reachableMonitors.insert(monitor);
                 }
             }
-            opponentWeight += reachableMonitors.size() / gi.numDisplays;
         }
 
-        weight += opponentWeight;
+        weight += reachableMonitors.size() / gi.numDisplays;
     }
     weight /= gi.numPlayers;
 
