@@ -12,7 +12,7 @@ struct OpponentsInfoTestFixture {
     }
     ChoosingStrategy cs;
     const Track::Monitors monitors{};
-    const Track::Princesses princesses{};
+    const Track::Princesses princesses{Point{0,0}};
     int playerId = 0;
 };
 

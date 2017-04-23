@@ -113,19 +113,77 @@ auto getExtraField(const Track& prevTrack, const Track& currentTrack) {
     return defaultExtraField;
 }
 
+void ChoosingStrategy::setTargetMonitors(std::vector<Point>& targetMonitors,
+                                         const Track& currentTrack) {
+    const auto& prevTrack = this->prevSt.gameState.track;
+    auto prevPlayerId = prevSt.playerId;
+
+    auto monitorDiff = prevTrack.getRemainingMonitors() -
+                           currentTrack.getRemainingMonitors();
+    std::cerr << "monitorDiff: " << monitorDiff << std::endl;
+    assert(monitorDiff == 0 || monitorDiff == 1);
+
+    // one monitor removed
+    if (prevTrack.getRemainingMonitors() !=
+        currentTrack.getRemainingMonitors()) {
+
+        // reset to all monitors which are still on the track
+        targetMonitors = currentTrack.getMonitors();
+        return;
+    }
+
+    auto potentialSteps = calculatePotentialSteps(
+        prevSt.gameState, opponentsInfo, prevPlayerId,
+        opponentsInfo[prevSt.playerId].extraField);
+
+    for (const PotentialStep& step : potentialSteps) {
+        const auto& reachablePoints =
+            step.targetTrack->getReachablePoints(
+                step.targetTrack->getPrincess(prevPlayerId));
+
+        // find a monitor which was reachable, but the opponent did not step
+        // onto that
+        for (Point p : reachablePoints) {
+            int monitor = step.targetTrack->getField(p).monitor;
+            if (monitor != -1) {
+                targetMonitors.erase(std::remove(targetMonitors.begin(),
+                                                 targetMonitors.end(), p),
+                                     targetMonitors.end());
+            }
+        }
+    }
+}
+
 void ChoosingStrategy::updateOpponentsInfo(const Track& track, int playerId) {
+
+    if (gameState.currentTick == 0) {
+        for (auto& oi : opponentsInfo) {
+            oi.targetMonitors = gameState.track.getMonitors();
+        }
+    }
+
     if (prevSt.playerId != -1 &&
         prevSt.playerId != gameState.gameInfo.playerId) {
 
         assert(playerId >= 0 && playerId < gameState.gameInfo.numPlayers);
         assert(prevSt.playerId >= 0 &&
                prevSt.playerId < gameState.gameInfo.numPlayers);
+
         opponentsInfo[prevSt.playerId].extraField =
-            getExtraField(prevSt.track, track);
+            getExtraField(prevSt.gameState.track, track);
+
+        setTargetMonitors(opponentsInfo[prevSt.playerId].targetMonitors, track);
     }
-    prevSt = {track, playerId};
+    prevSt = {GameState(this->gameState, track), playerId};
 }
 
 void ChoosingStrategy::opponentsTurn(const Track& track, int playerId) {
     updateOpponentsInfo(track, playerId);
+}
+
+Step ChoosingStrategy::ourTurn(GameState gameState) {
+    this->gameState = std::move(gameState);
+    updateOpponentsInfo(this->gameState.track,
+                        this->gameState.gameInfo.playerId);
+    return calculateStep();
 }

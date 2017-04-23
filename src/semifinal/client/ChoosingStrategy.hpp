@@ -20,13 +20,7 @@ public:
     ChoosingStrategy(ChoosingStrategy&&) noexcept = default;
     ChoosingStrategy& operator=(ChoosingStrategy&&) = default;
 
-    Step ourTurn(GameState gameState) {
-        this->gameState = std::move(gameState);
-        updateOpponentsInfo(this->gameState.track, 
-                this->gameState.gameInfo.playerId);
-        return calculateStep();
-    }
-
+    Step ourTurn(GameState gameState);
     void opponentsTurn(const Track& track, int playerId);
     const OpponentsInfo& getOpponentsInfo() const { return opponentsInfo; }
 
@@ -36,15 +30,19 @@ private:
     friend struct OpponentsInfoTestFixture;
     void updateOpponentsInfo(const Track& track, int playerId);
 
+    void setTargetMonitors(std::vector<Point>& targetMonitors,
+                           const Track& currentTrack);
+
     std::shared_ptr<IChooser> chooser;
     GameState gameState;
 
     OpponentsInfo opponentsInfo;
 
     struct PrevState {
-        Track track;
+        GameState gameState;
         int playerId = -1;
     } prevSt;
+
 };
 
 #endif // SEMIFINAL_CLIENT_CHOOSINGSTRATEGY_HPP

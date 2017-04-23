@@ -55,7 +55,7 @@ void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
 
     std::vector<int> fields;
     const auto& gi = gs.gameInfo;
-    Track::Monitors monitors(gi.numDisplays);
+    Track::Monitors monitors(gi.numDisplays, Point{-1, -1});
     Track::Princesses princesses(gi.numPlayers);
     for (const auto& line : input) {
         auto tokens = split(line);

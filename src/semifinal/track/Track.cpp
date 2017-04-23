@@ -2,6 +2,8 @@
 
 #include "FloodFill.hpp"
 
+#include <algorithm>
+
 Track::Track(std::size_t width, std::size_t height,
         const std::vector<int>& fieldTypes,
         Monitors monitors, Princesses princesses) :
@@ -139,6 +141,13 @@ void Track::removeMonitor(int id) {
     monitor = -1;
     monitors[id] = -p11;
     --remainingMonitors;
+}
+
+Track::Monitors Track::getMonitors() const {
+    Monitors result;
+    std::copy_if(monitors.begin(), monitors.end(), std::back_inserter(result),
+                 [](const auto p) { return p.x >= 0; });
+    return result;
 }
 
 void Track::calculateReachability(Point from) const {
