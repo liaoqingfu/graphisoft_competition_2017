@@ -3,12 +3,14 @@
 #include <set>
 
 Game::Game(Rng& rng, Options options,
-    const std::vector<ChoosingStrategy>& strategies) :
+        const std::vector<ChoosingStrategy>& strategies,
+        const std::vector<std::shared_ptr<Score>>& scores) :
         rng(&rng), options(std::move(options)) {
+    assert(scores.size() == numPlayers);
     for (int i = 0; i < static_cast<int>(numPlayers); ++i) {
-        playerStates.emplace_back(strategies[i % strategies.size()], i);
+        playerStates.emplace_back(strategies[i % strategies.size()], i,
+                scores[i]);
     }
-
 }
 
 void Game::setPlayerMonitors(GameState& globalState) {
@@ -159,16 +161,5 @@ void Game::run(bool print) {
                 std::cerr << "\n" << std::endl;
             }
         }
-    }
-}
-
-void Game::printScores() const {
-    for (const PlayerState& playerState : playerStates) {
-        int playerId = playerState.gameState.gameInfo.playerId;
-        std::cout << setColor(defaultColor, playerColors[playerId])
-                << "Player " << playerId << " final score "
-                << playerState.score->score << " Total time spent: "
-                << static_cast<double>(playerState.score->time) / CLOCKS_PER_SEC
-                << " s" << clearColor() << std::endl;
     }
 }

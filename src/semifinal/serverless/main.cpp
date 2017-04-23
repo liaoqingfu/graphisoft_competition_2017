@@ -23,9 +23,14 @@ int main(int argc, const char* argv[]) {
     }
     Rng rng{options.seed};
 
-    Game game{rng, options, createStrategies(rng, options)};
+    std::vector<std::shared_ptr<Score>> scores;
+    for (std::size_t i = 0; i < numPlayers; ++i) {
+        scores.push_back(std::make_shared<Score>());
+    }
 
     if (options.jobs == 1) {
+        Game game{rng, options, createStrategies(rng, options), scores};
+
         for (int i = 0; i < options.numRuns; ++i) {
             std::cout << "Run #" << i << "\n";
             game.run(options.numRuns == 1);
@@ -34,9 +39,10 @@ int main(int argc, const char* argv[]) {
         std::vector<std::unique_ptr<std::thread>> threads;
         for (std::size_t i = 0; i < options.jobs; ++i) {
             threads.push_back(std::make_unique<std::thread>(
-                    [game, &options, i, seed=rng()]() mutable {
+                    [&options, i, seed=rng(), &scores]() mutable {
                         Rng rng{seed};
-                        game.setRng(rng);
+                        Game game{rng, options, createStrategies(rng, options),
+                                scores};
                         for (int j = i; j < options.numRuns;
                                 j += options.jobs) {
                             game.run(false);
@@ -52,5 +58,11 @@ int main(int argc, const char* argv[]) {
     }
 
     std::cout << "Game over.\n";
-    game.printScores();
+    for (std::size_t i = 0; i < numPlayers; ++i) {
+        std::cout << setColor(defaultColor, playerColors[i])
+                << "Player " << i << " final score "
+                << scores[i]->score << " Total time spent: "
+                << static_cast<double>(scores[i]->time) / CLOCKS_PER_SEC
+                << " s" << clearColor() << std::endl;
+    }
 }

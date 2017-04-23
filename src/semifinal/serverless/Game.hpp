@@ -6,36 +6,33 @@
 #include "Options.hpp"
 #include "Random.hpp"
 
-
-#include <atomic>
 #include <time.h>
 #include <memory>
 #include <vector>
 
+struct Score {
+    std::atomic<int> score{0};
+    std::atomic<clock_t> time{0};
+
+    Score() = default;
+    Score(const Score&) = delete;
+    Score& operator=(const Score&) = delete;
+    Score(Score&&) = delete;
+    Score& operator=(Score&&) = delete;
+};
+
 struct Game : public std::enable_shared_from_this<Game> {
 public:
     Game(Rng& rng, Options options,
-            const std::vector<ChoosingStrategy>& strategies);
+            const std::vector<ChoosingStrategy>& strategies,
+            const std::vector<std::shared_ptr<Score>>& scores);
     void run(bool print);
-    void setRng(Rng& rng) { this->rng = &rng; }
-    void printScores() const;
 private:
-    struct Score {
-        std::atomic<int> score{0};
-        std::atomic<clock_t> time{0};
-
-        Score() = default;
-        Score(const Score&) = delete;
-        Score& operator=(const Score&) = delete;
-        Score(Score&&) = delete;
-        Score& operator=(Score&&) = delete;
-
-    };
-
     struct PlayerState {
-        PlayerState(ChoosingStrategy strategy, int playerId) :
+        PlayerState(ChoosingStrategy strategy, int playerId,
+                const std::shared_ptr<Score>& score) :
                 strategy{std::move(strategy)},
-                score{std::make_shared<Score>()} {
+                score{score} {
             gameState.gameInfo.playerId = playerId;
         }
 
