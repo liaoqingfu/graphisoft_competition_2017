@@ -1,5 +1,6 @@
 #include "BestChooser.hpp"
 #include "LookaheadChooser.hpp"
+#include "MaxReachableChooser.hpp"
 #include "PrincessMovingChooser.hpp"
 #include "RandomChooser.hpp"
 #include "StrategyParser.hpp"
@@ -45,7 +46,7 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
                 (-(lit(',') >> lit("override")))[_val = true];
 
         chooser %= randomChooser | lookaheadChooser | princessMovingChooser
-                | bestChooser | monitorDefendingChooser;
+                | bestChooser | monitorDefendingChooser | maxReachableChooser;
         randomChooser = (lit("RandomChooser") >> lit('(') >> lit(')'))[
                 _val = make_shared_<RandomChooser>(phoenix::ref(rng))];
         lookaheadChooser = (lit("LookaheadChooser") >> lit('(')
@@ -61,6 +62,9 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
                 >> chooser >> ',' >> double_ >> ',' >> double_ >> lit(')'))[
                         _val = make_shared_<MonitorDefendingChooser>(
                                 _1, _2, _3)];
+        maxReachableChooser = (lit("MaxReachableChooser") >> lit('(')
+                >> chooser >> ',' >> double_ >> lit(')'))[
+                        _val = make_shared_<MaxReachableChooser>(_1, _2)];
     }
 
     qi::rule<Iterator, ChoosingStrategy(), ascii::space_type> start;
@@ -76,7 +80,9 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
     qi::rule<Iterator, std::shared_ptr<BestChooser>(),
             ascii::space_type> bestChooser;
     qi::rule<Iterator, std::shared_ptr<MonitorDefendingChooser>(),
-             ascii::space_type> monitorDefendingChooser;
+            ascii::space_type> monitorDefendingChooser;
+    qi::rule<Iterator, std::shared_ptr<MaxReachableChooser>(),
+            ascii::space_type> maxReachableChooser;
 };
 
 
