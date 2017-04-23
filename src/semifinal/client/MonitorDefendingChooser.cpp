@@ -1,6 +1,8 @@
 #include "MonitorDefendingChooser.hpp"
 #include "ChooserHelper.hpp"
 
+#include <unordered_set>
+
 Step MonitorDefendingChooser::chooseBadStep(
     const std::vector<PotentialStep>& potentialSteps) {
 
@@ -42,22 +44,21 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
         double opponentWeight = 0.0;
         auto nextSteps = calculatePotentialSteps(
             newGameState, opponentsInfo, opponentId, opponentExtraField);
+        std::unordered_set<int> reachableMonitors;
         for (const PotentialStep& nextStep : nextSteps) {
             const auto& reachablePoints =
                 nextStep.targetTrack->getReachablePoints(
                     nextStep.targetTrack->getPrincess(opponentId));
 
             // TODO work only with the target monitor of the opponent
-            int reachableMonitors = 0;
             for (Point p : reachablePoints) {
-                if (nextStep.targetTrack->getField(p).monitor != -1) {
-                    ++reachableMonitors;
+                int monitor = nextStep.targetTrack->getField(p).monitor;
+                if (monitor != -1) {
+                    reachableMonitors.insert(monitor);
                 }
             }
-            opponentWeight += reachableMonitors / gi.numDisplays;
+            opponentWeight += reachableMonitors.size() / gi.numDisplays;
         }
-        assert(!nextSteps.empty());
-        opponentWeight /= nextSteps.size();
 
         weight += opponentWeight;
     }
