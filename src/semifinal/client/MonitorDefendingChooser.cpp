@@ -59,10 +59,15 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
             }
         }
 
-        weight += reachableMonitors.size() / gi.numDisplays;
+        double w = static_cast<double>(reachableMonitors.size())
+                / gi.numDisplays;
+        std::cerr << "  Player " << opponentId << ": reachable monitors = "
+                << reachableMonitors.size() << " w=" << w << "\n";
+        weight += w;
     }
     weight /= gi.numPlayers;
 
-    // TODO how to evaluate weights if we get steps from e.g. lookahedChooser
-    step.weight += (1.0 - weight) * weightMultiplier;
+    double w = (1.0 - weight) * weightMultiplier;
+    std::cerr << "Total weight = " << w << "\n";
+    step.weight += w;
 }
