@@ -41,6 +41,7 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
     GameState newGameState{*step.sourceState, *step.targetTrack};
     newGameState.extraField = step.targetExtraField;
     const auto& gi = newGameState.gameInfo;
+
     const auto& opponentsInfo = *step.opponentsInfo;
 
     std::cerr << "Step " << step.step << "\n";
@@ -55,6 +56,8 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
         if (opponentId == gi.playerId) continue;
 
         int opponentExtraField = opponentsInfo[opponentId].extraField;
+        const auto& targets = opponentsInfo[opponentId].targetMonitors;
+
         auto nextSteps = calculatePotentialSteps(
             newGameState, opponentsInfo, opponentId, opponentExtraField);
         std::unordered_set<int> reachableMonitors;
@@ -67,7 +70,7 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
             // TODO work only with the target monitor of the opponent
             for (Point p : reachablePoints) {
                 int monitor = nextStep.targetTrack->getField(p).monitor;
-                if (monitor != -1) {
+                if (monitor != -1 && targets.count(monitor) != 0) {
                     reachableMonitors.insert(monitor);
                 }
             }
