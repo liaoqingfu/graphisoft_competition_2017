@@ -29,10 +29,10 @@ int main(int argc, const char* argv[]) {
     }
 
     if (options.jobs == 1) {
-        Game game{rng, options, createStrategies(rng, options), scores};
 
         for (int i = 0; i < options.numRuns; ++i) {
             std::cout << "Run #" << i << "\n";
+            Game game{rng, options, createStrategies(rng, options), scores};
             game.run(options.numRuns == 1);
         }
     } else {
@@ -41,10 +41,10 @@ int main(int argc, const char* argv[]) {
             threads.push_back(std::make_unique<std::thread>(
                     [&options, i, seed=rng(), &scores]() mutable {
                         Rng rng{seed};
-                        Game game{rng, options, createStrategies(rng, options),
-                                scores};
                         for (int j = i; j < options.numRuns;
                                 j += options.jobs) {
+                            Game game{rng, options, 
+                                    createStrategies(rng, options), scores};
                             game.run(false);
                             std::cout << ".";
                             std::cout.flush();

@@ -144,7 +144,10 @@ void ChoosingStrategy::setTargetMonitors(const Track& currentTrack) {
 
     auto monitorDiff = prevTrack.getRemainingMonitors() -
                            currentTrack.getRemainingMonitors();
-    assert(monitorDiff == 0 || monitorDiff == 1);
+    if (!(monitorDiff == 0 || monitorDiff == 1)) {
+        std::cerr << "ERROR!\n" << prevTrack << currentTrack;
+        assert(0);
+    }
 
     //std::cerr << "YYY player" << gameState.gameInfo.playerId << " opp"
                 //<< prevSt.playerId << targetMonitors << "\n";
