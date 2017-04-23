@@ -106,9 +106,7 @@ void Game::run(bool print) {
                           << track.getRemainingMonitors() << "\n"
                           << setColor(defaultColor, playerColors[playerId])
                           << "Player " << playerId << " score "
-                          << playerState.score->score << " target M"
-                          << track.getField(track.getMonitor(targetMonitor))
-                                 .monitor
+                          << playerState.score->score << " target M" << targetMonitor
                           << track.getMonitor(targetMonitor)
                           << " extraField  "
                           << extraField
@@ -132,6 +130,14 @@ void Game::run(bool print) {
                 }
                 clock_t end = ::clock();
                 actualPlayer.score->time += end - start;
+
+            }
+
+            for (PlayerState& actualPlayer : playerStates) {
+                if (actualPlayer.strategy.getOpponentsInfo()[playerId]
+                        .targetMonitors.count(targetMonitor) == 0) {
+                    std::cerr << "ERR with target monitors\n";
+                }
             }
 
             if (print) {
