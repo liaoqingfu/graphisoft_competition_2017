@@ -13,9 +13,11 @@
 class MonitorDefendingChooser : public DelegatingChooser {
 public:
     MonitorDefendingChooser(std::shared_ptr<IChooser> chooser,
-            double weightMultiplier)
+            double monitorWeightMultiplier,
+            double reachabilityWeightMultiplier)
         : DelegatingChooser(std::move(chooser)),
-          weightMultiplier(weightMultiplier) {}
+          monitorWeightMultiplier(monitorWeightMultiplier),
+          reachabilityWeightMultiplier(reachabilityWeightMultiplier) {}
 
     Step chooseGoodStep(
         const std::vector<PotentialStep>& potentialSteps) override;
@@ -26,7 +28,8 @@ public:
 private:
     void processStep(PotentialStep& step);
 
-    double weightMultiplier;
+    double monitorWeightMultiplier;
     std::map<std::tuple<Directions, int, int>, double> savedWeights;
+    double reachabilityWeightMultiplier;
 };
 

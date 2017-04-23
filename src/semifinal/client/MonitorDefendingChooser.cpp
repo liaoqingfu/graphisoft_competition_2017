@@ -44,7 +44,10 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
     const auto& opponentsInfo = *step.opponentsInfo;
 
     std::cerr << "Step " << step.step << "\n";
-    double weight = 0;
+    double monitorWeight = 0;
+    double reachabilityWeight = 0;
+    double totalArea = step.targetTrack->width() * step.targetTrack->height();
+    double playerNumDivisor = gi.numPlayers * (gi.numPlayers - 1) / 2;
     for (int opponentId = 0; opponentId < gi.numPlayers;
          ++opponentId) {
 
@@ -55,11 +58,12 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
         auto nextSteps = calculatePotentialSteps(
             newGameState, opponentsInfo, opponentId, opponentExtraField);
         std::unordered_set<int> reachableMonitors;
+        std::size_t reachability = 0;
         for (const PotentialStep& nextStep : nextSteps) {
             const auto& reachablePoints =
                 nextStep.targetTrack->getReachablePoints(
                     nextStep.targetTrack->getPrincess(opponentId));
-
+            reachability = std::max(reachability, reachablePoints.size());
             // TODO work only with the target monitor of the opponent
             for (Point p : reachablePoints) {
                 int monitor = nextStep.targetTrack->getField(p).monitor;
@@ -69,15 +73,25 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
             }
         }
 
-        double w = static_cast<double>(reachableMonitors.size())
+        double opponentMultiplier = gi.numPlayers
+                - (opponentId - gi.playerId + gi.numPlayers) % gi.numPlayers;
+
+        double mw = static_cast<double>(reachableMonitors.size())
                 / gi.numDisplays;
         std::cerr << "  Player " << opponentId << ": reachable monitors = "
-                << reachableMonitors.size() << " w=" << w << "\n";
-        weight += w;
-    }
-    weight /= gi.numPlayers;
+                << reachableMonitors.size() << " w=" << mw << "\n";
+        monitorWeight += mw * opponentMultiplier;
 
-    double w = (1.0 - weight) * weightMultiplier;
+        double rw = static_cast<double>(reachability) / totalArea;
+        std::cerr << "  Player " << opponentId << ": reachable area = "
+                << reachability << " w=" << rw << "\n";
+        reachabilityWeight += rw * opponentMultiplier;
+    }
+    monitorWeight /= playerNumDivisor;
+    reachabilityWeight /= playerNumDivisor;
+
+    double w = (1.0 - monitorWeight) * monitorWeightMultiplier
+            + (1.0 - reachabilityWeight) * reachabilityWeightMultiplier;
     std::cerr << "Total weight = " << w << "\n";
     step.weight += w;
     savedWeights.emplace(key, w);
