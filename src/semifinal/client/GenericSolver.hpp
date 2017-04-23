@@ -16,9 +16,10 @@ public:
             const std::vector<std::string>& tickInfos) {
         parseTickInfo(gameState, tickInfos);
 
+        std::cout << "Player " << gameState.activePlayerId << "\n"
+                << toBox(gameState.track, gameState.gameInfo.playerId,
+                           gameState.ourTurn() ? gameState.targetMonitor : -1);
         if (gameState.ourTurn()) {
-            std::cout << toBox(gameState.track, gameState.gameInfo.playerId,
-                               gameState.targetMonitor);
             auto step = strategy.ourTurn(gameState);
             std::cout << "Step: " << step << "\n";
             auto trackAfter = gameState.track;
