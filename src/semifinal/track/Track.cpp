@@ -15,10 +15,14 @@ Track::Track(std::size_t width, std::size_t height,
     std::transform(fieldTypes.begin(), fieldTypes.end(), fields.begin(),
             [](int type) { return Field{type, -1, {}}; });
     for (std::size_t i = 0; i < this->monitors.size(); ++i) {
-        fields[this->monitors[i]].monitor = i;
+        if (isInsideMatrix(fields, this->monitors[i])) {
+            fields[this->monitors[i]].monitor = i;
+        }
     }
     for (std::size_t i = 0; i < this->princesses.size(); ++i) {
-        fields[this->princesses[i]].addPrincess(i);
+        if (isInsideMatrix(fields, this->princesses[i])) {
+            fields[this->princesses[i]].addPrincess(i);
+        }
     }
 }
 
