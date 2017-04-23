@@ -1,23 +1,23 @@
 #pragma once
 
 #include <array>
-#include <vector>
 #include <ostream>
+#include <set>
 
 #include "Point.hpp"
 
 struct OpponentData {
     int extraField = 15;
-    std::vector<Point> targetMonitors;
+    std::set<int> targetMonitors;
 };
 
 using OpponentsInfo = std::array<OpponentData, 4>;
 
 inline std::ostream& operator<<(std::ostream& os, const OpponentData& od) {
     os << "extraField: " << od.extraField;
-    os << " targets: {";
+    os << "   targets: {";
     for (const auto& x : od.targetMonitors) {
-        os << x << ",";
+        os << "M" << x << ",";
     }
     os << "}";
     return os;

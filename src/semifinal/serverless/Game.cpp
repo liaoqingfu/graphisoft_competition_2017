@@ -86,6 +86,7 @@ void Game::run(bool print) {
         state = gameState;
         state.gameInfo.playerId = i;
         state.targetMonitor = getRandomMonitor(state);
+        playerStates[i].strategy.init(state.gameInfo);
     }
 
     for (gameState.currentTick = 0;
@@ -101,18 +102,19 @@ void Game::run(bool print) {
                 playerState.strategy.getOpponentsInfo();
 
             if (print) {
-                std::cerr
-                        << "Tick " << gameState.currentTick
-                        << " monitors " << track.getRemainingMonitors()
-                        << "\n" << setColor(defaultColor,
-                                playerColors[playerId])
-                        << "Player " << playerId
-                        << " score " << playerState.score->score
-                        << " target " << track.getMonitor(targetMonitor)
-                        << " extraField  " << extraField
-                        << clearColor()
-                        << "\n" << toBox(gameState.track, playerId,
-                                targetMonitor);
+                std::cerr << "Tick " << gameState.currentTick << " monitors "
+                          << track.getRemainingMonitors() << "\n"
+                          << setColor(defaultColor, playerColors[playerId])
+                          << "Player " << playerId << " score "
+                          << playerState.score->score << " target M"
+                          << track.getField(track.getMonitor(targetMonitor))
+                                 .monitor
+                          << track.getMonitor(targetMonitor)
+                          << " extraField  "
+                          << extraField
+                          << clearColor()
+                          << "\n"
+                          << toBox(gameState.track, playerId, targetMonitor);
             }
 
             playerState.gameState.track = track;
@@ -126,18 +128,45 @@ void Game::run(bool print) {
                     step = actualPlayer.strategy.ourTurn(
                             actualPlayer.gameState);
                 } else {
-                    actualPlayer.strategy.opponentsTurn(track,
-                            playerId);
+                    actualPlayer.strategy.opponentsTurn(playerState.gameState.track, playerId);
                 }
                 clock_t end = ::clock();
                 actualPlayer.score->time += end - start;
             }
+
             if (print) {
                 std::cerr << "Step: " << step << "\n"
                           << "opponentsInfo:\n" << opponentsInfo;
             }
+
             playerState.gameState.extraField = executeStep(track, playerId,
                     step);
+
+            auto debugOpponentsInfo = [&]() {
+                for (int i = 0; i < (int)opponentsInfo.size(); ++i) {
+                    if (i == playerId) continue;
+                    const auto& targets = opponentsInfo[i].targetMonitors;
+                    auto alivesNum =
+                        playerState.gameState.track.getAliveMonitors().size();
+                    if (targets.size() <= 2) {
+                        std::cerr << "Targets less than two for player " << i
+                                  << " \n";
+                    }
+                    if (targets.size() * 2 <= alivesNum) {
+                        std::cerr << "Targets at half size for player " << i
+                                  << " \n";
+                    }
+                    if (targets.size() < alivesNum * 0.8) {
+                        std::cerr << "Targets at 80 percent size for player " << i
+                                  << " \n";
+                    }
+                }
+            };
+            debugOpponentsInfo();
+            for (const auto& ps : playerStates) {
+                std::cerr << "OppInfo of player" << ps.gameState.gameInfo.playerId << "\n";
+                std::cerr << ps.strategy.getOpponentsInfo();
+            }
 
             if (track.getPrincess(playerId) ==
                     track.getMonitor(targetMonitor)) {

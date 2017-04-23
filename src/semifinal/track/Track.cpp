@@ -143,10 +143,14 @@ void Track::removeMonitor(int id) {
     --remainingMonitors;
 }
 
-Track::Monitors Track::getAliveMonitors() const {
-    Monitors result;
-    std::copy_if(monitors.begin(), monitors.end(), std::back_inserter(result),
-                 [](const auto p) { return p.x >= 0; });
+std::set<int> Track::getAliveMonitors() const {
+    std::set<int> result;
+    for (const auto& m : monitors) {
+        if (m.x >= 0) {
+            assert(getField(m).monitor != -1);
+            result.insert(getField(m).monitor);
+        }
+    }
     return result;
 }
 

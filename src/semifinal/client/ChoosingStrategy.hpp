@@ -20,6 +20,9 @@ public:
     ChoosingStrategy(ChoosingStrategy&&) noexcept = default;
     ChoosingStrategy& operator=(ChoosingStrategy&&) = default;
 
+    void init(GameInfo gameInfo) {
+        this->gameState.gameInfo = std::move(gameInfo);
+    }
     Step ourTurn(GameState gameState);
     void opponentsTurn(const Track& track, int playerId);
     const OpponentsInfo& getOpponentsInfo() const { return opponentsInfo; }
