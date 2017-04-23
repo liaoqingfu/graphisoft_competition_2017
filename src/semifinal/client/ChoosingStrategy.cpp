@@ -146,13 +146,14 @@ void ChoosingStrategy::setTargetMonitors(const Track& currentTrack) {
                            currentTrack.getRemainingMonitors();
     assert(monitorDiff == 0 || monitorDiff == 1);
 
-    std::cerr << "YYY player" << gameState.gameInfo.playerId << " opp"
-                << prevSt.playerId << targetMonitors << "\n";
+    //std::cerr << "YYY player" << gameState.gameInfo.playerId << " opp"
+                //<< prevSt.playerId << targetMonitors << "\n";
 
     auto remove = [&](auto& targetMonitors, int monitorId, int oppId) {
-        std::cerr << "remove from targets: player"
-                  << gameState.gameInfo.playerId << " opp" << oppId << " "
-                  << monitorId << "\n";
+        (void)oppId;
+        //std::cerr << "remove from targets: player"
+                  //<< gameState.gameInfo.playerId << " opp" << oppId << " "
+                  //<< monitorId << "\n";
         targetMonitors.erase(monitorId);
     };
 
@@ -165,13 +166,13 @@ void ChoosingStrategy::setTargetMonitors(const Track& currentTrack) {
 
         // remove the monitor from all others targets
         int monitorId = getRemovedMonitor(prevTrack, currentTrack);
-        std::cerr << "One monitor Removed " << monitorId << std::endl;
+        //std::cerr << "One monitor Removed " << monitorId << std::endl;
         for (int i = 0; i < (int)opponentsInfo.size(); ++i) {
             if (i == prevSt.playerId) continue;
             remove(opponentsInfo[i].targetMonitors, monitorId, i);
         }
-        std::cerr << "XXX player" << gameState.gameInfo.playerId << " opp"
-                  << prevSt.playerId << targetMonitors << "\n";
+        //std::cerr << "XXX player" << gameState.gameInfo.playerId << " opp"
+                  //<< prevSt.playerId << targetMonitors << "\n";
         return;
     }
 
@@ -199,13 +200,13 @@ void ChoosingStrategy::setTargetMonitors(const Track& currentTrack) {
         remove(targetMonitors, i, prevSt.playerId);
     }
 
-    std::cerr << "XXX player" << gameState.gameInfo.playerId << " opp" << prevSt.playerId << targetMonitors << "\n";
+    //std::cerr << "XXX player" << gameState.gameInfo.playerId << " opp" << prevSt.playerId << targetMonitors << "\n";
 }
 
 void ChoosingStrategy::updateOpponentsInfo(const Track& track, int opponentId) {
 
     if (opponentsInfo[0].targetMonitors.empty()) {
-        std::cerr << "INITIALIZE TARGETS" << std::endl;
+        //std::cerr << "INITIALIZE TARGETS" << std::endl;
         for (auto& oi : opponentsInfo) {
             oi.targetMonitors = track.getAliveMonitors();
         }
