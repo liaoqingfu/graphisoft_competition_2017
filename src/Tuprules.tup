@@ -5,6 +5,7 @@ export HOME
 
 ifeq (@(COMPILER),)
     CXX = clang++
+    CPP_FLAGS += -O0 -g
 else
     CXX = @(COMPILER)
 endif
