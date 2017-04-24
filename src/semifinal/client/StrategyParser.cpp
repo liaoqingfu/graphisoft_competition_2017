@@ -38,6 +38,7 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
         using qi::_1;
         using qi::_2;
         using qi::_3;
+        using qi::_4;
 
         start = ("ChoosingStrategy" >> lit('(') >> chooser >> lit(')'))[
                 _val = phoenix::construct<ChoosingStrategy>(_1)];
@@ -59,9 +60,10 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
                 >> chooser >> lit(')'))[
                         _val = make_shared_<BestChooser>(_1)];
         monitorDefendingChooser = (lit("MonitorDefendingChooser") >> lit('(')
-                >> chooser >> ',' >> double_ >> ',' >> double_ >> lit(')'))[
+                >> chooser >> ',' >> double_ >> ',' >> double_ >> ','
+                >>double_ >> lit(')'))[
                         _val = make_shared_<MonitorDefendingChooser>(
-                                _1, _2, _3)];
+                                _1, _2, _3, _4)];
         maxReachableChooser = (lit("MaxReachableChooser") >> lit('(')
                 >> chooser >> ',' >> double_ >> lit(')'))[
                         _val = make_shared_<MaxReachableChooser>(_1, _2)];
