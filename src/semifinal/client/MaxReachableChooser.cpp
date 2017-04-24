@@ -10,7 +10,7 @@ Step MaxReachableChooser::chooseBadStep(
 
     savedWeights.clear();
     for (PotentialStep& step : changedPotentialSteps) {
-        processStep(step);
+        processStep(step, true);
     }
     return getDelegatedChooser().chooseBadStep(changedPotentialSteps);
 }
@@ -28,7 +28,8 @@ Step MaxReachableChooser::chooseGoodStep(
     return getDelegatedChooser().chooseGoodStep(changedPotentialSteps);
 }
 
-void MaxReachableChooser::processStep(PotentialStep& step) {
+void MaxReachableChooser::processStep(PotentialStep& step,
+        bool isBadStep) {
     auto key = std::make_tuple(step.step.pushDirection, step.step.pushPosition,
             step.step.pushFieldType);
     auto iterator = savedWeights.find(key);
@@ -41,7 +42,6 @@ void MaxReachableChooser::processStep(PotentialStep& step) {
     GameState newGameState{*step.sourceState, *step.targetTrack};
     newGameState.extraField = step.targetExtraField;
     const auto& gi = newGameState.gameInfo;
-    const auto& opponentsInfo = *step.opponentsInfo;
 
     std::cerr << "Step " << step.step << "\n";
 
@@ -52,6 +52,7 @@ void MaxReachableChooser::processStep(PotentialStep& step) {
     double w = static_cast<double>(reachablePoints.size())
             / (gi.width * gi.height) * weightMultiplier;
 #else
+    const auto& opponentsInfo = *step.opponentsInfo;
     double weight = 0;
     int opponentExtraField = opponentsInfo[gi.playerId].extraField;
     auto nextSteps = calculatePotentialSteps(
@@ -69,6 +70,9 @@ void MaxReachableChooser::processStep(PotentialStep& step) {
     }
     double w = weight / nextSteps.size() * weightMultiplier;
 #endif
+    if (isBadStep) {
+        w *= 2;
+    }
     std::cerr << "Total weight = " << w << "\n";
     step.weight += w;
     savedWeights.emplace(key, w);

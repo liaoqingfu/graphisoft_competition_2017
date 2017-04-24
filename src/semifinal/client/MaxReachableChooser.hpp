@@ -24,7 +24,7 @@ public:
         const std::vector<PotentialStep>& potentialSteps) override;
 
 private:
-    void processStep(PotentialStep& step);
+    void processStep(PotentialStep& step, bool isBadStep = false);
 
     double weightMultiplier;
     std::map<std::tuple<Directions, int, int>, double> savedWeights;

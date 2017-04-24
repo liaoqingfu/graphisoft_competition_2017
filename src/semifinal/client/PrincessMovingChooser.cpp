@@ -18,19 +18,23 @@ Step PrincessMovingChooser::chooseBadStep(
         const std::vector<PotentialStep>& potentialSteps) {
     return processPotentialSteps(potentialSteps,
             [this](auto& stepValues, const auto& step) {
-                return processStep(stepValues, step);
+                return processStep(stepValues, step, true);
             }, getDelegatedChooser(), "PrincessMovingChooser");
 }
 
 void PrincessMovingChooser::processStep(std::vector<PotentialStep>& stepValues,
-        PotentialStep step) {
+        PotentialStep step, bool isBadStep) {
     const Track& track = *step.targetTrack;
     int playerId = step.sourceState->gameInfo.playerId;
 
     double baseWeight = step.weight;
     for (Point p : track.getReachablePoints(track.getPrincess(playerId))) {
         step.step.princessTarget = p;
-        step.weight = baseWeight + calculateWeight(step);
+        double weight = calculateWeight(step);
+        if (isBadStep) {
+            weight *= 5;
+        }
+        step.weight = baseWeight + weight;
         stepValues.push_back(step);
     }
 }

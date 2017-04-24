@@ -25,7 +25,8 @@ public:
             const std::vector<PotentialStep>& potentialSteps) override;
 
 private:
-    void processStep(std::vector<PotentialStep>& stepValues, PotentialStep step);
+    void processStep(std::vector<PotentialStep>& stepValues, PotentialStep step,
+            bool isBadStep = false);
     double calculateWeight(const PotentialStep& step);
 
     double weightMultiplier;
