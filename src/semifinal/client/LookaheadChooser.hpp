@@ -22,7 +22,7 @@ public:
 
 private:
     void processStep(std::vector<PotentialStep>& stepValues,
-            PotentialStep step);
+            const PotentialStep& step);
 
     double weightMultiplier;
 };

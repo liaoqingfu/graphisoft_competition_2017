@@ -35,6 +35,8 @@ void MaxReachableChooser::processStep(PotentialStep& step) {
     if (iterator != savedWeights.end()) {
         // std::cerr << "Saved weight: " << iterator->second << "\n";
         step.weight += iterator->second;
+        step.debugInfo.push_back(PotentialStep::DebugInfo{"MaxReachableChooser", 
+                iterator->second / weightMultiplier, iterator->second});
         return;
     }
 

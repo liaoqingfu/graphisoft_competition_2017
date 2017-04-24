@@ -12,7 +12,7 @@ Step LookaheadChooser::chooseBadStep(
 }
 
 void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
-        PotentialStep step) {
+        const PotentialStep& step) {
     std::unordered_map<Point, int> reachablePointValues;
     // Collect the points reachable in the current step.
     const auto& reachablePoints = step.targetTrack->getReachablePoints(
@@ -60,13 +60,14 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
             continue;
         }
 
-        step.step.princessTarget = element.first;
+        PotentialStep step2 = step;
+        step2.step.princessTarget = element.first;
         // The value equals the number of possible next steps where the princess
         // can reach the target monitor.
         double w = element.second / valueLimit;
         double ww = w * weightMultiplier;
-        step.debugInfo.push_back(PotentialStep::DebugInfo{"LookaheadChooser", w, ww});
-        step.weight = baseWeight + ww;
-        stepValues.push_back(step);
+        step2.debugInfo.push_back(PotentialStep::DebugInfo{"LookaheadChooser", w, ww});
+        step2.weight = baseWeight + ww;
+        stepValues.push_back(step2);
     }
 }
