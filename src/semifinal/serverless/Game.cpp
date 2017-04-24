@@ -160,13 +160,13 @@ void Game::run(bool print) {
                                   << " for opp" << i << " \n";
                     }
                     if (targets.size() * 2 <= alivesNum) {
-                        std::cerr << "Targets at half size, player" << playerId
+                        std::cerr << "tick" << gameState.currentTick
+                                  << " Targets at half size, player" << playerId
                                   << " for opp" << i << " \n";
                     }
                     if (targets.size() < alivesNum * 0.8) {
-                        std::cerr << "Targets at 80 percent size for opp" << i
-                                  << " \n";
-                        std::cerr << "Targets at 80 percent size, player"
+                        std::cerr << "tick" << gameState.currentTick
+                                  << " Targets at 80 percent size, player"
                                   << playerId << " for opp" << i << " \n";
                     }
                 }
