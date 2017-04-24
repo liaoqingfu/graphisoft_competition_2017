@@ -165,17 +165,26 @@ void ChoosingStrategy::setTargetMonitors(const Track& currentTrack) {
         currentTrack.getRemainingMonitors()) {
 
         // reset to monitors which are still on the track
-        targetMonitors = currentTrack.getAliveMonitors();
+        auto reset = [&currentTrack](auto& targets) {
+            targets = currentTrack.getAliveMonitors();
+        };
+
+        reset(targetMonitors);
 
         // remove the monitor from all others targets
         int monitorId = getRemovedMonitor(prevTrack, currentTrack);
-        //std::cerr << "One monitor Removed " << monitorId << std::endl;
+        // std::cerr << "One monitor Removed " << monitorId << std::endl;
         for (int i = 0; i < (int)opponentsInfo.size(); ++i) {
             if (i == prevSt.playerId) continue;
-            remove(opponentsInfo[i].targetMonitors, monitorId, i);
+
+            if (opponentsInfo[i].targetMonitors.count(monitorId)) {
+                reset(opponentsInfo[i].targetMonitors);
+            } else {
+                remove(opponentsInfo[i].targetMonitors, monitorId, i);
+            }
         }
-        //std::cerr << "XXX player" << gameState.gameInfo.playerId << " opp"
-                  //<< prevSt.playerId << targetMonitors << "\n";
+        // std::cerr << "XXX player" << gameState.gameInfo.playerId << " opp"
+        //<< prevSt.playerId << targetMonitors << "\n";
         return;
     }
 

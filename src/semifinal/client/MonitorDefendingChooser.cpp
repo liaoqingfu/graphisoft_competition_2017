@@ -67,7 +67,6 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
                 nextStep.targetTrack->getReachablePoints(
                     nextStep.targetTrack->getPrincess(opponentId));
             reachability = std::max(reachability, reachablePoints.size());
-            // TODO work only with the target monitor of the opponent
             for (Point p : reachablePoints) {
                 int monitor = nextStep.targetTrack->getField(p).monitor;
                 if (monitor != -1 && targets.count(monitor) != 0) {
