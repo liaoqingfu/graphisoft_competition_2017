@@ -37,7 +37,7 @@ private:
                 over = true;
                 std::cerr << "-----------------------------\n";
             }
-            std::cerr << "BestChooser " << step.step << "\n";
+            std::cerr << "BestChooser " << step.step << " " << step.weight << "\n";
             for (const auto& info : step.debugInfo) {
                 std::cerr << "  " << info.name << " " << info.baseValue
                         << " " << info.finalValue << "\n";
