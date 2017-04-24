@@ -81,7 +81,7 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
                 - (opponentId - gi.playerId + gi.numPlayers) % gi.numPlayers;
 
         double mw = static_cast<double>(reachableMonitors.size())
-                / gi.numDisplays;
+                / step.sourceState->track.getAliveMonitors().size();
         // std::cerr << "  Player " << opponentId << ": reachable monitors = "
         //         << reachableMonitors.size() << " w=" << mw << "\n";
         monitorWeight += mw * opponentMultiplier;
