@@ -126,7 +126,8 @@ void Game::run(bool print) {
                     step = actualPlayer.strategy.ourTurn(
                             actualPlayer.gameState);
                 } else {
-                    actualPlayer.strategy.opponentsTurn(playerState.gameState.track, playerId);
+                    actualPlayer.strategy.opponentsTurn(
+                        playerState.gameState.track, playerId);
                 }
                 clock_t end = ::clock();
                 actualPlayer.score->time += end - start;
@@ -155,22 +156,25 @@ void Game::run(bool print) {
                     auto alivesNum =
                         playerState.gameState.track.getAliveMonitors().size();
                     if (targets.size() <= 2) {
-                        std::cerr << "Targets less than two for player " << i
-                                  << " \n";
+                        std::cerr << "Targets less than two, player" << playerId
+                                  << " for opp" << i << " \n";
                     }
                     if (targets.size() * 2 <= alivesNum) {
-                        std::cerr << "Targets at half size for player " << i
-                                  << " \n";
+                        std::cerr << "Targets at half size, player" << playerId
+                                  << " for opp" << i << " \n";
                     }
                     if (targets.size() < alivesNum * 0.8) {
-                        std::cerr << "Targets at 80 percent size for player " << i
+                        std::cerr << "Targets at 80 percent size for opp" << i
                                   << " \n";
+                        std::cerr << "Targets at 80 percent size, player"
+                                  << playerId << " for opp" << i << " \n";
                     }
                 }
             };
             debugOpponentsInfo();
             for (const auto& ps : playerStates) {
-                std::cerr << "OppInfo of player" << ps.gameState.gameInfo.playerId << "\n";
+                std::cerr << "OppInfo of player"
+                          << ps.gameState.gameInfo.playerId << "\n";
                 std::cerr << ps.strategy.getOpponentsInfo();
             }
 
