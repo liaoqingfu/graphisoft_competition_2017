@@ -31,10 +31,18 @@ private:
                     return lhs.weight > rhs.weight;
                 });
         std::size_t i = 0;
-        // for (const PotentialStep& step : potentialSteps) {
-        //     std::cerr << "Step " << step.step << " weight " << step.weight
-        //             << "\n";
-        // }
+        bool over = false;
+        for (const PotentialStep& step : potentialSteps) {
+            if (!over && step.weight < potentialSteps[0].weight - tolerance) {
+                over = true;
+                std::cerr << "-----------------------------\n";
+            }
+            std::cerr << "Step " << step.step << "\n";
+            for (const auto& info : step.debugInfo) {
+                std::cerr << "  " << info.name << " " << info.baseValue
+                        << " " << info.finalValue << "\n";
+            }
+        }
         for (; i < potentialSteps.size() &&
                 potentialSteps[i].weight >= potentialSteps[0].weight - tolerance;
                 ++i) {

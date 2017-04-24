@@ -63,8 +63,10 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
         step.step.princessTarget = element.first;
         // The value equals the number of possible next steps where the princess
         // can reach the target monitor.
-        step.weight = baseWeight
-                + element.second / valueLimit * weightMultiplier;
+        double w = element.second / valueLimit;
+        double ww = w * weightMultiplier;
+        step.debugInfo.push_back(PotentialStep::DebugInfo{"LookaheadChooser", w, ww});
+        step.weight = baseWeight + ww;
         stepValues.push_back(step);
     }
 }

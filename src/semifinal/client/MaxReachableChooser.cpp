@@ -41,7 +41,6 @@ void MaxReachableChooser::processStep(PotentialStep& step) {
     GameState newGameState{*step.sourceState, *step.targetTrack};
     newGameState.extraField = step.targetExtraField;
     const auto& gi = newGameState.gameInfo;
-    const auto& opponentsInfo = *step.opponentsInfo;
 
     std::cerr << "Step " << step.step << "\n";
 
@@ -50,9 +49,10 @@ void MaxReachableChooser::processStep(PotentialStep& step) {
     const auto& reachablePoints = step.targetTrack->getReachablePoints(
             step.targetTrack->getPrincess(gi.playerId));
     double w = static_cast<double>(reachablePoints.size())
-            / (gi.width * gi.height) * weightMultiplier;
+            / (gi.width * gi.height);
 #else
     double weight = 0;
+    const auto& opponentsInfo = *step.opponentsInfo;
     int opponentExtraField = opponentsInfo[gi.playerId].extraField;
     auto nextSteps = calculatePotentialSteps(
             newGameState, opponentsInfo, gi.playerId, opponentExtraField);
@@ -63,13 +63,15 @@ void MaxReachableChooser::processStep(PotentialStep& step) {
 
         double w = static_cast<double>(reachablePoints.size())
                 / (gi.width * gi.height);
-        std::cerr << "  Our reachable points = "
-                << reachablePoints.size() << " w=" << w << "\n";
+        // std::cerr << "  Our reachable points = "
+        //         << reachablePoints.size() << " w=" << w << "\n";
         weight += w;
     }
-    double w = weight / nextSteps.size() * weightMultiplier;
+    double w = weight / nextSteps.size();
 #endif
-    std::cerr << "Total weight = " << w << "\n";
-    step.weight += w;
-    savedWeights.emplace(key, w);
+    // std::cerr << "Total weight = " << w << "\n";
+    double ww = w * weightMultiplier;
+    step.weight += ww;
+    step.debugInfo.push_back(PotentialStep::DebugInfo{"MaxReachableChooser", w, ww});
+    savedWeights.emplace(key, ww);
 }

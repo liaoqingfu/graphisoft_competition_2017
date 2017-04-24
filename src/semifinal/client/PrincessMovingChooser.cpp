@@ -35,7 +35,7 @@ void PrincessMovingChooser::processStep(std::vector<PotentialStep>& stepValues,
     }
 }
 
-double PrincessMovingChooser::calculateWeight(const PotentialStep& step) {
+double PrincessMovingChooser::calculateWeight(PotentialStep& step) {
     const Track& track = *step.targetTrack;
     Point target = track.getMonitor(step.sourceState->targetMonitor);
 
@@ -44,7 +44,10 @@ double PrincessMovingChooser::calculateWeight(const PotentialStep& step) {
                 + std::abs(step.step.princessTarget.y - target.y);
     // std::cerr << "|" << step.step.princessTarget << " - " << target << "| = "
     //         << d << "\n";
-    double result = (1.0 - d / static_cast<double>(size)) * weightMultiplier;
+    double w = (1.0 - d / static_cast<double>(size));
+    double ww = w * weightMultiplier;
+    step.debugInfo.push_back({"PrincessMovingChooser", w, ww});
+    double result = ww;
     // std::cerr << step.step << ": (1 - " << d << " / " << size << ") * "
     //         << weightMultiplier << " = " << result << "\n";
     return result;

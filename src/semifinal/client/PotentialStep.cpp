@@ -6,7 +6,7 @@ PotentialStep createPotentialStep(const GameState& gameState, const OpponentsInf
     auto targetTrack = std::make_shared<Track>(gameState.track);
     int extraField = executeStep(*targetTrack, playerId, step);
     return PotentialStep{&gameState, &opponentsInfo, targetTrack, extraField, std::move(step),
-            1.0};
+            1.0, {}};
 }
 
 } // unnamed namespace

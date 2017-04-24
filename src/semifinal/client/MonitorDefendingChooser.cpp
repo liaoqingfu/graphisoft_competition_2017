@@ -44,7 +44,7 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
 
     const auto& opponentsInfo = *step.opponentsInfo;
 
-    std::cerr << "Step " << step.step << "\n";
+    // std::cerr << "Step " << step.step << "\n";
     double monitorWeight = 0;
     double reachabilityWeight = 0;
     double totalArea = step.targetTrack->width() * step.targetTrack->height();
@@ -80,21 +80,24 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
 
         double mw = static_cast<double>(reachableMonitors.size())
                 / gi.numDisplays;
-        std::cerr << "  Player " << opponentId << ": reachable monitors = "
-                << reachableMonitors.size() << " w=" << mw << "\n";
+        // std::cerr << "  Player " << opponentId << ": reachable monitors = "
+        //         << reachableMonitors.size() << " w=" << mw << "\n";
         monitorWeight += mw * opponentMultiplier;
 
         double rw = static_cast<double>(reachability) / totalArea;
-        std::cerr << "  Player " << opponentId << ": reachable area = "
-                << reachability << " w=" << rw << "\n";
+        // std::cerr << "  Player " << opponentId << ": reachable area = "
+        //         << reachability << " w=" << rw << "\n";
         reachabilityWeight += rw * opponentMultiplier;
     }
     monitorWeight /= playerNumDivisor;
     reachabilityWeight /= playerNumDivisor;
 
-    double w = (1.0 - monitorWeight) * monitorWeightMultiplier
-            + (1.0 - reachabilityWeight) * reachabilityWeightMultiplier;
-    std::cerr << "Total weight = " << w << "\n";
-    step.weight += w;
-    savedWeights.emplace(key, w);
+    double mw = (1.0 - monitorWeight);
+    double mww = mw * monitorWeightMultiplier;
+    double rw = (1.0 - reachabilityWeight);
+    double rww = rw * reachabilityWeightMultiplier;
+    step.debugInfo.push_back(PotentialStep::DebugInfo{"MonitorDefendingChooser:monitors", mw, mww});
+    step.debugInfo.push_back(PotentialStep::DebugInfo{"MonitorDefendingChooser:reachability", rw, rww});
+    step.weight += mww + rww;
+    savedWeights.emplace(key, mww + rww);
 }

@@ -15,6 +15,13 @@ struct PotentialStep {
     int targetExtraField;
     Step step;
     double weight;
+
+    struct DebugInfo {
+        std::string name;
+        double baseValue;
+        double finalValue;
+    };
+    std::vector<DebugInfo> debugInfo;
 };
 
 std::vector<PotentialStep> calculatePotentialSteps(
