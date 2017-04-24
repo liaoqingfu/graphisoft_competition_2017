@@ -80,6 +80,18 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
 
         double mw = static_cast<double>(reachableMonitors.size())
                 / step.sourceState->track.getAliveMonitors().size();
+
+        const int& ourTargetMonitor = step.sourceState->targetMonitor;
+        // In this step we are not going to catch out target Monitor ...
+        if (step.step.princessTarget !=
+                step.targetTrack->getMonitor(ourTargetMonitor)
+            // ... but this potential step would allow the opponent to reach it
+            &&
+            targets.count(ourTargetMonitor) > 0) {
+
+            mw *= 2;
+        }
+
         std::cerr << "  Player " << opponentId << ": reachable monitors = "
                 << reachableMonitors.size() << " w=" << mw << "\n";
         monitorWeight += mw * opponentMultiplier;
