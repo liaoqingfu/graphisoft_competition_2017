@@ -7,7 +7,7 @@ Step LookaheadChooser::chooseBadStep(
         const std::vector<PotentialStep>& potentialSteps) {
     return processPotentialSteps(potentialSteps,
             [this](auto& stepValues, const auto& step) {
-                return processStep(stepValues, step);
+                return this->processStep(stepValues, step);
             }, getDelegatedChooser(), "LookaheadChooser");
 }
 

@@ -18,7 +18,7 @@ Step PrincessMovingChooser::chooseBadStep(
         const std::vector<PotentialStep>& potentialSteps) {
     return processPotentialSteps(potentialSteps,
             [this](auto& stepValues, const auto& step) {
-                return processStep(stepValues, step, true);
+                return this->processStep(stepValues, step, true);
             }, getDelegatedChooser(), "PrincessMovingChooser");
 }
 
