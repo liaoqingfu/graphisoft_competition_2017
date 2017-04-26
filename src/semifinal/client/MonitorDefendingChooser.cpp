@@ -89,7 +89,7 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
             &&
             targets.count(ourTargetMonitor) > 0) {
 
-            mw *= ownMonitorWeightMultiplier;
+            mw *= 2;
         }
 
         std::cerr << "  Player " << opponentId << ": reachable monitors = "
