@@ -10,8 +10,7 @@ Track::Track(std::size_t width, std::size_t height,
         fields{width, height},
         monitors(std::move(monitors)),
         remainingMonitors(this->monitors.size()),
-        princesses(std::move(princesses)),
-        reachability{width, height} {
+        princesses(std::move(princesses)) {
     std::transform(fieldTypes.begin(), fieldTypes.end(), fields.begin(),
             [](int type) { return Field{type, -1, {}}; });
     for (std::size_t i = 0; i < this->monitors.size(); ++i) {
@@ -27,13 +26,16 @@ Track::Track(std::size_t width, std::size_t height,
 }
 
 bool Track::isReachableFrom(Point source, Point target) const {
-    calculateReachability(source);
-    return reachability[source] == reachability[target];
+    return floodFill(fields, source, [](Point){})[target];
 }
 
-const std::vector<Point>& Track::getReachablePoints(Point source) const {
-    calculateReachability(source);
-    return reachability[source]->elements;
+std::vector<Point> Track::getReachablePoints(Point source) const {
+    std::vector<Point> reachability;
+    floodFill(fields, source,
+            [&reachability](Point p) {
+                reachability.push_back(p);
+            });
+    return reachability;
 }
 
 bool Track::canMovePrincess(int player, Point target) const {
@@ -132,8 +134,6 @@ int Track::moveFields(std::size_t direction, int position, int fieldToPush) {
     int result = fields[end].type;
     fields[end].type = fieldToPush;
 
-    resetReachability();
-
     return result;
 }
 
@@ -156,22 +156,6 @@ std::set<int> Track::getAliveMonitors() const {
         }
     }
     return result;
-}
-
-void Track::calculateReachability(Point from) const {
-    if (reachability[from]) {
-        return;
-    }
-    auto reachabilityClass = std::make_shared<ReachabilityClass>();
-    floodFill(fields, from,
-            [this, &reachabilityClass](Point p) {
-                reachability[p] = reachabilityClass;
-                reachabilityClass->elements.push_back(p);
-            });
-}
-
-void Track::resetReachability() {
-    reachability.fill({});
 }
 
 std::ostream& operator<<(std::ostream& os, const Track& track) {
