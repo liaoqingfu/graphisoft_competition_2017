@@ -69,44 +69,35 @@ R"foo(
 
 BOOST_AUTO_TEST_CASE(Value8) {
     Field field; field.type = 8;
-    std::string tmp =
-R"foo(
-┏━━━━━━━┓
-┃       ┗
-┃        
-┃       ┏
-┗━━━━━━━┛
-)foo";
-    std::string expected(tmp.begin() + 1, tmp.end());
+    std::string expected =
+"┏━━━━━━━┓\n"
+"┃       ┗\n"
+"┃        \n"
+"┃       ┏\n"
+"┗━━━━━━━┛\n";
     BOOST_CHECK_EQUAL(toBox(field), expected);
 }
 
 BOOST_AUTO_TEST_CASE(Value15) {
     Field field; field.type = 15;
-    std::string tmp =
-R"foo(
-┏━┛   ┗━┓
-┛       ┗
-         
-┓       ┏
-┗━┓   ┏━┛
-)foo";
-    std::string expected(tmp.begin() + 1, tmp.end());
+    std::string expected =
+"┏━┛   ┗━┓\n"
+"┛       ┗\n"
+"         \n"
+"┓       ┏\n"
+"┗━┓   ┏━┛\n";
     BOOST_CHECK_EQUAL(toBox(field), expected);
 }
 
 BOOST_AUTO_TEST_CASE(Princess) {
     Field field; field.type = 8;
     field.addPrincess(3);
-    std::string tmp =
-R"foo(
-┏━━━━━━━┓
-┃ K3    ┗
-┃        
-┃       ┏
-┗━━━━━━━┛
-)foo";
-    std::string expected(tmp.begin() + 1, tmp.end());
+    std::string expected =
+"┏━━━━━━━┓\n"
+"┃       ┗\n"
+"┃ K3     \n"
+"┃       ┏\n"
+"┗━━━━━━━┛\n";
     BOOST_CHECK_EQUAL(toBox(field), expected);
 }
 
@@ -114,15 +105,12 @@ BOOST_AUTO_TEST_CASE(TwoPrincesses) {
     Field field; field.type = 8;
     field.addPrincess(3);
     field.addPrincess(2);
-    std::string tmp =
-R"foo(
-┏━━━━━━━┓
-┃ K3 K2 ┗
-┃        
-┃       ┏
-┗━━━━━━━┛
-)foo";
-    std::string expected(tmp.begin() + 1, tmp.end());
+    std::string expected =
+"┏━━━━━━━┓\n"
+"┃       ┗\n"
+"┃ K2 K3  \n"
+"┃       ┏\n"
+"┗━━━━━━━┛\n";
     BOOST_CHECK_EQUAL(toBox(field), expected);
 }
 
@@ -132,30 +120,24 @@ BOOST_AUTO_TEST_CASE(FourPrincesses) {
     field.addPrincess(2);
     field.addPrincess(1);
     field.addPrincess(0);
-    std::string tmp =
-R"foo(
-┏━━━━━━━┓
-┃ K3 K2 ┗
-┃ K1 K0  
-┃       ┏
-┗━━━━━━━┛
-)foo";
-    std::string expected(tmp.begin() + 1, tmp.end());
+    std::string expected =
+"┏━━━━━━━┓\n"
+"┃ K0 K1 ┗\n"
+"┃ K2 K3  \n"
+"┃       ┏\n"
+"┗━━━━━━━┛\n";
     BOOST_CHECK_EQUAL(toBox(field), expected);
 }
 
 BOOST_AUTO_TEST_CASE(Monitor) {
     Field field; field.type = 8;
     field.monitor = 3;
-    std::string tmp =
-R"foo(
-┏━━━━━━━┓
-┃       ┗
-┃        
-┃ M3    ┏
-┗━━━━━━━┛
-)foo";
-    std::string expected(tmp.begin() + 1, tmp.end());
+    std::string expected =
+"┏━━━━━━━┓\n"
+"┃       ┗\n"
+"┃        \n"
+"┃ M3    ┏\n"
+"┗━━━━━━━┛\n";
     BOOST_CHECK_EQUAL(toBox(field), expected);
 }
 

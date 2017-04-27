@@ -12,7 +12,7 @@ Track::Track(std::size_t width, std::size_t height,
         remainingMonitors(this->monitors.size()),
         princesses(std::move(princesses)) {
     std::transform(fieldTypes.begin(), fieldTypes.end(), fields.begin(),
-            [](int type) { return Field{type, -1, {}}; });
+            [](int type) { return Field{type, -1}; });
     for (std::size_t i = 0; i < this->monitors.size(); ++i) {
         if (isInsideMatrix(fields, this->monitors[i])) {
             fields[this->monitors[i]].monitor = i;
