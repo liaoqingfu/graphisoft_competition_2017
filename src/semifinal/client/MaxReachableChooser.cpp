@@ -41,17 +41,20 @@ void MaxReachableChooser::processStep(PotentialStep& step,
         return;
     }
 
-    GameState newGameState = step.createNewGameState();
-    const auto& gi = newGameState.gameInfo;
+    const auto& gi = step.getSourceState().gameInfo;
 
     // std::cerr << "Step " << step.step << "\n";
 
-    const Track& targetTrack = step.getTargetTrack();
-    const auto& reachablePoints = targetTrack.getReachablePoints(
-            targetTrack.getPrincess(gi.playerId));
-    double w = static_cast<double>(reachablePoints.size())
-            / (gi.width * gi.height);
+    double w = 0;
+    {
+        TemporaryStep temporaryStep{step.getSourceState(), step.getStep()};
+        const Track& track = step.getSourceState().track;
+        const auto& reachablePoints = track.getReachablePoints(
+                track.getPrincess(gi.playerId));
+        w = static_cast<double>(reachablePoints.size())
+                / (gi.width * gi.height);
 
+    }
     // std::cerr << "Total weight = " << w << "\n";
     double ww = w * weightMultiplier;
     if (isBadStep) {

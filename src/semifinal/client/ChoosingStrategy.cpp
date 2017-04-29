@@ -12,19 +12,23 @@ Step ChoosingStrategy::calculateStep() {
     std::remove_copy_if(potentialSteps.begin(), potentialSteps.end(),
             std::back_inserter(goodSteps),
             [](const PotentialStep& step) {
-                const Track& targetTrack = step.getTargetTrack();
+                TemporaryStep temporaryStep{step.getSourceState(),
+                        step.getStep()};
+                const Track& track = step.getSourceState().track;
                 const GameState& sourceState = step.getSourceState();
-                return !targetTrack.canMovePrincess(
+                return !track.canMovePrincess(
                         sourceState.gameInfo.playerId,
-                        targetTrack.getMonitor(sourceState.targetMonitor));
+                        track.getMonitor(sourceState.targetMonitor));
             });
     if (goodSteps.empty()) {
         return chooser->chooseBadStep(potentialSteps);
     }
     potentialSteps.clear();
     for (PotentialStep& step : goodSteps) {
-        const Track& targetTrack = step.getTargetTrack();
-        Point target = targetTrack.getMonitor(gameState.targetMonitor);
+        TemporaryStep temporaryStep{step.getSourceState(),
+                step.getStep()};
+        const Track& track = step.getSourceState().track;
+        Point target = track.getMonitor(gameState.targetMonitor);
         step.setPrincessTarget(target);
         // std::cerr << "Good step: " << step.step.pushDirection
         //         << " " << step.step.pushPosition
@@ -192,18 +196,19 @@ void ChoosingStrategy::setTargetMonitors(const Track& currentTrack) {
 
     std::unordered_set<int> toBeRemoved;
     for (const PotentialStep& step : potentialSteps) {
-        const Track& targetTrack = step.getTargetTrack();
+        TemporaryStep temporaryStep{step.getSourceState(),
+                step.getStep()};
+        const Track& track = step.getSourceState().track;
         const auto& reachablePoints =
-            targetTrack.getReachablePoints(
-                targetTrack.getPrincess(prevPlayerId));
+            track.getReachablePoints(
+                track.getPrincess(prevPlayerId));
 
         // find a monitor which was reachable, but the opponent did not step
         // onto that
         for (Point p : reachablePoints) {
-            int monitor = targetTrack.getField(p).monitor;
+            int monitor = track.getField(p).monitor;
             if (monitor != -1) {
-                toBeRemoved.insert(targetTrack.getField(p).monitor);
-                //remove(targetMonitors, step.targetTrack->getField(p).monitor, prevSt.playerId);
+                toBeRemoved.insert(track.getField(p).monitor);
             }
         }
     }

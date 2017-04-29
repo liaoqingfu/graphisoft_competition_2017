@@ -35,7 +35,7 @@ struct GameState {
     Track track;
 
     GameState() = default;
-    GameState(GameInfo gameInfo) : gameInfo(std::move(gameInfo)) {}
+    explicit GameState(GameInfo gameInfo) : gameInfo(std::move(gameInfo)) {}
     //GameState(Track track) : track(std::move(track)) {}
     GameState(const GameState& other, Track track) :
         gameInfo(other.gameInfo),
@@ -70,13 +70,39 @@ std::vector<std::string> createOutput(const Track& track,
         const Step& step, Point ourPosition);
 
 inline
-int executeStep(Track& track, int playerId, const Step& step) {
+int executeStep(Track& track, int playerId, const Step& step,
+        bool checkMovability = true) {
     int result = track.moveFields(step.pushDirection, step.pushPosition,
             step.pushFieldType);
-    if (track.canMovePrincess(playerId, step.princessTarget)) {
+    if (!checkMovability ||
+            track.canMovePrincess(playerId, step.princessTarget)) {
         track.movePrincess(playerId, step.princessTarget);
     }
     return result;
 }
+
+class TemporaryStep {
+public:
+    TemporaryStep(const GameState& gameState, const Step& step) :
+            gameState(const_cast<GameState&>(gameState)),
+            playerId(gameState.gameInfo.playerId) {
+        stepBack.pushDirection = static_cast<Directions>(
+                oppositeDirection(step.pushDirection));
+        stepBack.pushPosition = step.pushPosition;
+        stepBack.princessTarget = this->gameState.track.getPrincess(playerId);
+        this->gameState.extraField = stepBack.pushFieldType =
+                executeStep(this->gameState.track, playerId, step);
+    }
+
+    ~TemporaryStep() {
+        gameState.extraField =
+                executeStep(gameState.track, playerId, stepBack, false);
+    }
+
+private:
+    GameState& gameState;
+    int playerId;
+    Step stepBack;
+};
 
 #endif // SEMIFINAL_TRACK_GAMESTATE_HPP

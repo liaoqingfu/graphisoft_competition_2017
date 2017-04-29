@@ -40,70 +40,72 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
         return;
     }
 
-    GameState newGameState = step.createNewGameState();
-    const auto& gi = newGameState.gameInfo;
-
-    const OpponentsInfo& opponentsInfo = step.getOpponentInfo();
-
-    // std::cerr << "Step " << step.step << "\n";
+    const auto& gi = step.getSourceState().gameInfo;
+    double playerNumDivisor = gi.numPlayers * (gi.numPlayers - 1) / 2;
     double monitorWeight = 0;
     double reachabilityWeight = 0;
-    const Track& targetTrack = step.getTargetTrack();
-    double totalArea = targetTrack.width() * targetTrack.height();
-    double playerNumDivisor = gi.numPlayers * (gi.numPlayers - 1) / 2;
-    for (int opponentId = 0; opponentId < gi.numPlayers;
-         ++opponentId) {
+    {
+        TemporaryStep temporaryStep1{step.getSourceState(), step.getStep()};
+        const Track& track = step.getSourceState().track;
 
-        // skip ourself
-        if (opponentId == gi.playerId) continue;
+        const OpponentsInfo& opponentsInfo = step.getOpponentInfo();
 
-        int opponentExtraField = opponentsInfo[opponentId].extraField;
-        const auto& targets = opponentsInfo[opponentId].targetMonitors;
+        // std::cerr << "Step " << step.step << "\n";
+        double totalArea = track.width() * track.height();
+        for (int opponentId = 0; opponentId < gi.numPlayers; ++opponentId) {
 
-        auto nextSteps = calculatePotentialSteps(
-            newGameState, opponentsInfo, opponentId, opponentExtraField);
-        std::unordered_set<int> reachableMonitors;
-        std::size_t reachability = 0;
-        for (const PotentialStep& nextStep : nextSteps) {
-            const Track& nextTargetTrack = nextStep.getTargetTrack();
-            const auto& reachablePoints =
-                nextTargetTrack.getReachablePoints(
-                    nextTargetTrack.getPrincess(opponentId));
-            reachability = std::max(reachability, reachablePoints.size());
-            for (Point p : reachablePoints) {
-                int monitor = nextTargetTrack.getField(p).monitor;
-                if (monitor != -1 && targets.count(monitor) != 0) {
-                    reachableMonitors.insert(monitor);
+            // skip ourself
+            if (opponentId == gi.playerId) continue;
+
+            int opponentExtraField = opponentsInfo[opponentId].extraField;
+            const auto& targets = opponentsInfo[opponentId].targetMonitors;
+
+            auto nextSteps = calculatePotentialSteps(
+                step.getSourceState(), opponentsInfo, opponentId,
+                        opponentExtraField);
+            std::unordered_set<int> reachableMonitors;
+            std::size_t reachability = 0;
+            for (const PotentialStep& nextStep : nextSteps) {
+                TemporaryStep temporaryStep2{step.getSourceState(),
+                        nextStep.getStep()};
+                const auto& reachablePoints =
+                    track.getReachablePoints(
+                        track.getPrincess(opponentId));
+                reachability = std::max(reachability, reachablePoints.size());
+                for (Point p : reachablePoints) {
+                    int monitor = track.getField(p).monitor;
+                    if (monitor != -1 && targets.count(monitor) != 0) {
+                        reachableMonitors.insert(monitor);
+                    }
                 }
             }
+
+            double opponentMultiplier = gi.numPlayers
+                    - (opponentId - gi.playerId + gi.numPlayers) % gi.numPlayers;
+
+            const GameState& sourceState = step.getSourceState();
+            double mw = static_cast<double>(reachableMonitors.size())
+                    / sourceState.track.getAliveMonitors().size();
+
+            const int& ourTargetMonitor = sourceState.targetMonitor;
+            // In this step we are not going to catch out target Monitor ...
+            if (step.getStep().princessTarget !=
+                    track.getMonitor(ourTargetMonitor)
+                    // ... but this potential step would allow the opponent to
+                    // reach it
+                    && targets.count(ourTargetMonitor) > 0) {
+                mw *= 2;
+            }
+
+            // std::cerr << "  Player " << opponentId << ": reachable monitors = "
+            //         << reachableMonitors.size() << " w=" << mw << "\n";
+            monitorWeight += mw * opponentMultiplier;
+
+            double rw = static_cast<double>(reachability) / totalArea;
+            // std::cerr << "  Player " << opponentId << ": reachable area = "
+            //         << reachability << " w=" << rw << "\n";
+            reachabilityWeight += rw * opponentMultiplier;
         }
-
-        double opponentMultiplier = gi.numPlayers
-                - (opponentId - gi.playerId + gi.numPlayers) % gi.numPlayers;
-
-        const GameState& sourceState = step.getSourceState();
-        double mw = static_cast<double>(reachableMonitors.size())
-                / sourceState.track.getAliveMonitors().size();
-
-        const int& ourTargetMonitor = sourceState.targetMonitor;
-        // In this step we are not going to catch out target Monitor ...
-        if (step.getStep().princessTarget !=
-                targetTrack.getMonitor(ourTargetMonitor)
-            // ... but this potential step would allow the opponent to reach it
-            &&
-            targets.count(ourTargetMonitor) > 0) {
-
-            mw *= 2;
-        }
-
-        // std::cerr << "  Player " << opponentId << ": reachable monitors = "
-        //         << reachableMonitors.size() << " w=" << mw << "\n";
-        monitorWeight += mw * opponentMultiplier;
-
-        double rw = static_cast<double>(reachability) / totalArea;
-        // std::cerr << "  Player " << opponentId << ": reachable area = "
-        //         << reachability << " w=" << rw << "\n";
-        reachabilityWeight += rw * opponentMultiplier;
     }
     monitorWeight /= playerNumDivisor;
     reachabilityWeight /= playerNumDivisor;

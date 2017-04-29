@@ -21,13 +21,9 @@ public:
 
     PotentialStep(const GameState& sourceState,
             const OpponentsInfo& opponentsInfo,
-            Step step, int playerId) :
+            Step step, int /*playerId*/) :
             sourceState(&sourceState), opponentsInfo(&opponentsInfo),
-            step(std::move(step)),
-            playerId(playerId),
-            targetTrack(std::make_shared<Track>(sourceState.track)),
-            targetExtraField(executeStep(*targetTrack, playerId, step)) {
-    }
+            step(std::move(step)) {}
 
     PotentialStep(const PotentialStep&) = default;
     PotentialStep& operator=(const PotentialStep&) = default;
@@ -39,27 +35,10 @@ public:
     const Step& getStep() const { return step; }
     void setPrincessTarget(Point target) {
         step.princessTarget = target;
-        if (targetTrack) {
-            targetTrack->movePrincess(playerId, target);
-        }
-    }
-
-    const Track& getTargetTrack() const {
-        return *targetTrack;
-    }
-
-    int getTargetExtraField() const {
-        return targetExtraField;
     }
 
     double getWeight() const { return weight; }
     void addWeight(double value) { weight += value; }
-
-    GameState createNewGameState() const {
-        GameState newGameState{*sourceState, *targetTrack};
-        newGameState.extraField = targetExtraField;
-        return newGameState;
-    }
 
     void addDebugInfo(DebugInfo info) {
         if (debugEnabled) {
@@ -80,12 +59,9 @@ private:
     const GameState* sourceState;
     const OpponentsInfo* opponentsInfo;
     Step step;
-    int playerId;
 
     double weight = 1.0;
 
-    std::shared_ptr<Track> targetTrack;
-    int targetExtraField;
     std::vector<DebugInfo> debugInfo;
 };
 
