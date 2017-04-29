@@ -10,12 +10,13 @@
 #include <unordered_map>
 #include <tuple>
 
-class MaxReachableChooser : public DelegatingChooser {
+class DistanceChooser : public DelegatingChooser {
 public:
-    MaxReachableChooser(std::shared_ptr<IChooser> chooser,
+    DistanceChooser(std::shared_ptr<IChooser> chooser,
             double weightMultiplier)
         : DelegatingChooser(std::move(chooser)),
-          weightMultiplier(weightMultiplier) {}
+          weightMultiplier(weightMultiplier) {
+    }
 
     Step chooseGoodStep(
         const std::vector<PotentialStep>& potentialSteps) override;
@@ -24,7 +25,7 @@ public:
         const std::vector<PotentialStep>& potentialSteps) override;
 
 private:
-    void processStep(PotentialStep& step, bool isBadStep = false);
+    void processStep(PotentialStep& step);
 
     double weightMultiplier;
     std::map<std::tuple<Directions, int, int>, double> savedWeights;

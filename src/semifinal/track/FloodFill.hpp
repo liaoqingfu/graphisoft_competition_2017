@@ -5,7 +5,7 @@
 #include "Field.hpp"
 
 template <typename Action>
-void floodFill(const Matrix<Field>& matrix, Point p0, Action action)
+Matrix<bool> floodFill(const Matrix<Field>& matrix, Point p0, Action action)
 {
     Matrix<bool> reached{matrix.width(), matrix.height(), false};
 
@@ -34,6 +34,7 @@ void floodFill(const Matrix<Field>& matrix, Point p0, Action action)
             }
         }
     }
+    return reached;
 }
 
 #endif // SEMIFINAL_TRACK_FLOODFILL_HPP

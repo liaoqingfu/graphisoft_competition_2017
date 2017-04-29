@@ -41,7 +41,7 @@ public:
 
     bool canMovePrincess(int player, Point target) const;
     bool isReachableFrom(Point source, Point target) const;
-    const std::vector<Point>& getReachablePoints(Point source) const;
+    std::vector<Point> getReachablePoints(Point source) const;
     // returns the playerIds who can move to target
     std::vector<int> canMoveAnyPrincess(Point target) const;
 
@@ -49,18 +49,11 @@ public:
     void removeMonitor(int id);
 
 private:
-    struct ReachabilityClass {
-        std::vector<Point> elements;
-    };
-
-    void calculateReachability(Point from) const;
-    void resetReachability();
 
     Matrix<Field> fields;
     Monitors monitors;
     std::size_t remainingMonitors;
     Princesses princesses;
-    mutable Matrix<std::shared_ptr<ReachabilityClass>> reachability;
 };
 
 std::ostream& operator<<(std::ostream& os, const Track& track);

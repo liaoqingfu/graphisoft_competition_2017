@@ -29,26 +29,37 @@ constexpr const Neighbors& getNeighbors(Point) {
     return neighbors;
 }
 
+constexpr std::size_t numPlayers = 4;
+
 struct Field {
 
     int type = 0;
     int monitor = -1; // monitor ID, -1 = none
 
     Field() : type(0), monitor(-1), princesses() {}
-    Field(int type, int monitor, std::vector<int> princesses)
-        : type(type), monitor(monitor), princesses(std::move(princesses)) {}
+    template<typename PrincessList = std::initializer_list<int>>
+    Field(int type, int monitor, const PrincessList& princessList = {})
+        : type(type), monitor(monitor), princesses{0} {
+        for (int princess : princessList) {
+            addPrincess(princess);
+        }
+    }
 
     void removePrincess(int p) {
-        princesses.erase(std::remove(princesses.begin(), princesses.end(), p),
-                         princesses.end());
+        princesses &= ~(1 << p);
     }
-    void addPrincess(int p) { princesses.push_back(p); }
+
+    void addPrincess(int p) {
+        princesses |= 1 << p;
+    }
+
     bool hasPrincess(int p) const {
-        return std::find(princesses.begin(), princesses.end(), p) !=
-               princesses.end();
+        return princesses & (1 << p);
     }
-    bool noPrincess() const { return princesses.empty(); }
-    const std::vector<int>& getPrincesses() const { return princesses; }
+
+    bool noPrincess() const {
+        return princesses == 0;
+    }
 
     friend bool operator==(const Field& lhs, const Field& rhs) {
         return lhs.type == rhs.type && lhs.monitor == rhs.monitor &&
@@ -56,13 +67,12 @@ struct Field {
     }
 
 private:
-    std::vector<int> princesses;
+    int princesses;
 };
 
 constexpr std::size_t numFieldTypes = 16;
 extern const std::array<std::string, numFieldTypes> fieldTypes;
 
-constexpr std::size_t numPlayers = 4;
 constexpr std::array<int, numPlayers> playerColors {{31, 32, 33, 34}};
 
 constexpr int defaultColor = 0;

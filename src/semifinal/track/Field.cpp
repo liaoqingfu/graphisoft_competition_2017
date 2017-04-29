@@ -133,9 +133,10 @@ std::string getPrincesses(const Field field, unsigned begin, unsigned end,
         const boost::optional<ColorInfo>& colorInfo) {
     std::size_t size = 0;
     std::string result;
-    for (unsigned i = begin, to = 0; i < end && i < field.getPrincesses().size();
-            ++i, ++to) {
-        int princess = field.getPrincesses()[i];
+    for (unsigned princess = begin, to = 0; princess < end; ++princess, ++to) {
+        if (!field.hasPrincess(princess)) {
+            continue;
+        }
         auto colorizer = makeColorDrawer(result, colorInfo,
                 [princess](const ColorInfo& info) {
                     return info.princessColors[princess];

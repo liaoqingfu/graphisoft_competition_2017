@@ -68,9 +68,10 @@ void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
             if (tokens.size() > 1 && tokens.at(1) != "OK") {
                 // TODO instead of throw we might need this as a bool return
                 // value
-                throw std::runtime_error(
-                    std::string("error in previous command: ")
-                        .append(tokens.at(1)));
+                std::cerr << "Error received: " << line << std::endl;
+                // throw std::runtime_error(
+                //     std::string("error in previous command: ")
+                //         .append(tokens.at(1)));
             }
         } else if (tokens.at(0) == "TICK") {
             gs.currentTick = stoi(tokens.at(1));
@@ -133,4 +134,3 @@ std::vector<std::string> createOutput(const Track& track,
 
     return {pushMsg, gotoMsg};
 }
-
