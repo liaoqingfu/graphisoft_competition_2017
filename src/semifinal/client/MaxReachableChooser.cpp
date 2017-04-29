@@ -43,7 +43,7 @@ void MaxReachableChooser::processStep(PotentialStep& step,
     newGameState.extraField = step.targetExtraField;
     const auto& gi = newGameState.gameInfo;
 
-    std::cerr << "Step " << step.step << "\n";
+    // std::cerr << "Step " << step.step << "\n";
 
 #define NO_LOOKAHEAD 1
 #if NO_LOOKAHEAD
@@ -64,8 +64,8 @@ void MaxReachableChooser::processStep(PotentialStep& step,
 
         double w = static_cast<double>(reachablePoints.size())
                 / (gi.width * gi.height);
-        std::cerr << "  Our reachable points = "
-                << reachablePoints.size() << " w=" << w << "\n";
+        // std::cerr << "  Our reachable points = "
+        //         << reachablePoints.size() << " w=" << w << "\n";
         weight += w;
     }
     double w = weight / nextSteps.size() * weightMultiplier;
@@ -73,7 +73,7 @@ void MaxReachableChooser::processStep(PotentialStep& step,
     if (isBadStep) {
         w *= 2;
     }
-    std::cerr << "Total weight = " << w << "\n";
+    // std::cerr << "Total weight = " << w << "\n";
     step.weight += w;
     savedWeights.emplace(key, w);
 }

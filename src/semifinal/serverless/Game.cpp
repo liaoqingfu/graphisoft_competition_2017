@@ -67,11 +67,11 @@ GameState Game::generateGame() {
     auto monitors =
             generatePoints(gi.width, gi.height,
                     gi.numDisplays);
-    std::cerr << "Monitors: ";
-    for (Point p : monitors) {
-        std::cerr << p << " ";
-    }
-    std::cerr << "\n";
+    // std::cerr << "Monitors: ";
+    // for (Point p : monitors) {
+    //     std::cerr << p << " ";
+    // }
+    // std::cerr << "\n";
 
     result.track = Track(gi.width, gi.height, fields, monitors,
             generatePoints(gi.width, gi.height, numPlayers));
@@ -149,34 +149,34 @@ void Game::run(bool print) {
             playerState.gameState.extraField = executeStep(track, playerId,
                     step);
 
-            auto debugOpponentsInfo = [&]() {
-                for (int i = 0; i < (int)opponentsInfo.size(); ++i) {
-                    if (i == playerId) continue;
-                    const auto& targets = opponentsInfo[i].targetMonitors;
-                    auto alivesNum =
-                        playerState.gameState.track.getAliveMonitors().size();
-                    if (targets.size() <= 2) {
-                        std::cerr << "Targets less than two, player" << playerId
-                                  << " for opp" << i << " \n";
-                    }
-                    if (targets.size() * 2 <= alivesNum) {
-                        std::cerr << "tick" << gameState.currentTick
-                                  << " Targets at half size, player" << playerId
-                                  << " for opp" << i << " \n";
-                    }
-                    if (targets.size() < alivesNum * 0.8) {
-                        std::cerr << "tick" << gameState.currentTick
-                                  << " Targets at 80 percent size, player"
-                                  << playerId << " for opp" << i << " \n";
-                    }
-                }
-            };
-            debugOpponentsInfo();
-            for (const auto& ps : playerStates) {
-                std::cerr << "OppInfo of player"
-                          << ps.gameState.gameInfo.playerId << "\n";
-                std::cerr << ps.strategy.getOpponentsInfo();
-            }
+            // auto debugOpponentsInfo = [&]() {
+            //     for (int i = 0; i < (int)opponentsInfo.size(); ++i) {
+            //         if (i == playerId) continue;
+            //         const auto& targets = opponentsInfo[i].targetMonitors;
+            //         auto alivesNum =
+            //             playerState.gameState.track.getAliveMonitors().size();
+            //         if (targets.size() <= 2) {
+            //             std::cerr << "Targets less than two, player" << playerId
+            //                       << " for opp" << i << " \n";
+            //         }
+            //         if (targets.size() * 2 <= alivesNum) {
+            //             std::cerr << "tick" << gameState.currentTick
+            //                       << " Targets at half size, player" << playerId
+            //                       << " for opp" << i << " \n";
+            //         }
+            //         if (targets.size() < alivesNum * 0.8) {
+            //             std::cerr << "tick" << gameState.currentTick
+            //                       << " Targets at 80 percent size, player"
+            //                       << playerId << " for opp" << i << " \n";
+            //         }
+            //     }
+            // };
+            // debugOpponentsInfo();
+            // for (const auto& ps : playerStates) {
+            //     std::cerr << "OppInfo of player"
+            //               << ps.gameState.gameInfo.playerId << "\n";
+            //     std::cerr << ps.strategy.getOpponentsInfo();
+            // }
 
             if (track.getPrincess(playerId) ==
                     track.getMonitor(targetMonitor)) {
