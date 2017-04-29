@@ -1,0 +1,5 @@
+project(Track)
+file (GLOB sources "*.cpp")
+include_directories(${Matrix_SOURCE_DIR})
+add_library(track ${sources})
+target_link_libraries(track Matrix)

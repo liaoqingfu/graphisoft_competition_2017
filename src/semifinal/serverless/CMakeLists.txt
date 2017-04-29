@@ -1,0 +1,8 @@
+project(Serverless)
+file (GLOB sources "*.cpp")
+include_directories(${Matrix_SOURCE_DIR})
+include_directories(${Track_SOURCE_DIR})
+include_directories(${Client_SOURCE_DIR})
+add_executable(serverless ${sources})
+target_link_libraries(serverless client)
+target_link_libraries(serverless ${Boost_LIBRARIES})
