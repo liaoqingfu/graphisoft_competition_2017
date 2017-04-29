@@ -29,27 +29,27 @@ Step MonitorDefendingChooser::chooseGoodStep(
 }
 
 void MonitorDefendingChooser::processStep(PotentialStep& step) {
-    auto key = std::make_tuple(step.step.pushDirection, step.step.pushPosition,
-            step.step.pushFieldType);
+    auto key = std::make_tuple(step.getStep().pushDirection,
+            step.getStep().pushPosition, step.getStep().pushFieldType);
     auto iterator = savedWeights.find(key);
     if (iterator != savedWeights.end()) {
         // std::cerr << "Saved weight: " << iterator->second << "\n";
-        step.weight += iterator->second;
+        step.addWeight(iterator->second);
         step.debugInfo.push_back(PotentialStep::DebugInfo{
                 "MonitorDefendingChooser:total", 0, iterator->second});
         return;
     }
 
-    GameState newGameState{*step.sourceState, *step.targetTrack};
-    newGameState.extraField = step.targetExtraField;
+    GameState newGameState = step.createNewGameState();
     const auto& gi = newGameState.gameInfo;
 
-    const auto& opponentsInfo = *step.opponentsInfo;
+    const OpponentsInfo& opponentsInfo = step.getOpponentInfo();
 
     // std::cerr << "Step " << step.step << "\n";
     double monitorWeight = 0;
     double reachabilityWeight = 0;
-    double totalArea = step.targetTrack->width() * step.targetTrack->height();
+    const Track& targetTrack = step.getTargetTrack();
+    double totalArea = targetTrack.width() * targetTrack.height();
     double playerNumDivisor = gi.numPlayers * (gi.numPlayers - 1) / 2;
     for (int opponentId = 0; opponentId < gi.numPlayers;
          ++opponentId) {
@@ -65,12 +65,13 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
         std::unordered_set<int> reachableMonitors;
         std::size_t reachability = 0;
         for (const PotentialStep& nextStep : nextSteps) {
+            const Track& nextTargetTrack = nextStep.getTargetTrack();
             const auto& reachablePoints =
-                nextStep.targetTrack->getReachablePoints(
-                    nextStep.targetTrack->getPrincess(opponentId));
+                nextTargetTrack.getReachablePoints(
+                    nextTargetTrack.getPrincess(opponentId));
             reachability = std::max(reachability, reachablePoints.size());
             for (Point p : reachablePoints) {
-                int monitor = nextStep.targetTrack->getField(p).monitor;
+                int monitor = nextTargetTrack.getField(p).monitor;
                 if (monitor != -1 && targets.count(monitor) != 0) {
                     reachableMonitors.insert(monitor);
                 }
@@ -80,13 +81,14 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
         double opponentMultiplier = gi.numPlayers
                 - (opponentId - gi.playerId + gi.numPlayers) % gi.numPlayers;
 
+        const GameState& sourceState = step.getSourceState();
         double mw = static_cast<double>(reachableMonitors.size())
-                / step.sourceState->track.getAliveMonitors().size();
+                / sourceState.track.getAliveMonitors().size();
 
-        const int& ourTargetMonitor = step.sourceState->targetMonitor;
+        const int& ourTargetMonitor = sourceState.targetMonitor;
         // In this step we are not going to catch out target Monitor ...
-        if (step.step.princessTarget !=
-                step.targetTrack->getMonitor(ourTargetMonitor)
+        if (step.getStep().princessTarget !=
+                targetTrack.getMonitor(ourTargetMonitor)
             // ... but this potential step would allow the opponent to reach it
             &&
             targets.count(ourTargetMonitor) > 0) {
@@ -112,6 +114,6 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
     double rww = rw * reachabilityWeightMultiplier;
     step.debugInfo.push_back(PotentialStep::DebugInfo{"MonitorDefendingChooser:monitors", mw, mww});
     step.debugInfo.push_back(PotentialStep::DebugInfo{"MonitorDefendingChooser:reachability", rw, rww});
-    step.weight += mww + rww;
+    step.addWeight(mww + rww);
     savedWeights.emplace(key, mww + rww);
 }

@@ -25,7 +25,7 @@ private:
             const std::vector<PotentialStep>& potentialSteps) {
         std::uniform_int_distribution<std::size_t> distribution{
                 0, potentialSteps.size() - 1};
-        return potentialSteps[distribution(rng)].step;
+        return potentialSteps[distribution(rng)].getStep();
     }
 
     std::mt19937& rng;

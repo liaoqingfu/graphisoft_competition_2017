@@ -28,23 +28,26 @@ private:
             std::vector<PotentialStep> potentialSteps) {
         std::sort(potentialSteps.begin(), potentialSteps.end(),
                 [](const PotentialStep& lhs, const PotentialStep& rhs) {
-                    return lhs.weight > rhs.weight;
+                    return lhs.getWeight() > rhs.getWeight();
                 });
         std::size_t i = 0;
         bool over = false;
         for (const PotentialStep& step : potentialSteps) {
-            if (!over && step.weight < potentialSteps[0].weight - tolerance) {
+            if (!over && step.getWeight() <
+                    potentialSteps[0].getWeight() - tolerance) {
                 over = true;
                 std::cerr << "-----------------------------\n";
             }
-            std::cerr << "BestChooser " << step.step << " " << step.weight << "\n";
+            std::cerr << "BestChooser " << step.getStep()
+                    << " " << step.getWeight() << "\n";
             for (const auto& info : step.debugInfo) {
                 std::cerr << "  " << info.name << " " << info.baseValue
                         << " " << info.finalValue << "\n";
             }
         }
         for (; i < potentialSteps.size() &&
-                potentialSteps[i].weight >= potentialSteps[0].weight - tolerance;
+                potentialSteps[i].getWeight() >=
+                        potentialSteps[0].getWeight() - tolerance;
                 ++i) {
             // std::cerr << "-> " << potentialSteps[i].step.pushDirection << " "
             //         << potentialSteps[i].step.pushPosition << " "

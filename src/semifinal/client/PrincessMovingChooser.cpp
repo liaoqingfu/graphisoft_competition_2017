@@ -6,7 +6,7 @@ Step PrincessMovingChooser::chooseGoodStep(
     if (overrideGoodSteps) {
         auto steps = potentialSteps;
         for (PotentialStep& step : steps) {
-            step.weight += calculateWeight(step);
+            step.addWeight(calculateWeight(step));
         }
         return DelegatingChooser::chooseGoodStep(steps);
     } else {
@@ -24,29 +24,28 @@ Step PrincessMovingChooser::chooseBadStep(
 
 void PrincessMovingChooser::processStep(std::vector<PotentialStep>& stepValues,
         const PotentialStep& step, bool isBadStep) {
-    const Track& track = *step.targetTrack;
-    int playerId = step.sourceState->gameInfo.playerId;
+    const Track& track = step.getTargetTrack();
+    int playerId = step.getSourceState().gameInfo.playerId;
 
-    double baseWeight = step.weight;
     for (Point p : track.getReachablePoints(track.getPrincess(playerId))) {
-        auto newStep = step;
-        newStep.step.princessTarget = p;
+        PotentialStep newStep = step;
+        newStep.setPrincessTarget(p);
         double weight = calculateWeight(newStep);
         if (isBadStep) {
             weight *= 5;
         }
-        newStep.weight = baseWeight + weight;
+        newStep.addWeight(weight);
         stepValues.push_back(std::move(newStep));
     }
 }
 
 double PrincessMovingChooser::calculateWeight(PotentialStep& step) {
-    const Track& track = *step.targetTrack;
-    Point target = track.getMonitor(step.sourceState->targetMonitor);
+    const Track& track = step.getTargetTrack();
+    Point target = track.getMonitor(step.getSourceState().targetMonitor);
 
     int size = track.width() + track.height();
-    double d = std::abs(step.step.princessTarget.x - target.x)
-                + std::abs(step.step.princessTarget.y - target.y);
+    double d = std::abs(step.getStep().princessTarget.x - target.x)
+                + std::abs(step.getStep().princessTarget.y - target.y);
     // std::cerr << "|" << step.step.princessTarget << " - " << target << "| = "
     //         << d << "\n";
     double w = (1.0 - d / static_cast<double>(size));
