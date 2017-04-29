@@ -35,7 +35,7 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
     if (iterator != savedWeights.end()) {
         // std::cerr << "Saved weight: " << iterator->second << "\n";
         step.addWeight(iterator->second);
-        step.debugInfo.push_back(PotentialStep::DebugInfo{
+        step.addDebugInfo(PotentialStep::DebugInfo{
                 "MonitorDefendingChooser:total", 0, iterator->second});
         return;
     }
@@ -112,8 +112,8 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
     double mww = mw * monitorWeightMultiplier;
     double rw = (1.0 - reachabilityWeight);
     double rww = rw * reachabilityWeightMultiplier;
-    step.debugInfo.push_back(PotentialStep::DebugInfo{"MonitorDefendingChooser:monitors", mw, mww});
-    step.debugInfo.push_back(PotentialStep::DebugInfo{"MonitorDefendingChooser:reachability", rw, rww});
+    step.addDebugInfo(PotentialStep::DebugInfo{"MonitorDefendingChooser:monitors", mw, mww});
+    step.addDebugInfo(PotentialStep::DebugInfo{"MonitorDefendingChooser:reachability", rw, rww});
     step.addWeight(mww + rww);
     savedWeights.emplace(key, mww + rww);
 }

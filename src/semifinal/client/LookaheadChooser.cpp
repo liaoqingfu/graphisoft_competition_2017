@@ -67,7 +67,7 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
         double w = element.second / valueLimit;
         double ww = w * weightMultiplier;
         step2.addWeight(ww);
-        step2.debugInfo.push_back(PotentialStep::DebugInfo{"LookaheadChooser", w, ww});
+        step2.addDebugInfo(PotentialStep::DebugInfo{"LookaheadChooser", w, ww});
         stepValues.push_back(std::move(step2));
     }
 }

@@ -13,6 +13,7 @@ struct Options {
     int numDisplays = 20;
     int maxTick = 40;
     std::size_t jobs = 1;
+    bool debug;
 };
 
 Options parseOptions(int argc, const char* argv[]);

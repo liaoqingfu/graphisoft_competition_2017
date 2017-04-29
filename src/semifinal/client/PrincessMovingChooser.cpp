@@ -50,7 +50,7 @@ double PrincessMovingChooser::calculateWeight(PotentialStep& step) {
     //         << d << "\n";
     double w = (1.0 - d / static_cast<double>(size));
     double ww = w * weightMultiplier;
-    step.debugInfo.push_back({"PrincessMovingChooser", w, ww});
+    step.addDebugInfo({"PrincessMovingChooser", w, ww});
     double result = ww;
     // std::cerr << step.step << ": (1 - " << d << " / " << size << ") * "
     //         << weightMultiplier << " = " << result << "\n";

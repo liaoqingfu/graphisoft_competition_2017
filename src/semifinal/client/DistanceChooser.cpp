@@ -37,6 +37,7 @@ void DistanceChooser::processStep(PotentialStep& step) {
     if (iterator != savedWeights.end()) {
         // std::cerr << "Saved weight: " << iterator->second << "\n";
         step.addWeight(iterator->second);
+        step.addDebugInfo({"DistanceChooser", 0.0, iterator->second});
         return;
     }
 
@@ -59,5 +60,6 @@ void DistanceChooser::processStep(PotentialStep& step) {
     }
     double result = weight * weightMultiplier;
     savedWeights.emplace(key, result);
+    step.addDebugInfo({"DistanceChooser", weight, result});
     step.addWeight(result);
 }

@@ -29,6 +29,7 @@ Options parseOptions(int argc, const char* argv[]) {
         ("num-displays,m", defaultValue(options.numDisplays))
         ("time-limit,t", defaultValue(options.maxTick))
         ("jobs,j", defaultValue(options.jobs))
+        ("debug", po::bool_switch(&options.debug))
         ;
 
     po::variables_map vm;

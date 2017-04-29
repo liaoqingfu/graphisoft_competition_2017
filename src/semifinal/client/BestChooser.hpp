@@ -30,21 +30,10 @@ private:
                 [](const PotentialStep& lhs, const PotentialStep& rhs) {
                     return lhs.getWeight() > rhs.getWeight();
                 });
-        std::size_t i = 0;
-        bool over = false;
-        for (const PotentialStep& step : potentialSteps) {
-            if (!over && step.getWeight() <
-                    potentialSteps[0].getWeight() - tolerance) {
-                over = true;
-                std::cerr << "-----------------------------\n";
-            }
-            std::cerr << "BestChooser " << step.getStep()
-                    << " " << step.getWeight() << "\n";
-            for (const auto& info : step.debugInfo) {
-                std::cerr << "  " << info.name << " " << info.baseValue
-                        << " " << info.finalValue << "\n";
-            }
+        if (PotentialStep::debugEnabled) {
+            printDebugInfo(potentialSteps);
         }
+        std::size_t i = 0;
         for (; i < potentialSteps.size() &&
                 potentialSteps[i].getWeight() >=
                         potentialSteps[0].getWeight() - tolerance;
@@ -57,6 +46,20 @@ private:
         potentialSteps.resize(i);
         std::cerr << "Filtered out the " << i << " best steps\n";
         return potentialSteps;
+    }
+
+    void printDebugInfo(const std::vector<PotentialStep>& potentialSteps) {
+        bool over = false;
+        for (const PotentialStep& step : potentialSteps) {
+            if (!over && step.getWeight() <
+                    potentialSteps[0].getWeight() - tolerance) {
+                over = true;
+                std::cerr << "-----------------------------\n";
+            }
+            std::cerr << "BestChooser " << step.getStep()
+                    << " total weight: " << step.getWeight() << "\n";
+            step.printDebugInfo(std::cerr, "  ");
+        }
     }
 
     double tolerance;

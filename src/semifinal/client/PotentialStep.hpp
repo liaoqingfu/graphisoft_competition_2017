@@ -9,6 +9,12 @@
 
 class PotentialStep {
 public:
+    struct DebugInfo {
+        std::string name;
+        double baseValue;
+        double finalValue;
+    };
+
     PotentialStep() : sourceState(nullptr), opponentsInfo(nullptr) {
         assert(false);
     }
@@ -55,12 +61,21 @@ public:
         return newGameState;
     }
 
-    struct DebugInfo {
-        std::string name;
-        double baseValue;
-        double finalValue;
-    };
-    std::vector<DebugInfo> debugInfo;
+    void addDebugInfo(DebugInfo info) {
+        if (debugEnabled) {
+            debugInfo.push_back(std::move(info));
+        }
+    }
+
+    void printDebugInfo(std::ostream& stream, const char* prefix) const {
+        for (const auto& info : debugInfo) {
+            stream << prefix << info.name << ": base " << info.baseValue
+                    << " weighted " << info.finalValue << "\n";
+        }
+    }
+
+    static bool debugEnabled;
+
 private:
     const GameState* sourceState;
     const OpponentsInfo* opponentsInfo;
@@ -71,6 +86,7 @@ private:
 
     std::shared_ptr<Track> targetTrack;
     int targetExtraField;
+    std::vector<DebugInfo> debugInfo;
 };
 
 std::vector<PotentialStep> calculatePotentialSteps(

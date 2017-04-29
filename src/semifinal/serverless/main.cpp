@@ -2,6 +2,7 @@
 #include "Game.hpp"
 #include "StrategyParser.hpp"
 #include "Options.hpp"
+#include "PotentialStep.hpp"
 #include "Random.hpp"
 
 #include <thread>
@@ -22,6 +23,7 @@ int main(int argc, const char* argv[]) {
         options.seed = std::random_device{}();
     }
     Rng rng{options.seed};
+    PotentialStep::debugEnabled = options.debug;
 
     std::vector<std::shared_ptr<Score>> scores;
     for (std::size_t i = 0; i < numPlayers; ++i) {
@@ -43,7 +45,7 @@ int main(int argc, const char* argv[]) {
                         Rng rng{seed};
                         for (int j = i; j < options.numRuns;
                                 j += options.jobs) {
-                            Game game{rng, options, 
+                            Game game{rng, options,
                                     createStrategies(rng, options), scores};
                             game.run(false);
                             std::cout << ".";
