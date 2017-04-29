@@ -194,7 +194,7 @@ std::tuple<bool, int> getColor(Point p, const Track& track,
         drawColor = false;
     }
 
-    return {drawColor, colorId};
+    return std::make_tuple(drawColor, colorId);
 }
 
 } // unnamed namespace
