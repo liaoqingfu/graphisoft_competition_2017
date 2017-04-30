@@ -1,6 +1,7 @@
 #ifndef SEMIFINAL_CLIENT_POTENTIALSTEP_HPP
 #define SEMIFINAL_CLIENT_POTENTIALSTEP_HPP
 
+#include "Debug.hpp"
 #include "GameState.hpp"
 #include "OpponentsInfo.hpp"
 
@@ -52,8 +53,6 @@ public:
                     << " weighted " << info.finalValue << "\n";
         }
     }
-
-    static bool debugEnabled;
 
 private:
     const GameState* gameState;

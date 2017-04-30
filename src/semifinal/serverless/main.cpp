@@ -23,7 +23,7 @@ int main(int argc, const char* argv[]) {
         options.seed = std::random_device{}();
     }
     Rng rng{options.seed};
-    PotentialStep::debugEnabled = options.debug;
+    debugEnabled = options.debug;
 
     std::vector<std::shared_ptr<Score>> scores;
     for (std::size_t i = 0; i < numPlayers; ++i) {

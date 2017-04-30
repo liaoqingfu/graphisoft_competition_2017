@@ -1,0 +1,6 @@
+#ifndef SEMIFINAL_TRACK_DEBUG_HPP
+#define SEMIFINAL_TRACK_DEBUG_HPP
+
+extern bool debugEnabled;
+
+#endif // SEMIFINAL_TRACK_DEBUG_HPP

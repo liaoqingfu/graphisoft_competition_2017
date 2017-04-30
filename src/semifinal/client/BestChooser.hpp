@@ -2,6 +2,7 @@
 #define SEMIFINAL_CLIENT_BESTCHOOSER_HPP
 
 #include "DelegatingChooser.hpp"
+#include "Debug.hpp"
 
 #include <iostream>
 
@@ -30,7 +31,7 @@ private:
                 [](const PotentialStep& lhs, const PotentialStep& rhs) {
                     return lhs.getWeight() > rhs.getWeight();
                 });
-        if (PotentialStep::debugEnabled) {
+        if (debugEnabled) {
             printDebugInfo(potentialSteps);
         }
         std::size_t i = 0;

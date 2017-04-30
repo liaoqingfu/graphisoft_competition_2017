@@ -36,5 +36,3 @@ std::vector<PotentialStep> calculatePotentialSteps(
                                    gameState.gameInfo.playerId,
                                    gameState.extraField);
 }
-
-bool PotentialStep::debugEnabled = false;
