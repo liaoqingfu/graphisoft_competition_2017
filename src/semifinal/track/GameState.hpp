@@ -83,9 +83,10 @@ int executeStep(Track& track, int playerId, const Step& step,
 
 class TemporaryStep {
 public:
-    TemporaryStep(const GameState& gameState, const Step& step) :
+    TemporaryStep(const GameState& gameState, const Step& step,
+            int player = -1) :
             gameState(const_cast<GameState&>(gameState)),
-            playerId(gameState.gameInfo.playerId) {
+            playerId(player >= 0 ? player : gameState.gameInfo.playerId) {
         stepBack.pushDirection = static_cast<Directions>(
                 oppositeDirection(step.pushDirection));
         stepBack.pushPosition = step.pushPosition;

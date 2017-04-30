@@ -197,7 +197,7 @@ void ChoosingStrategy::setTargetMonitors(const Track& currentTrack) {
     std::unordered_set<int> toBeRemoved;
     for (const PotentialStep& step : potentialSteps) {
         TemporaryStep temporaryStep{step.getGameState(),
-                step.getStep()};
+                step.getStep(), prevSt.playerId};
         const Track& track = step.getGameState().track;
         const auto& reachablePoints =
             track.getReachablePoints(
