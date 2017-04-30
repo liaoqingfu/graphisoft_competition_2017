@@ -1,7 +1,10 @@
-#include "client.hpp"
-#include "ChoosingStrategy.hpp"
-#include "GenericSolver.hpp"
-#include "StrategyParser.hpp"
+#include "NeuralChooserFactory.hpp"
+
+#include <client.hpp>
+#include <AssemblingChooser.hpp>
+#include <ChoosingStrategy.hpp>
+#include <GenericSolver.hpp>
+#include <StrategyParser.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
@@ -74,7 +77,10 @@ int main(int argc, const char* argv[]) {
                             parseStrategy(options.strategyString, rng));
         } else {
             std::cerr << "No strategy is chosen!" << std::endl;
-            return 2;
+            using Chooser = AssemblingChooser<NeuralChooserFactory>;
+            NeuralChooserFactory factory{rng};
+            solver = std::make_unique<Solver>(ChoosingStrategy(
+                            std::make_shared<Chooser>(factory))); // TODO: params
         }
         client<Solver> mazeClient{options.hostname.c_str(), options.port,
                     options.teamName.c_str(), options.password.c_str(),
