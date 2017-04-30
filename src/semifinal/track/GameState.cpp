@@ -107,9 +107,9 @@ void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
 
 std::vector<std::string> createOutput(const Track& track,
         const Step& step, Point ourPosition) {
-    std::initializer_list<Point> points{ourPosition};
-    Point newPosition = transformPoints(track, points,
-            step.pushDirection, step.pushPosition)[0].transformed;
+    std::vector<Point> points{ourPosition};
+    transformPoints(track, points, step.pushDirection, step.pushPosition);
+    Point newPosition = points[0];
     std::string c =
         (step.pushDirection == left || step.pushDirection == right) ? "0" : "1";
     std::string p =

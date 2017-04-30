@@ -14,37 +14,30 @@ Step LookaheadChooser::chooseBadStep(
 
 namespace {
 
-template<typename ReachablePoints>
+template<typename AddValue>
 void calculateTargetValues(
         const PotentialStep& step,
-        const ReachablePoints& reachablePoints,
-        std::unordered_map<Point, int>& reachablePointValues) {
+        std::vector<Point>& reachablePoints,
+        const AddValue& addValue) {
     const GameState& gameState = step.getGameState();
     // Iterate through the next steps.
     for (const PotentialStep& nextStep :
             calculatePotentialSteps(gameState, step.getOpponentInfo())) {
-        TemporaryStep temporaryStep{gameState, nextStep.getStep()};
+        TemporaryStep temporaryStep{gameState, nextStep.getStep(),
+                reachablePoints};
         const Track& track = gameState.track;
-        // Transform reachablePoints (save both original and transformed points)
-        auto transformedPoints = transformPoints(track,
-                reachablePoints, nextStep.getStep().pushDirection,
-                nextStep.getStep().pushPosition);
-        TransformedPointCompare comparator{&TransformedPoint::transformed};
-        // Sort for binary search.
-        std::sort(transformedPoints.begin(), transformedPoints.end(),
-                comparator);
+        auto reachableFromTarget = track.getReachablePoints(
+                track.getMonitor(gameState.targetMonitor));
+        std::sort(reachableFromTarget.begin(), reachableFromTarget.end());
         // Find the common subset of the points reachable from the target
         // monitor after the next step and the points reachable by the princess
         // in the current step.
-        for (Point p : track.getReachablePoints(
-                track.getMonitor(
-                        gameState.targetMonitor))) {
-
+        for (std::size_t i = 0; i < reachablePoints.size(); ++i) {
             auto iterators = std::equal_range(
-                    transformedPoints.begin(), transformedPoints.end(), p,
-                    comparator);
+                    reachableFromTarget.begin(), reachableFromTarget.end(),
+                    reachablePoints[i]);
             if (iterators.first != iterators.second) {
-                ++reachablePointValues.at(iterators.first->original);
+                addValue(i);
             }
         }
     }
@@ -54,56 +47,59 @@ void calculateTargetValues(
 
 void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
         const PotentialStep& step) {
-    std::unordered_map<Point, int> reachablePointValues;
     const GameState& gameState = step.getGameState();
+    std::vector<Point> reachablePoints;
+    std::vector<int> reachablePointValues;
     {
         TemporaryStep temporaryStep1{gameState, step.getStep()};
         const Track& track = gameState.track;
         // Collect the points reachable in the current step.
-        const auto& reachablePoints = track.getReachablePoints(
+        reachablePoints = track.getReachablePoints(
                 track.getPrincess(step.getGameState().gameInfo.playerId));
-        for (Point p : reachablePoints) {
-            reachablePointValues.emplace(p, 0);
-        }
+        reachablePointValues.resize(reachablePoints.size(), 0);
 
         if (lookahead == 1) {
-            calculateTargetValues(step, reachablePoints, reachablePointValues);
+            calculateTargetValues(step, reachablePoints,
+                    [&reachablePointValues](std::size_t i) {
+                        ++reachablePointValues[i];
+                    });
         } else {
             for (const PotentialStep& nextStep : calculatePotentialSteps(
                         gameState, step.getOpponentInfo())) {
-                TemporaryStep temporaryStep2{gameState, nextStep.getStep()};
-                auto transformedPoints = transformPoints(track,
-                        reachablePoints, nextStep.getStep().pushDirection,
-                        nextStep.getStep().pushPosition);
-                std::size_t max = transformedPoints.size();
-                for (std::size_t i = 0; i < max; ++i) {
+                TemporaryStep temporaryStep2{gameState, nextStep.getStep(),
+                        reachablePoints};
+                std::vector<std::size_t> transformations;
+                std::vector<Point> transformedPoints;
+                for (std::size_t i = 0; i < reachablePoints.size(); ++i) {
                     for (Point target : track.getReachablePoints(
-                            transformedPoints[i].transformed)) {
-                        transformedPoints.push_back(TransformedPoint{
-                                transformedPoints[i].original, target});
+                            reachablePoints[i])) {
+                        transformations.push_back(i);
+                        transformedPoints.push_back(target);
                     }
                 }
 
                 calculateTargetValues(nextStep, transformedPoints,
-                        reachablePointValues);
+                        [&reachablePointValues, &transformations](
+                                std::size_t i) {
+                            ++reachablePointValues[transformations[i]];
+                        });
             }
         }
     }
 
-    auto valueRange = reachablePointValues | boost::adaptors::map_values;
-    double valueLimit = *std::max_element(valueRange.begin(),
-            valueRange.end()) + 1.0;
+    double valueLimit = *std::max_element(reachablePointValues.begin(),
+            reachablePointValues.end()) + 1.0;
 
-    for (const auto& element : reachablePointValues) {
-        if (element.second == 0) {
+    for (std::size_t i = 0; i < reachablePointValues.size(); ++i) {
+        if (reachablePointValues[i] == 0) {
             continue;
         }
 
         PotentialStep step2 = step;
-        step2.setPrincessTarget(element.first);
+        step2.setPrincessTarget(reachablePoints[i]);
         // The value equals the number of possible next steps where the princess
         // can reach the target monitor.
-        double w = element.second / valueLimit;
+        double w = reachablePointValues[i] / valueLimit;
         double ww = w * weightMultiplier;
         step2.addWeight(ww);
         step2.addDebugInfo(PotentialStep::DebugInfo{"LookaheadChooser", w, ww});

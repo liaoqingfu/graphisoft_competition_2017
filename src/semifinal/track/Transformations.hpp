@@ -46,45 +46,12 @@ void rotatePoints(Container& points, int Point::*toCheck,
 
 } // namespace detail
 
-struct TransformedPoint {
-    Point original;
-    Point transformed;
-};
-
-class TransformedPointCompare {
-public:
-    TransformedPointCompare(Point TransformedPoint::* fieldToCompare) :
-            fieldToCompare(fieldToCompare) {
-    }
-
-    bool operator()(const TransformedPoint& lhs, const TransformedPoint& rhs) {
-        return lhs.*fieldToCompare < rhs.*fieldToCompare;
-    }
-
-    bool operator()(Point lhs, const TransformedPoint& rhs) {
-        return lhs < rhs.*fieldToCompare;
-    }
-
-    bool operator()(const TransformedPoint& lhs, Point rhs) {
-        return lhs.*fieldToCompare < rhs;
-    }
-
-private:
-    Point TransformedPoint::* fieldToCompare;
-};
-
 template<typename Container>
-typename std::enable_if<std::is_convertible<
-        typename Container::value_type, Point>::value,
-std::vector<TransformedPoint>>::type transformPoints(
+void transformPoints(
         std::size_t width, std::size_t height,
-        const Container& points, Directions direction, int position) {
+        Container& points, Directions direction, int position) {
     Point delta = neighbors[direction];
-    std::vector<TransformedPoint> result;
-    auto action =
-            [&result](Point original, Point p) {
-                result.push_back(TransformedPoint{original, p});
-            };
+    auto action = [](Point& original, Point p) { original = p; };
     if (delta.y == 0) {
         detail::rotatePoints(points, &Point::y, &Point::x, position, delta.x,
                 width, action);
@@ -93,37 +60,11 @@ std::vector<TransformedPoint>>::type transformPoints(
         detail::rotatePoints(points, &Point::x, &Point::y, position, delta.y,
                 height, action);
     }
-    return result;
 }
 
 template<typename Container>
-typename std::enable_if<std::is_convertible<
-        typename Container::value_type, TransformedPoint>::value,
-std::vector<TransformedPoint>>::type transformPoints(
-        std::size_t width, std::size_t height,
-        const Container& points, Directions direction, int position) {
-    Point delta = neighbors[direction];
-    std::vector<TransformedPoint> result;
-    auto action =
-            [&result](const TransformedPoint& original,
-                    const TransformedPoint& p) {
-                result.push_back(TransformedPoint{original.original,
-                        p.transformed});
-            };
-    auto getX = [](TransformedPoint& p) -> int& { return p.transformed.x; };
-    auto getY = [](TransformedPoint& p) -> int& { return p.transformed.y; };
-    if (delta.y == 0) {
-        detail::rotatePoints(points, getY, getX, position, delta.x, width, action);
-    } else {
-        assert(delta.x == 0);
-        detail::rotatePoints(points, getX, getY, position, delta.y, height, action);
-    }
-    return result;
-}
-
-template<typename Container>
-std::vector<TransformedPoint> transformPoints(const Track& track,
-        const Container& points, Directions direction, int position) {
+void transformPoints(const Track& track,
+        Container& points, Directions direction, int position) {
     return transformPoints(track.width(), track.height(),
             points, direction, position);
 }

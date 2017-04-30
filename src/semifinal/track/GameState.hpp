@@ -2,6 +2,7 @@
 #define SEMIFINAL_TRACK_GAMESTATE_HPP
 
 #include "Track.hpp"
+#include "Transformations.hpp"
 
 #include <ostream>
 #include <string>
@@ -95,9 +96,21 @@ public:
                 executeStep(this->gameState.track, playerId, step);
     }
 
+    TemporaryStep(const GameState& gameState, const Step& step,
+            std::vector<Point>& points, int player = -1) :
+            TemporaryStep(gameState, step, player) {
+        this->points = &points;
+        transformPoints(gameState.track, points, step.pushDirection,
+                step.pushPosition);
+    }
+
     ~TemporaryStep() {
         gameState.extraField =
                 executeStep(gameState.track, playerId, stepBack, false);
+        if (points) {
+        transformPoints(gameState.track, *points, stepBack.pushDirection,
+                stepBack.pushPosition);
+        }
     }
 
     TemporaryStep(const TemporaryStep&) = delete;
@@ -109,6 +122,7 @@ private:
     GameState& gameState;
     int playerId;
     Step stepBack;
+    std::vector<Point>* points = nullptr;
 };
 
 #endif // SEMIFINAL_TRACK_GAMESTATE_HPP
