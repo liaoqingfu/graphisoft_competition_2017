@@ -11,47 +11,80 @@ Step LookaheadChooser::chooseBadStep(
             }, getDelegatedChooser(), "LookaheadChooser");
 }
 
+namespace {
+
+template<typename ReachablePoints>
+void calculateTargetValues(
+        const PotentialStep& step,
+        const ReachablePoints& reachablePoints,
+        std::unordered_map<Point, int>& reachablePointValues) {
+    const GameState& gameState = step.getGameState();
+    // Iterate through the next steps.
+    for (const PotentialStep& nextStep :
+            calculatePotentialSteps(gameState, step.getOpponentInfo())) {
+        TemporaryStep temporaryStep{gameState, nextStep.getStep()};
+        const Track& track = gameState.track;
+        // Transform reachablePoints (save both original and transformed points)
+        auto transformedPoints = transformPoints(track,
+                reachablePoints, nextStep.getStep().pushDirection,
+                nextStep.getStep().pushPosition);
+        TransformedPointCompare comparator{&TransformedPoint::transformed};
+        // Sort for binary search.
+        std::sort(transformedPoints.begin(), transformedPoints.end(),
+                comparator);
+        // Find the common subset of the points reachable from the target
+        // monitor after the next step and the points reachable by the princess
+        // in the current step.
+        for (Point p : track.getReachablePoints(
+                track.getMonitor(
+                        gameState.targetMonitor))) {
+
+            auto iterators = std::equal_range(
+                    transformedPoints.begin(), transformedPoints.end(), p,
+                    comparator);
+            if (iterators.first != iterators.second) {
+                ++reachablePointValues.at(iterators.first->original);
+            }
+        }
+    }
+}
+
+} // unnamed namespace
+
 void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
         const PotentialStep& step) {
     std::unordered_map<Point, int> reachablePointValues;
-    // Collect the points reachable in the current step.
+    const GameState& gameState = step.getGameState();
     {
-        TemporaryStep temporaryStep1{step.getGameState(), step.getStep()};
-        const Track& track = step.getGameState().track;
+        TemporaryStep temporaryStep1{gameState, step.getStep()};
+        const Track& track = gameState.track;
+        // Collect the points reachable in the current step.
         const auto& reachablePoints = track.getReachablePoints(
                 track.getPrincess(step.getGameState().gameInfo.playerId));
         for (Point p : reachablePoints) {
             reachablePointValues.emplace(p, 0);
         }
 
-        // Iterate through the next steps.
-        for (const PotentialStep& nextStep :
-                calculatePotentialSteps(step.getGameState(),
-                        step.getOpponentInfo())) {
-            TemporaryStep temporaryStep2{step.getGameState(),
-                    nextStep.getStep()};
-            // Transform reachablePoints (save both original and transformed
-            // points)
-            auto transformedPoints = transformPoints(track,
-                    reachablePoints, nextStep.getStep().pushDirection,
-                    nextStep.getStep().pushPosition);
-            TransformedPointCompare comparator{&TransformedPoint::transformed};
-            // Sort for binary search.
-            std::sort(transformedPoints.begin(), transformedPoints.end(),
-                    comparator);
-            // Find the common subset of the points reachable from the target
-            // monitor after the next step and the points reachable by the
-            // princess in the current step.
-            for (Point p : track.getReachablePoints(
-                    track.getMonitor(
-                            step.getGameState().targetMonitor))) {
-
-                auto iterators = std::equal_range(
-                        transformedPoints.begin(), transformedPoints.end(), p,
-                        comparator);
-                if (iterators.first != iterators.second) {
-                    ++reachablePointValues.at(iterators.first->original);
+        if (lookahead == 1) {
+            calculateTargetValues(step, reachablePoints, reachablePointValues);
+        } else {
+            for (const PotentialStep& nextStep : calculatePotentialSteps(
+                        gameState, step.getOpponentInfo())) {
+                TemporaryStep temporaryStep2{gameState, nextStep.getStep()};
+                auto transformedPoints = transformPoints(track,
+                        reachablePoints, nextStep.getStep().pushDirection,
+                        nextStep.getStep().pushPosition);
+                std::size_t max = transformedPoints.size();
+                for (std::size_t i = 0; i < max; ++i) {
+                    for (Point target : track.getReachablePoints(
+                            transformedPoints[i].transformed)) {
+                        transformedPoints.push_back(TransformedPoint{
+                                transformedPoints[i].original, target});
+                    }
                 }
+
+                calculateTargetValues(nextStep, transformedPoints, 
+                        reachablePointValues);
             }
         }
     }

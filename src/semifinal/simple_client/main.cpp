@@ -17,7 +17,16 @@ struct Options {
     std::string teamName = "elvont_gyar";
     std::string password = "T&kX,!RT;vXK";
     unsigned seed = 2;
-    std::string strategyString = "ChoosingStrategy(LookaheadChooser(MonitorDefendingChooser(PrincessMovingChooser(MaxReachableChooser(BestChooser(RandomChooser()), 2), 10), 10, 2), 4))";
+    std::string strategyString = "ChoosingStrategy("
+        "LookaheadChooser(1,"
+            "MonitorDefendingChooser("
+                "PrincessMovingChooser("
+                    "MaxReachableChooser("
+                        "BestChooser(RandomChooser()),"
+                    "2),"
+                "10),"
+            "10, 2),"
+        "4))";
 };
 
 int main(int argc, const char* argv[]) {
