@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE(MessageError) {
     input = {
         "MESSAGE ErrorString"
     };
-    BOOST_CHECK_THROW(parseTickInfo(gs, input), std::runtime_error);
+    BOOST_CHECK_NO_THROW(parseTickInfo(gs, input));
 }
 
 BOOST_AUTO_TEST_SUITE_END() // ParseTickInfo
