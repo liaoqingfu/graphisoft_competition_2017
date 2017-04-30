@@ -130,8 +130,15 @@ void Game::run(bool print) {
                         playerState.gameState.track, playerId);
                 }
                 clock_t end = ::clock();
-                actualPlayer.score->time += end - start;
-
+                auto stepTime = end - start;
+                actualPlayer.score->time += stepTime;
+                if (stepTime > 1.0 * CLOCKS_PER_SEC) {
+                    std::cout << "Step " << gameState.currentTick
+                            << " for player " << playerId
+                            << " took a long time: "
+                            << static_cast<double>(stepTime) / CLOCKS_PER_SEC
+                            << " s" << std::endl;
+                }
             }
 
             for (PlayerState& actualPlayer : playerStates) {
