@@ -16,19 +16,19 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
     std::unordered_map<Point, int> reachablePointValues;
     // Collect the points reachable in the current step.
     {
-        TemporaryStep temporaryStep1{step.getSourceState(), step.getStep()};
-        const Track& track = step.getSourceState().track;
+        TemporaryStep temporaryStep1{step.getGameState(), step.getStep()};
+        const Track& track = step.getGameState().track;
         const auto& reachablePoints = track.getReachablePoints(
-                track.getPrincess(step.getSourceState().gameInfo.playerId));
+                track.getPrincess(step.getGameState().gameInfo.playerId));
         for (Point p : reachablePoints) {
             reachablePointValues.emplace(p, 0);
         }
 
         // Iterate through the next steps.
         for (const PotentialStep& nextStep :
-                calculatePotentialSteps(step.getSourceState(),
+                calculatePotentialSteps(step.getGameState(),
                         step.getOpponentInfo())) {
-            TemporaryStep temporaryStep2{step.getSourceState(),
+            TemporaryStep temporaryStep2{step.getGameState(),
                     nextStep.getStep()};
             // Transform reachablePoints (save both original and transformed
             // points)
@@ -44,7 +44,7 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
             // princess in the current step.
             for (Point p : track.getReachablePoints(
                     track.getMonitor(
-                            step.getSourceState().targetMonitor))) {
+                            step.getGameState().targetMonitor))) {
 
                 auto iterators = std::equal_range(
                         transformedPoints.begin(), transformedPoints.end(), p,

@@ -40,13 +40,13 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
         return;
     }
 
-    const auto& gi = step.getSourceState().gameInfo;
+    const auto& gi = step.getGameState().gameInfo;
     double playerNumDivisor = gi.numPlayers * (gi.numPlayers - 1) / 2;
     double monitorWeight = 0;
     double reachabilityWeight = 0;
     {
-        TemporaryStep temporaryStep1{step.getSourceState(), step.getStep()};
-        const Track& track = step.getSourceState().track;
+        TemporaryStep temporaryStep1{step.getGameState(), step.getStep()};
+        const Track& track = step.getGameState().track;
 
         const OpponentsInfo& opponentsInfo = step.getOpponentInfo();
 
@@ -61,12 +61,12 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
             const auto& targets = opponentsInfo[opponentId].targetMonitors;
 
             auto nextSteps = calculatePotentialSteps(
-                step.getSourceState(), opponentsInfo, opponentId,
+                step.getGameState(), opponentsInfo, opponentId,
                         opponentExtraField);
             std::unordered_set<int> reachableMonitors;
             std::size_t reachability = 0;
             for (const PotentialStep& nextStep : nextSteps) {
-                TemporaryStep temporaryStep2{step.getSourceState(),
+                TemporaryStep temporaryStep2{step.getGameState(),
                         nextStep.getStep()};
                 const auto& reachablePoints =
                     track.getReachablePoints(
@@ -83,11 +83,11 @@ void MonitorDefendingChooser::processStep(PotentialStep& step) {
             double opponentMultiplier = gi.numPlayers
                     - (opponentId - gi.playerId + gi.numPlayers) % gi.numPlayers;
 
-            const GameState& sourceState = step.getSourceState();
+            const GameState& gameState = step.getGameState();
             double mw = static_cast<double>(reachableMonitors.size())
-                    / sourceState.track.getAliveMonitors().size();
+                    / gameState.track.getAliveMonitors().size();
 
-            const int& ourTargetMonitor = sourceState.targetMonitor;
+            const int& ourTargetMonitor = gameState.targetMonitor;
             // In this step we are not going to catch out target Monitor ...
             if (step.getStep().princessTarget !=
                     track.getMonitor(ourTargetMonitor)

@@ -42,10 +42,10 @@ void DistanceChooser::processStep(PotentialStep& step) {
 
     double weight = 0;
     {
-        TemporaryStep temporaryStep{step.getSourceState(), step.getStep()};
-        const Track& track = step.getSourceState().track;
+        TemporaryStep temporaryStep{step.getGameState(), step.getStep()};
+        const Track& track = step.getGameState().track;
 
-        const auto& gi = step.getSourceState().gameInfo;
+        const auto& gi = step.getGameState().gameInfo;
 
         double size = static_cast<double>(track.width() + track.height());
         Point ownPrincess = step.getStep().princessTarget;

@@ -15,14 +15,14 @@ public:
         double finalValue;
     };
 
-    PotentialStep() : sourceState(nullptr), opponentsInfo(nullptr) {
+    PotentialStep() : gameState(nullptr), opponentsInfo(nullptr) {
         assert(false);
     }
 
-    PotentialStep(const GameState& sourceState,
+    PotentialStep(const GameState& gameState,
             const OpponentsInfo& opponentsInfo,
             Step step, int /*playerId*/) :
-            sourceState(&sourceState), opponentsInfo(&opponentsInfo),
+            gameState(&gameState), opponentsInfo(&opponentsInfo),
             step(std::move(step)) {}
 
     PotentialStep(const PotentialStep&) = default;
@@ -30,7 +30,7 @@ public:
     PotentialStep(PotentialStep&&) = default;
     PotentialStep& operator=(PotentialStep&&) = default;
 
-    const GameState& getSourceState() const { return *sourceState; }
+    const GameState& getGameState() const { return *gameState; }
     const OpponentsInfo& getOpponentInfo() const { return *opponentsInfo; }
     const Step& getStep() const { return step; }
     void setPrincessTarget(Point target) {
@@ -56,7 +56,7 @@ public:
     static bool debugEnabled;
 
 private:
-    const GameState* sourceState;
+    const GameState* gameState;
     const OpponentsInfo* opponentsInfo;
     Step step;
 

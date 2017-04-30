@@ -6,7 +6,7 @@ Step PrincessMovingChooser::chooseGoodStep(
     if (overrideGoodSteps) {
         auto steps = potentialSteps;
         for (PotentialStep& step : steps) {
-            TemporaryStep temporaryStep{step.getSourceState(), step.getStep()};
+            TemporaryStep temporaryStep{step.getGameState(), step.getStep()};
             step.addWeight(calculateWeight(step));
         }
         return DelegatingChooser::chooseGoodStep(steps);
@@ -25,9 +25,9 @@ Step PrincessMovingChooser::chooseBadStep(
 
 void PrincessMovingChooser::processStep(std::vector<PotentialStep>& stepValues,
         const PotentialStep& step, bool isBadStep) {
-    TemporaryStep temporaryStep{step.getSourceState(), step.getStep()};
-    const Track& track = step.getSourceState().track;
-    int playerId = step.getSourceState().gameInfo.playerId;
+    TemporaryStep temporaryStep{step.getGameState(), step.getStep()};
+    const Track& track = step.getGameState().track;
+    int playerId = step.getGameState().gameInfo.playerId;
 
     for (Point p : track.getReachablePoints(track.getPrincess(playerId))) {
         PotentialStep newStep = step;
@@ -42,8 +42,8 @@ void PrincessMovingChooser::processStep(std::vector<PotentialStep>& stepValues,
 }
 
 double PrincessMovingChooser::calculateWeight(PotentialStep& step) {
-    const Track& track = step.getSourceState().track;
-    Point target = track.getMonitor(step.getSourceState().targetMonitor);
+    const Track& track = step.getGameState().track;
+    Point target = track.getMonitor(step.getGameState().targetMonitor);
 
     int size = track.width() + track.height();
     double d = std::abs(step.getStep().princessTarget.x - target.x)

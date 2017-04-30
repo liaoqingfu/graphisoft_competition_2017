@@ -12,22 +12,22 @@ Step ChoosingStrategy::calculateStep() {
     std::remove_copy_if(potentialSteps.begin(), potentialSteps.end(),
             std::back_inserter(goodSteps),
             [](const PotentialStep& step) {
-                TemporaryStep temporaryStep{step.getSourceState(),
+                TemporaryStep temporaryStep{step.getGameState(),
                         step.getStep()};
-                const Track& track = step.getSourceState().track;
-                const GameState& sourceState = step.getSourceState();
+                const Track& track = step.getGameState().track;
+                const GameState& gameState = step.getGameState();
                 return !track.canMovePrincess(
-                        sourceState.gameInfo.playerId,
-                        track.getMonitor(sourceState.targetMonitor));
+                        gameState.gameInfo.playerId,
+                        track.getMonitor(gameState.targetMonitor));
             });
     if (goodSteps.empty()) {
         return chooser->chooseBadStep(potentialSteps);
     }
     potentialSteps.clear();
     for (PotentialStep& step : goodSteps) {
-        TemporaryStep temporaryStep{step.getSourceState(),
+        TemporaryStep temporaryStep{step.getGameState(),
                 step.getStep()};
-        const Track& track = step.getSourceState().track;
+        const Track& track = step.getGameState().track;
         Point target = track.getMonitor(gameState.targetMonitor);
         step.setPrincessTarget(target);
         // std::cerr << "Good step: " << step.step.pushDirection
@@ -196,9 +196,9 @@ void ChoosingStrategy::setTargetMonitors(const Track& currentTrack) {
 
     std::unordered_set<int> toBeRemoved;
     for (const PotentialStep& step : potentialSteps) {
-        TemporaryStep temporaryStep{step.getSourceState(),
+        TemporaryStep temporaryStep{step.getGameState(),
                 step.getStep()};
-        const Track& track = step.getSourceState().track;
+        const Track& track = step.getGameState().track;
         const auto& reachablePoints =
             track.getReachablePoints(
                 track.getPrincess(prevPlayerId));
