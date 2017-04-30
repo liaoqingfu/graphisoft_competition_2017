@@ -132,7 +132,7 @@ void Game::run(bool print) {
                 clock_t end = ::clock();
                 auto stepTime = end - start;
                 actualPlayer.score->time += stepTime;
-                if (stepTime > 1.0 * CLOCKS_PER_SEC) {
+                if (print && stepTime > 1.0 * CLOCKS_PER_SEC) {
                     std::cout << "Step " << gameState.currentTick
                             << " for player " << playerId
                             << " took a long time: "

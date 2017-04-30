@@ -8,7 +8,7 @@ Step LookaheadChooser::chooseBadStep(
     return processPotentialSteps(potentialSteps,
             [this](auto& stepValues, const auto& step) {
                 return this->processStep(stepValues, step);
-            }, getDelegatedChooser(), "LookaheadChooser");
+            }, getDelegatedChooser(), name.c_str());
 }
 
 namespace {
@@ -83,7 +83,7 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
                     }
                 }
 
-                calculateTargetValues(nextStep, transformedPoints, 
+                calculateTargetValues(nextStep, transformedPoints,
                         reachablePointValues);
             }
         }

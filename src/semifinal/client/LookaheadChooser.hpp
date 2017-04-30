@@ -16,7 +16,8 @@ public:
             int lookahead, double weightMultiplier) :
             DelegatingChooser(std::move(chooser)),
             lookahead(lookahead),
-            weightMultiplier(weightMultiplier) {
+            weightMultiplier(weightMultiplier),
+            name("LookaheadChooser" + std::to_string(lookahead)) {
         std::cerr << "Construct: " << lookahead << "\n";
     }
 
@@ -29,6 +30,7 @@ private:
 
     int lookahead;
     double weightMultiplier;
+    std::string name;
 };
 
 #endif // SEMIFINAL_CLIENT_LOOKAHEADCHOOSER_HPP
