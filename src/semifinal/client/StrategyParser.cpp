@@ -33,6 +33,7 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
         using qi::lit;
         using qi::_val;
         using qi::double_;
+        using qi::int_;
         using qi::eps;
         using qi::_1;
         using qi::_2;
@@ -49,8 +50,8 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
         randomChooser = (lit("RandomChooser") >> lit('(') >> lit(')'))[
                 _val = make_shared_<RandomChooser>(phoenix::ref(rng))];
         lookaheadChooser = (lit("LookaheadChooser") >> lit('(')
-                >> chooser >> ',' >> double_ >> lit(')'))[
-                        _val = make_shared_<LookaheadChooser>(_1, _2)];
+                >> int_ >> ',' >> chooser >> ',' >> double_ >> lit(')'))[
+                        _val = make_shared_<LookaheadChooser>(_2, _3, _1)];
         princessMovingChooser = (lit("PrincessMovingChooser") >> lit('(')
                 >> chooser >> ',' >> double_ >> overrideParameter >> lit(')'))[
                         _val = make_shared_<PrincessMovingChooser>(_1, _2, _3)];

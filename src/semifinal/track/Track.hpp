@@ -103,6 +103,19 @@ std::vector<TransformedPoint> transformPoints(const Track& track,
             points, direction, position);
 }
 
+std::vector<TransformedPoint> transformPoints(
+        std::size_t width, std::size_t height,
+        const std::vector<TransformedPoint>& points,
+        Directions direction, int position);
+
+inline
+std::vector<TransformedPoint> transformPoints(const Track& track,
+        const std::vector<TransformedPoint>& points,
+        Directions direction, int position) {
+    return transformPoints(track.width(), track.height(),
+            points, direction, position);
+}
+
 int getExtraField(const Track& track, Directions direction, int position);
 
 #endif // SEMIFINAL_TRACK_TRACK_HPP
