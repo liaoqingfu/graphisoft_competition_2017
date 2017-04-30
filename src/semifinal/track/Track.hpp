@@ -61,57 +61,6 @@ std::ostream& operator<<(std::ostream& os, const Track& track);
 std::string toBox(const Track& track, int currentPrincess = -1,
         int targetMonitor = -1);
 
-struct TransformedPoint {
-    Point original;
-    Point transformed;
-};
-
-class TransformedPointCompare {
-public:
-    TransformedPointCompare(Point TransformedPoint::* fieldToCompare) :
-            fieldToCompare(fieldToCompare) {
-    }
-
-    bool operator()(const TransformedPoint& lhs, const TransformedPoint& rhs) {
-        return lhs.*fieldToCompare < rhs.*fieldToCompare;
-    }
-
-    bool operator()(Point lhs, const TransformedPoint& rhs) {
-        return lhs < rhs.*fieldToCompare;
-    }
-
-    bool operator()(const TransformedPoint& lhs, Point rhs) {
-        return lhs.*fieldToCompare < rhs;
-    }
-
-private:
-    Point TransformedPoint::* fieldToCompare;
-};
-
-std::vector<TransformedPoint> transformPoints(
-        std::size_t width, std::size_t height,
-        const std::vector<Point>& points, Directions direction, int position);
-
-inline
-std::vector<TransformedPoint> transformPoints(const Track& track,
-        const std::vector<Point>& points, Directions direction, int position) {
-    return transformPoints(track.width(), track.height(),
-            points, direction, position);
-}
-
-std::vector<TransformedPoint> transformPoints(
-        std::size_t width, std::size_t height,
-        const std::vector<TransformedPoint>& points,
-        Directions direction, int position);
-
-inline
-std::vector<TransformedPoint> transformPoints(const Track& track,
-        const std::vector<TransformedPoint>& points,
-        Directions direction, int position) {
-    return transformPoints(track.width(), track.height(),
-            points, direction, position);
-}
-
 int getExtraField(const Track& track, Directions direction, int position);
 
 #endif // SEMIFINAL_TRACK_TRACK_HPP

@@ -1,8 +1,10 @@
 #include "GameState.hpp"
-#include <exception>
+#include "Transformations.hpp"
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
+
+#include <exception>
 
 namespace {
 
@@ -105,7 +107,8 @@ void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
 
 std::vector<std::string> createOutput(const Track& track,
         const Step& step, Point ourPosition) {
-    Point newPosition = transformPoints(track, {ourPosition},
+    std::initializer_list<Point> points{ourPosition};
+    Point newPosition = transformPoints(track, points,
             step.pushDirection, step.pushPosition)[0].transformed;
     std::string c =
         (step.pushDirection == left || step.pushDirection == right) ? "0" : "1";

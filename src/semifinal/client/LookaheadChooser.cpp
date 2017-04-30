@@ -1,5 +1,6 @@
 #include "LookaheadChooser.hpp"
 #include "ChooserHelper.hpp"
+#include "Transformations.hpp"
 
 #include <boost/range/adaptor/map.hpp>
 

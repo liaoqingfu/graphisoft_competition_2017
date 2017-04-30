@@ -99,6 +99,11 @@ public:
                 executeStep(gameState.track, playerId, stepBack, false);
     }
 
+    TemporaryStep(const TemporaryStep&) = delete;
+    TemporaryStep& operator=(const TemporaryStep&) = delete;
+    TemporaryStep(TemporaryStep&&) = delete;
+    TemporaryStep& operator=(TemporaryStep&&) = delete;
+
 private:
     GameState& gameState;
     int playerId;
