@@ -68,21 +68,33 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
                         gameState, step.getOpponentInfo())) {
                 TemporaryStep temporaryStep2{gameState, nextStep.getStep(),
                         reachablePoints};
-                std::vector<std::size_t> transformations;
+                std::unordered_map<Point, std::vector<std::size_t>>
+                        transformations;
                 std::vector<Point> transformedPoints;
                 for (std::size_t i = 0; i < reachablePoints.size(); ++i) {
                     for (Point target : track.getReachablePoints(
                             reachablePoints[i])) {
-                        transformations.push_back(i);
-                        transformedPoints.push_back(target);
+                        auto iterator = transformations.find(target);
+                        if (iterator == transformations.end()) {
+                            iterator = transformations.emplace(target,
+                                    std::vector<std::size_t>{}).first;
+                            transformedPoints.push_back(target);
+                        }
+                        iterator->second.push_back(i);
                     }
                 }
 
+                std::vector<int> collectedValues(transformedPoints.size(), 0);
                 calculateTargetValues(nextStep, transformedPoints,
-                        [&reachablePointValues, &transformations](
-                                std::size_t i) {
-                            ++reachablePointValues[transformations[i]];
+                        [&collectedValues](std::size_t i) {
+                            ++collectedValues[i];
                         });
+                for (std::size_t i = 0; i < transformedPoints.size(); ++i) {
+                    for (std::size_t j : transformations.at(
+                            transformedPoints[i])) {
+                        reachablePointValues[j] += collectedValues[i];
+                    }
+                }
             }
         }
     }
