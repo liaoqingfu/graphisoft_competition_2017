@@ -6,6 +6,8 @@
 #include <GenericSolver.hpp>
 #include <StrategyParser.hpp>
 
+#include <MultiNeuralNetwork.hpp>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 
@@ -60,6 +62,21 @@ Options parseOptions(int argc, const char* argv[]) {
     return options;
 }
 
+using MazeNeuralNetwork = MultiNeuralNetwork<1>;
+
+MazeNeuralNetwork getNeuralNetwork() {
+    static constexpr unsigned inputNeuronCount = 5;
+    static constexpr unsigned outputNeuronCount = 5;
+    static constexpr unsigned hiddenLayerCount = 1;
+    static constexpr unsigned neuronPerHiddenLayer = 60;
+
+    MazeNeuralNetwork result{hiddenLayerCount,
+                neuronPerHiddenLayer,
+                inputNeuronCount,
+                outputNeuronCount};
+    return result;
+}
+
 int main(int argc, const char* argv[]) {
     Options options = parseOptions(argc, argv);
     if (options.seed == 0) {
@@ -76,9 +93,10 @@ int main(int argc, const char* argv[]) {
             solver = std::make_unique<Solver>(
                             parseStrategy(options.strategyString, rng));
         } else {
-            std::cerr << "No strategy is chosen!" << std::endl;
-            using Chooser = AssemblingChooser<NeuralChooserFactory>;
-            NeuralChooserFactory factory{rng};
+            std::cerr << "Neural network is used!" << std::endl;
+            using ChooserFactory = NeuralChooserFactory<MazeNeuralNetwork>;
+            using Chooser = AssemblingChooser<ChooserFactory>;
+            ChooserFactory factory{rng, getNeuralNetwork()};
             solver = std::make_unique<Solver>(ChoosingStrategy(
                             std::make_shared<Chooser>(factory))); // TODO: params
         }

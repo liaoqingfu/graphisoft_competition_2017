@@ -3,6 +3,7 @@
 
 #include <IChooser.hpp>
 
+#include <cassert>
 #include <memory>
 
 //============================================================================//
@@ -16,13 +17,17 @@ public:
 
     Step chooseGoodStep(
             const std::vector<PotentialStep>& potentialSteps) override {
-        std::unique_ptr<IChooser> chooser = chooserFactory(); // TODO: give parameters from potentialSteps
+        assert(potentialSteps.size() > 0);
+        std::unique_ptr<IChooser> chooser = chooserFactory(
+                potentialSteps.back().getGameState());
         return chooser->chooseGoodStep(potentialSteps);
     }
 
     Step chooseBadStep(
             const std::vector<PotentialStep>& potentialSteps) override {
-        std::unique_ptr<IChooser> chooser = chooserFactory(); // TODO: give parameters from potentialSteps
+        assert(potentialSteps.size() > 0);
+        std::unique_ptr<IChooser> chooser = chooserFactory(
+                potentialSteps.back().getGameState());
         return chooser->chooseBadStep(potentialSteps);
     }
 
