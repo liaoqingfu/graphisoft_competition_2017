@@ -96,7 +96,8 @@ int main(int argc, const char* argv[]) {
             std::cerr << "Neural network is used!" << std::endl;
             using ChooserFactory = NeuralChooserFactory<MazeNeuralNetwork>;
             using Chooser = AssemblingChooser<ChooserFactory>;
-            ChooserFactory factory{rng, getNeuralNetwork()};
+            ChooserFactory factory{rng};
+            factory.setNeuralNetwork(getNeuralNetwork());
             solver = std::make_unique<Solver>(ChoosingStrategy(
                             std::make_shared<Chooser>(factory))); // TODO: params
         }

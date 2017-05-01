@@ -22,16 +22,18 @@ class NeuralChooserFactory {
 private:
 
 public:
-    explicit NeuralChooserFactory(std::mt19937& rng,
-            NeuralNetwork neuralNetwork)
-            : rng(rng),
-              neuralNetwork(std::move(neuralNetwork)) {
+    explicit NeuralChooserFactory(std::mt19937& rng)
+            : rng(rng) {
 //               neuralNetwork(hiddenLayerCount,
 //                       neuronPerHiddenLayer,
 //                       inputNeuronCount,
 //                       outputNeuronCount) {
         // assert(learningParams.inputNeuronCount == inputNeronCount);
         // assert(learningParams.outputNeuronCount == outputNeronCount);
+    }
+
+    void setNeuralNetwork(NeuralNetwork neuralNetwork) {
+        this->neuralNetwork = std::move(neuralNetwork);
     }
 
     std::unique_ptr<IChooser> operator()(const GameState& gameState) {
@@ -80,6 +82,7 @@ private:
     std::shared_ptr<T> c(Args&&...args) {
         return std::make_shared<T>(std::forward<Args>(args)...);
     }
+
     std::mt19937& rng;
     NeuralNetwork neuralNetwork;
 };

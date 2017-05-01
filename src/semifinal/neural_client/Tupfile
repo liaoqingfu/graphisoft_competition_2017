@@ -1,7 +1,7 @@
 include_rules
 
-INCLUDE_DIRS += -I$(MATRIX_DIR) -I$(TRACK_DIR) -I$(CLIENT_DIR) -I$(NEURAL_NETWORK_DIR) -I$(GENETIC_LEARNING_DIR)
-LD_FLAGS += -lboost_program_options
+INCLUDE_DIRS += -I$(MATRIX_DIR) -I$(TRACK_DIR) -I$(CLIENT_DIR) -I$(GAME_DIR) -I$(NEURAL_NETWORK_DIR) \
+             -I$(GENETIC_LEARNING_DIR) -I$(CPP_UTIL_DIR)/include
 
 include $(COMPILE_TUP)
 
@@ -9,4 +9,8 @@ include $(COMPILE_TUP)
 
 include $(LINK_TUP)
 
-: *.o $(NEURAL_NETWORK_LIB) $(CLIENT_LIB) $(TRACK_LIB) $(MATRIX_LIB) |> !linker |> neural_client
+LD_FLAGS += -lboost_program_options -lboost_serialization -lboost_filesystem -lboost_system -lboost_thread -lpthread
+
+: main.o $(NEURAL_NETWORK_LIB) $(CLIENT_LIB) $(TRACK_LIB) $(MATRIX_LIB) |> !linker |> neural_client
+: learner.o $(NEURAL_NETWORK_LIB) $(GENETIC_LEARNING_LIB) $(GAME_LIB) $(CLIENT_LIB) \
+      $(TRACK_LIB) $(MATRIX_LIB) $(CPP_UTIL_LIB) |> !linker |> learner
