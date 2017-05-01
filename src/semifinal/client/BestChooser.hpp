@@ -45,7 +45,9 @@ private:
             //         << potentialSteps[i].weight << "\n";
         }
         potentialSteps.resize(i);
-        std::cerr << "Filtered out the " << i << " best steps\n";
+        if (debugEnabled) {
+            std::cerr << "Filtered out the " << i << " best steps\n";
+        }
         return potentialSteps;
     }
 
@@ -55,11 +57,15 @@ private:
             if (!over && step.getWeight() <
                     potentialSteps[0].getWeight() - tolerance) {
                 over = true;
-                std::cerr << "-----------------------------\n";
+                if (debugEnabled) {
+                    std::cerr << "-----------------------------\n";
+                }
             }
-            std::cerr << "BestChooser " << step.getStep()
-                    << " total weight: " << step.getWeight() << "\n";
-            step.printDebugInfo(std::cerr, "  ");
+            if (debugEnabled) {
+                std::cerr << "BestChooser " << step.getStep()
+                          << " total weight: " << step.getWeight() << "\n";
+                step.printDebugInfo(std::cerr, "  ");
+            }
         }
     }
 

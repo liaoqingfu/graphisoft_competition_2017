@@ -3,6 +3,7 @@
 #include <client.hpp>
 #include <AssemblingChooser.hpp>
 #include <ChoosingStrategy.hpp>
+#include <Debug.hpp>
 #include <Game.hpp>
 #include <GenericSolver.hpp>
 #include <StrategyParser.hpp>
@@ -31,6 +32,7 @@ struct Options {
     int iterationLimit = 4;
     std::size_t numThreads = 1;
     LearningParameters learningParameters;
+    bool debug;
 };
 
 //----------------------------------------------------------------------------//
@@ -93,6 +95,7 @@ Options parseOptions(int argc, const char* argv[]) {
             ("threads,j",
              defaultValue(options.numThreads),
              "The number of threads to use.")
+            ("debug", po::bool_switch(&options.debug))
             ;
 
     po::variables_map vm;
@@ -218,6 +221,7 @@ private:
 
 int main(int argc, const char* argv[]) {
     Options options = parseOptions(argc, argv);
+    debugEnabled = options.debug;
     assert(options.strategyStrings.size() > 0);
     if (options.seed == 0) {
         options.seed = std::random_device{}();

@@ -152,10 +152,12 @@ void Game::run(bool print) {
                 }
             }
 
-            for (PlayerState& actualPlayer : playerStates) {
-                if (actualPlayer.strategy.getOpponentsInfo()[playerId]
-                        .targetMonitors.count(targetMonitor) == 0) {
-                    std::cerr << "ERR with target monitors\n";
+            if (debugEnabled) {
+                for (PlayerState& actualPlayer : playerStates) {
+                    if (actualPlayer.strategy.getOpponentsInfo()[playerId]
+                            .targetMonitors.count(targetMonitor) == 0) {
+                        std::cerr << "ERR with target monitors\n";
+                    }
                 }
             }
 

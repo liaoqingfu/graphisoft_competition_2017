@@ -18,7 +18,9 @@ public:
             lookahead(lookahead),
             weightMultiplier(weightMultiplier),
             name("LookaheadChooser" + std::to_string(lookahead)) {
-        std::cerr << "Construct: " << lookahead << "\n";
+        if (debugEnabled) {
+            std::cerr << "Construct: " << lookahead << "\n";
+        }
     }
 
     Step chooseBadStep(
