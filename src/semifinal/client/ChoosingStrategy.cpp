@@ -45,33 +45,6 @@ namespace {
 
 constexpr int defaultExtraField = 15;
 
-struct Push {
-    std::size_t direction;
-    int position;
-};
-
-bool operator==(const Push& lhs, const Push& rhs) {
-    return lhs.direction == rhs.direction && lhs.position == rhs.position;
-}
-
-} // unnamed namespace
-
-namespace std {
-
-template<>
-struct hash<Push> {
-    std::size_t operator()(const Push& push) const {
-        std::size_t seed = 0;
-        hash_combine(seed, push.direction);
-        hash_combine(seed, push.position);
-        return seed;
-    }
-};
-
-} // namespace std
-
-namespace {
-
 Push getPush(const Track& prevTrack, const Track& currentTrack,
         std::size_t opponentId) {
     // Check if a monitor or a player other than the opponent is moved.
@@ -126,13 +99,13 @@ Push getPush(const Track& prevTrack, const Track& currentTrack,
                 return lhs.second < rhs.second;
             });
     if (best.second == 0) {
-        return Push{0, -1};
+        return invalidPush;
     }
     return best.first;
 }
 
 int getExtraField(const Track& prevTrack, const Push& push) {
-    if (push.position < 0) {
+    if (!isValid(push)) {
         return defaultExtraField;
     }
     Point p{push.position, push.position};
@@ -257,9 +230,11 @@ void ChoosingStrategy::updateOpponentsInfo(const Track& track, int opponentId) {
         assert(prevSt.playerId >= 0 &&
                prevSt.playerId < gameState.gameInfo.numPlayers);
 
-        opponentsInfo[prevSt.playerId].extraField =
-            getExtraField(prevSt.gameState.track,
-                    getPush(prevSt.gameState.track, track, opponentId));
+        OpponentData& opponentData = opponentsInfo[prevSt.playerId];
+        opponentData.lastPush = getPush(
+                prevSt.gameState.track, track, opponentId);
+        opponentData.extraField =
+            getExtraField(prevSt.gameState.track, opponentData.lastPush);
 
         setTargetMonitors(track);
     }

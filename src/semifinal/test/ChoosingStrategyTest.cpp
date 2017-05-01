@@ -29,6 +29,7 @@ BOOST_FIXTURE_TEST_CASE(ShiftRight, OpponentsInfoTestFixture) {
     updateOpponentsInfo(currentTrack, playerId);
     auto oppInfo = getOpponentsInfo(cs);
     BOOST_CHECK_EQUAL(oppInfo[0].extraField, 3);
+    BOOST_CHECK_EQUAL(oppInfo[0].lastPush, (Push{right, 0}));
 }
 
 BOOST_FIXTURE_TEST_CASE(ShiftRightMiddle, OpponentsInfoTestFixture) {
@@ -42,6 +43,7 @@ BOOST_FIXTURE_TEST_CASE(ShiftRightMiddle, OpponentsInfoTestFixture) {
     updateOpponentsInfo(currentTrack, playerId);
     auto oppInfo = getOpponentsInfo(cs);
     BOOST_CHECK_EQUAL(oppInfo[0].extraField, 6);
+    BOOST_CHECK_EQUAL(oppInfo[0].lastPush, (Push{right, 1}));
 }
 
 BOOST_FIXTURE_TEST_CASE(ShiftLeft, OpponentsInfoTestFixture) {
@@ -51,6 +53,7 @@ BOOST_FIXTURE_TEST_CASE(ShiftLeft, OpponentsInfoTestFixture) {
     updateOpponentsInfo(currentTrack, playerId);
     auto oppInfo = getOpponentsInfo(cs);
     BOOST_CHECK_EQUAL(oppInfo[0].extraField, 1);
+    BOOST_CHECK_EQUAL(oppInfo[0].lastPush, (Push{left, 0}));
 }
 
 BOOST_FIXTURE_TEST_CASE(ShiftUp, OpponentsInfoTestFixture) {
@@ -60,6 +63,7 @@ BOOST_FIXTURE_TEST_CASE(ShiftUp, OpponentsInfoTestFixture) {
     updateOpponentsInfo(currentTrack, playerId);
     auto oppInfo = getOpponentsInfo(cs);
     BOOST_CHECK_EQUAL(oppInfo[0].extraField, 1);
+    BOOST_CHECK_EQUAL(oppInfo[0].lastPush, (Push{up, 0}));
 }
 
 BOOST_FIXTURE_TEST_CASE(ShiftUpMiddle, OpponentsInfoTestFixture) {
@@ -69,6 +73,7 @@ BOOST_FIXTURE_TEST_CASE(ShiftUpMiddle, OpponentsInfoTestFixture) {
     updateOpponentsInfo(currentTrack, playerId);
     auto oppInfo = getOpponentsInfo(cs);
     BOOST_CHECK_EQUAL(oppInfo[0].extraField, 2);
+    BOOST_CHECK_EQUAL(oppInfo[0].lastPush, (Push{up, 1}));
 }
 
 BOOST_FIXTURE_TEST_CASE(ShiftDown, OpponentsInfoTestFixture) {
@@ -78,6 +83,7 @@ BOOST_FIXTURE_TEST_CASE(ShiftDown, OpponentsInfoTestFixture) {
     updateOpponentsInfo(currentTrack, playerId);
     auto oppInfo = getOpponentsInfo(cs);
     BOOST_CHECK_EQUAL(oppInfo[0].extraField, 7);
+    BOOST_CHECK_EQUAL(oppInfo[0].lastPush, (Push{down, 0}));
 }
 
 BOOST_AUTO_TEST_CASE(GetIsomorphs) {
