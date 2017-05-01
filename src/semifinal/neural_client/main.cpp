@@ -23,6 +23,7 @@ struct Options {
     std::string password = "T&kX,!RT;vXK";
     unsigned seed = 0;
     std::string strategyString = "";
+    std::string aiFile = "best.ai";
 };
 
 namespace po = boost::program_options;
@@ -46,6 +47,7 @@ Options parseOptions(int argc, const char* argv[]) {
             ("password", defaultValue(options.password))
             ("seed,S", defaultValue(options.seed))
             ("strategy,s", po::value(&options.strategyString))
+            ("ai-file,a", defaultValue(options.aiFile))
             ;
 
     po::variables_map vm;
@@ -64,16 +66,11 @@ Options parseOptions(int argc, const char* argv[]) {
 
 using MazeNeuralNetwork = MultiNeuralNetwork<1>;
 
-MazeNeuralNetwork getNeuralNetwork() {
-    static constexpr unsigned inputNeuronCount = 5;
-    static constexpr unsigned outputNeuronCount = 5;
-    static constexpr unsigned hiddenLayerCount = 1;
-    static constexpr unsigned neuronPerHiddenLayer = 60;
-
-    MazeNeuralNetwork result{hiddenLayerCount,
-                neuronPerHiddenLayer,
-                inputNeuronCount,
-                outputNeuronCount};
+MazeNeuralNetwork getNeuralNetwork(std::string aiFile) {
+    MazeNeuralNetwork result;
+    std::ifstream input{aiFile};
+    boost::archive::text_iarchive ar{input};
+    ar >> result;
     return result;
 }
 
@@ -97,9 +94,9 @@ int main(int argc, const char* argv[]) {
             using ChooserFactory = NeuralChooserFactory<MazeNeuralNetwork>;
             using Chooser = AssemblingChooser<ChooserFactory>;
             ChooserFactory factory{rng};
-            factory.setNeuralNetwork(getNeuralNetwork());
+            factory.setNeuralNetwork(getNeuralNetwork(options.aiFile));
             solver = std::make_unique<Solver>(ChoosingStrategy(
-                            std::make_shared<Chooser>(factory))); // TODO: params
+                            std::make_shared<Chooser>(factory)));
         }
         client<Solver> mazeClient{options.hostname.c_str(), options.port,
                     options.teamName.c_str(), options.password.c_str(),
