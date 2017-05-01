@@ -29,7 +29,7 @@
 struct Options {
     unsigned seed = 0;
     std::vector<std::string> strategyStrings;
-    int iterationLimit = 4;
+    int gameCount = 4;
     std::size_t numThreads = 1;
     LearningParameters learningParameters;
     bool debug;
@@ -89,8 +89,8 @@ Options parseOptions(int argc, const char* argv[]) {
              defaultValue(options.learningParameters.populationCutoff),
              "The number of generations after the worst population is dropped "
              "(if there are more than one).")
-            ("iteration-limit,n",
-             defaultValue(options.iterationLimit),
+            ("game-count,n",
+             defaultValue(options.gameCount),
              "The iteration limit for the solver.")
             ("threads,j",
              defaultValue(options.numThreads),
@@ -232,7 +232,7 @@ int main(int argc, const char* argv[]) {
 
         std::vector<GameParameters> gameParams;
         std::uniform_int_distribution<> sizeDistribution(6, 15);
-        for (int i = 0; i < options.iterationLimit; ++i) {
+        for (int i = 0; i < options.gameCount; ++i) {
             int height = sizeDistribution(rng);
             int width = sizeDistribution(rng);
             int numDisplays = std::uniform_int_distribution<>(
