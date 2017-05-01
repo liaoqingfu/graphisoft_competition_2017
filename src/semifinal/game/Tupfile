@@ -1,0 +1,11 @@
+include_rules
+
+INCLUDE_DIRS += -I$(CLIENT_DIR) -I$(TRACK_DIR) -I$(MATRIX_DIR)
+
+include $(COMPILE_TUP)
+
+: foreach *.cpp |> !cxx |>
+
+include $(ARCHIVE_TUP)
+
+: *.o |> !ar |> game.a

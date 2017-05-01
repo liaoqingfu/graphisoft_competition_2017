@@ -3,15 +3,16 @@
 
 #include "ChoosingStrategy.hpp"
 #include "GameState.hpp"
-#include "Options.hpp"
-#include "Random.hpp"
 
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
 
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <random>
 #include <vector>
+
+//============================================================================//
 
 struct Score {
     std::atomic<int> score{0};
@@ -26,12 +27,16 @@ struct Score {
     Score& operator=(Score&&) = delete;
 };
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 struct Game : public std::enable_shared_from_this<Game> {
 public:
-    Game(Rng& rng, Options options,
+    Game(std::mt19937& rng, int width, int height, int numDisplays, int maxTick,
             const std::vector<ChoosingStrategy>& strategies,
             const std::vector<std::shared_ptr<Score>>& scores);
+
     void run(bool print);
+
 private:
     struct PlayerState {
         PlayerState(ChoosingStrategy strategy, int playerId,
@@ -58,10 +63,14 @@ private:
     std::vector<Point> generatePoints(int width, int height,
             std::size_t number);
 
-    Rng* rng;
-    Options options;
+    std::mt19937* rng;
+    int width;
+    int height;
+    int numDisplays;
+    int maxTick;
     std::vector<PlayerState> playerStates;
 };
 
+//============================================================================//
 
 #endif // SEMIFINAL_SERVERLESS_GAME_HPP

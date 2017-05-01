@@ -9,6 +9,7 @@
 
 #include <thread>
 #include <iostream>
+#include <thread>
 
 std::vector<ChoosingStrategy> createStrategies(Rng& rng,
         const Options& options) {
@@ -36,7 +37,9 @@ int main(int argc, const char* argv[]) {
 
         for (int i = 0; i < options.numRuns; ++i) {
             std::cout << "Run #" << i << "\n";
-            Game game{rng, options, createStrategies(rng, options), scores};
+            Game game{rng, options.width, options.height, options.numDisplays,
+                        options.maxTick, createStrategies(rng, options),
+                        scores};
             game.run(options.numRuns == 1);
         }
     } else {
@@ -47,7 +50,8 @@ int main(int argc, const char* argv[]) {
                         Rng rng{seed};
                         for (int j = i; j < options.numRuns;
                                 j += options.jobs) {
-                            Game game{rng, options,
+                            Game game{rng, options.width, options.height,
+                                        options.numDisplays, options.maxTick,
                                     createStrategies(rng, options), scores};
                             game.run(false);
                             std::cout << ".";

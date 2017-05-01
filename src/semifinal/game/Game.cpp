@@ -4,10 +4,14 @@
 
 #include <set>
 
-Game::Game(Rng& rng, Options options,
+Game::Game(std::mt19937& rng, int width, int height, int numDisplays, int maxTick,
         const std::vector<ChoosingStrategy>& strategies,
-        const std::vector<std::shared_ptr<Score>>& scores) :
-        rng(&rng), options(std::move(options)) {
+        const std::vector<std::shared_ptr<Score>>& scores)
+        : rng(&rng),
+          width(width),
+          height(height),
+          numDisplays(numDisplays),
+          maxTick(maxTick) {
     assert(scores.size() == numPlayers);
     for (int i = 0; i < static_cast<int>(numPlayers); ++i) {
         playerStates.emplace_back(strategies[i % strategies.size()], i,
@@ -51,10 +55,10 @@ std::vector<Point> Game::generatePoints(int width, int height,
 GameState Game::generateGame() {
     GameState result;
     auto& gi = result.gameInfo;
-    gi.width = options.width;
-    gi.height = options.height;
-    gi.numDisplays = options.numDisplays;
-    gi.maxTick = options.maxTick;
+    gi.width = width;
+    gi.height = height;
+    gi.numDisplays = numDisplays;
+    gi.maxTick = maxTick;
     result.currentTick = 0;
     result.extraField = 15;
 
