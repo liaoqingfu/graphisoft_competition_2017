@@ -1,10 +1,12 @@
 #include "ChoosingStrategy.hpp"
 
+#include "Hash.hpp"
 #include "PotentialStep.hpp"
 
 #include <iostream>
-#include <vector>
+#include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 Step ChoosingStrategy::calculateStep() {
     auto potentialSteps = calculatePotentialSteps(gameState, getOpponentsInfo());
@@ -39,81 +41,108 @@ Step ChoosingStrategy::calculateStep() {
     return chooser->chooseGoodStep(goodSteps);
 }
 
-enum class ColRow { Column, Row };
+namespace {
+
 constexpr int defaultExtraField = 15;
 
-auto getExtraFieldFromColRow(const Track& prevTrack, const Track& currentTrack,
-                             ColRow colRow, int position) {
-    if (colRow == ColRow::Column) {
-        for (int i = 1; i < (int)currentTrack.height(); ++i) {
-            Point p1{position, i};
-            Point p2{position, i - 1};
-            if (prevTrack.getField(p2).type != currentTrack.getField(p1).type) {
-                Point extra{position, 0};
-                return prevTrack.getField(extra).type;
-            }
-        }
-        Point extra{position, (int)currentTrack.height() - 1};
-        return prevTrack.getField(extra).type;
+struct Push {
+    std::size_t direction;
+    int position;
+};
 
-    } else { // Row
-        for (int i = 1; i < (int)currentTrack.width(); ++i) {
-            Point p1{i, position};
-            Point p2{i - 1, position};
-            if (prevTrack.getField(p2).type != currentTrack.getField(p1).type) {
-                Point extra{0, position};
-                return prevTrack.getField(extra).type;
-            }
-        }
-        Point extra{(int)currentTrack.width() - 1, position};
-        return prevTrack.getField(extra).type;
-    }
-    return defaultExtraField;
+bool operator==(const Push& lhs, const Push& rhs) {
+    return lhs.direction == rhs.direction && lhs.position == rhs.position;
 }
 
-auto getExtraField(const Track& prevTrack, const Track& currentTrack) {
-    assert(prevTrack.width() == currentTrack.width());
-    assert(prevTrack.height() == currentTrack.height());
+} // unnamed namespace
 
-    // go through the first row
-    for (int i = 0; i < (int)currentTrack.width(); ++i) {
-        Point p = {i, 0};
+namespace std {
 
-        // one column possible
-        if (currentTrack.getField(p).type != prevTrack.getField(p).type) {
-            unsigned diff = 0;
-            // go through the column
-            for (int j = 1; j < (int)currentTrack.height(); ++j) {
-                if (prevTrack.getField({i,j}).type != currentTrack.getField({i,j}).type) ++diff;
+template<>
+struct hash<Push> {
+    std::size_t operator()(const Push& push) const {
+        std::size_t seed = 0;
+        hash_combine(seed, push.direction);
+        hash_combine(seed, push.position);
+        return seed;
+    }
+};
+
+} // namespace std
+
+namespace {
+
+Push getPush(const Track& prevTrack, const Track& currentTrack,
+        std::size_t opponentId) {
+    // Check if a monitor or a player other than the opponent is moved.
+    std::size_t numMonitors = prevTrack.getAllMonitors().size();
+    for (std::size_t i = 0; i < numMonitors; ++i) {
+        Point currentMonitor = currentTrack.getMonitor(i);
+        if (currentMonitor.x < 0) {
+            continue;
+        }
+        for (std::size_t neighbor = 0; neighbor < numNeighbors; ++neighbor) {
+            if (currentMonitor == prevTrack.getMonitor(i) +
+                    neighbors[neighbor]) {
+                return Push{neighbor, neighbors[neighbor].x == 0
+                        ? currentMonitor.x : currentMonitor.y};
             }
-
-            // very possibly this column
-            if (diff >= currentTrack.height() / 2) {
-                return getExtraFieldFromColRow(prevTrack, currentTrack, ColRow::Column, i);
+        }
+    }
+    for (std::size_t i = 0; i < numPlayers; ++i) {
+        if (i == opponentId) {
+            continue;
+        }
+        Point currentPlayer = currentTrack.getPrincess(i);
+        for (std::size_t neighbor = 0; neighbor < numNeighbors; ++neighbor) {
+            if (currentPlayer == prevTrack.getPrincess(i) +
+                    neighbors[neighbor]) {
+                return Push{neighbor, neighbors[neighbor].x == 0
+                        ? currentPlayer.x : currentPlayer.y};
             }
         }
     }
 
-    // go through the first column
-    for (int i = 0; i < (int)currentTrack.height(); ++i) {
-        Point p = {0, i};
-
-        // one row possible
-        if (currentTrack.getField(p).type != prevTrack.getField(p).type) {
-            unsigned diff = 0;
-            // go through the row
-            for (int j = 1; j < (int)currentTrack.width(); ++j) {
-                if (prevTrack.getField({j,i}).type != currentTrack.getField({j,i}).type) ++diff;
+    // No monitor or player is moved. Try to check the field types.
+    std::unordered_map<Push, int> evidence;
+    for (Point p : matrixRange(currentTrack)) {
+        int prevField = prevTrack.getField(p).type;
+        if (prevField == currentTrack.getField(p).type) {
+            continue;
+        }
+        for (std::size_t neighbor = 0; neighbor < numNeighbors; ++neighbor) {
+            Point neighborPoint = p + neighbors[neighbor];
+            if (!isInsideMatrix(currentTrack, neighborPoint)) {
+                continue;
             }
-
-            // very possibly this row
-            if (diff >= currentTrack.width() / 2) {
-                return getExtraFieldFromColRow(prevTrack, currentTrack, ColRow::Row, i);
+            if (currentTrack.getField(neighborPoint).type == prevField) {
+                ++evidence[Push{neighbor, neighbors[neighbor].x == 0
+                        ? p.x : p.y}];
             }
         }
     }
+    const auto& best = *std::max_element(evidence.begin(), evidence.end(),
+            [](const auto& lhs, const auto& rhs) {
+                return lhs.second < rhs.second;
+            });
+    if (best.second == 0) {
+        return Push{0, -1};
+    }
+    return best.first;
+}
 
-    return defaultExtraField;
+int getExtraField(const Track& prevTrack, const Push& push) {
+    if (push.position < 0) {
+        return defaultExtraField;
+    }
+    Point p{push.position, push.position};
+    switch (push.direction) {
+    case left: p.x = 0; break;
+    case up: p.y = 0; break;
+    case right: p.x = prevTrack.width() - 1; break;
+    case down: p.y = prevTrack.height() - 1; break;
+    };
+    return prevTrack.getField(p).type;
 }
 
 int getRemovedMonitor(const Track& prev, const Track& current) {
@@ -128,14 +157,7 @@ int getRemovedMonitor(const Track& prev, const Track& current) {
     return -1;
 }
 
-std::ostream& operator<<(std::ostream& os, const std::set<int>& vi) {
-    os << "{";
-    for (auto i : vi) {
-        os << i << " ";
-    }
-    os << "}";
-    return os;
-}
+} // unnamed namespace
 
 void ChoosingStrategy::setTargetMonitors(const Track& currentTrack) {
 
@@ -236,7 +258,8 @@ void ChoosingStrategy::updateOpponentsInfo(const Track& track, int opponentId) {
                prevSt.playerId < gameState.gameInfo.numPlayers);
 
         opponentsInfo[prevSt.playerId].extraField =
-            getExtraField(prevSt.gameState.track, track);
+            getExtraField(prevSt.gameState.track,
+                    getPush(prevSt.gameState.track, track, opponentId));
 
         setTargetMonitors(track);
     }
