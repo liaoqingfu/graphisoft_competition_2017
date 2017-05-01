@@ -1,5 +1,7 @@
 #include "Game.hpp"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include <set>
 
 Game::Game(Rng& rng, Options options,
@@ -120,7 +122,8 @@ void Game::run(bool print) {
 
             Step step;
             for (PlayerState& actualPlayer : playerStates) {
-                clock_t start = ::clock();
+                auto start =
+                        boost::posix_time::microsec_clock::universal_time();
                 if (actualPlayer.gameState.gameInfo.playerId
                         == playerState.gameState.gameInfo.playerId) {
                     step = actualPlayer.strategy.ourTurn(
@@ -129,15 +132,19 @@ void Game::run(bool print) {
                     actualPlayer.strategy.opponentsTurn(
                         playerState.gameState.track, playerId);
                 }
-                clock_t end = ::clock();
+                auto end =
+                        boost::posix_time::microsec_clock::universal_time();
                 auto stepTime = end - start;
-                actualPlayer.score->time += stepTime;
-                if (print && stepTime > 1.0 * CLOCKS_PER_SEC) {
-                    std::cout << "Step " << gameState.currentTick
-                            << " for player " << playerId
-                            << " took a long time: "
-                            << static_cast<double>(stepTime) / CLOCKS_PER_SEC
-                            << " s" << std::endl;
+                {
+                    std::unique_lock<std::mutex> lock{
+                            actualPlayer.score->mutex};
+                    actualPlayer.score->time += stepTime;
+                    if (print && stepTime > boost::posix_time::seconds(1)) {
+                        std::cout << "Step " << gameState.currentTick
+                                << " for player " << playerId
+                                << " took a long time: "
+                                << stepTime << std::endl;
+                    }
                 }
             }
 

@@ -5,6 +5,8 @@
 #include "PotentialStep.hpp"
 #include "Random.hpp"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include <thread>
 #include <iostream>
 
@@ -64,7 +66,6 @@ int main(int argc, const char* argv[]) {
         std::cout << setColor(defaultColor, playerColors[i])
                 << "Player " << i << " final score "
                 << scores[i]->score << " Total time spent: "
-                << static_cast<double>(scores[i]->time) / CLOCKS_PER_SEC
-                << " s" << clearColor() << std::endl;
+                << scores[i]->time << clearColor() << std::endl;
     }
 }

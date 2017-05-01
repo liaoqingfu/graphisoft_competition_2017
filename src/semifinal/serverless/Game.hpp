@@ -6,13 +6,18 @@
 #include "Options.hpp"
 #include "Random.hpp"
 
-#include <time.h>
+#include <boost/date_time/posix_time/posix_time_duration.hpp>
+
+#include <atomic>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 struct Score {
     std::atomic<int> score{0};
-    std::atomic<clock_t> time{0};
+    boost::posix_time::time_duration time = boost::posix_time::seconds(0);
+
+    std::mutex mutex;
 
     Score() = default;
     Score(const Score&) = delete;
