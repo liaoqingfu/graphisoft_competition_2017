@@ -1,3 +1,4 @@
+#include "Debug.hpp"
 #include "client.hpp"
 #include "ChoosingStrategy.hpp"
 #include "GenericSolver.hpp"
@@ -19,6 +20,7 @@ struct Options {
     std::string password = "T&kX,!RT;vXK";
     unsigned seed = 0;
     std::string strategyString;
+    bool debug = false;
 };
 
 namespace po = boost::program_options;
@@ -41,6 +43,7 @@ Options parseOptions(int argc, const char* argv[]) {
         ("password", defaultValue(options.password))
         ("seed,S", defaultValue(options.seed))
         ("strategy,s", po::value(&options.strategyString))
+        ("debug", po::bool_switch(&options.debug))
         ;
 
     po::variables_map vm;
@@ -60,6 +63,7 @@ int main(int argc, const char* argv[]) {
     if (options.seed == 0) {
         options.seed = std::random_device{}();
     }
+    debugEnabled = options.debug;
 
     try {
         platform_dep::enable_socket _;
