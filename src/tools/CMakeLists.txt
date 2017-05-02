@@ -1,1 +1,3 @@
 add_subdirectory(Matrix)
+add_subdirectory(NeuralNetwork)
+add_subdirectory(GeneticLearning)
