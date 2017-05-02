@@ -58,6 +58,18 @@ struct Step {
 };
 
 inline
+bool operator==(const Step& lhs, const Step& rhs) {
+    return lhs.pushDirection == rhs.pushDirection
+            && lhs.pushPosition == rhs.pushPosition
+            && lhs.pushFieldType == rhs.pushFieldType
+            && lhs.princessTarget == rhs.princessTarget;
+}
+
+inline bool operator!=(const Step& lhs, const Step& rhs) {
+    return !(lhs == rhs);
+}
+
+inline
 std::ostream& operator<<(std::ostream& os, const Step& step) {
     os << "push " << step.pushDirection << " " << step.pushPosition << " "
        << fieldTypes[step.pushFieldType] << " princess=" << step.princessTarget;
