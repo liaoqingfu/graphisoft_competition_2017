@@ -2,13 +2,20 @@
 #include "ChooserHelper.hpp"
 #include "Transformations.hpp"
 
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/range/adaptor/map.hpp>
 
 Step LookaheadChooser::chooseBadStep(
         const std::vector<PotentialStep>& potentialSteps) {
+    boost::posix_time::ptime limit =
+            boost::posix_time::microsec_clock::universal_time()
+                    + boost::posix_time::millisec(1500);
     return processPotentialSteps(potentialSteps,
-            [this](auto& stepValues, const auto& step) {
-                return this->processStep(stepValues, step);
+            [this, limit](auto& stepValues, const auto& step) {
+                if (boost::posix_time::microsec_clock::universal_time()
+                        <= limit) {
+                    this->processStep(stepValues, step);
+                }
             }, getDelegatedChooser(), name.c_str());
 }
 

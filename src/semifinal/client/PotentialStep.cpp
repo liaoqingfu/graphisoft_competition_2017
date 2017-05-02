@@ -1,5 +1,7 @@
 #include "PotentialStep.hpp"
 
+#include <algorithm>
+
 std::vector<PotentialStep> calculatePotentialSteps(
     const GameState& gameState, const OpponentsInfo& opponentsInfo,
     int playerId, int extraField) {
@@ -9,23 +11,52 @@ std::vector<PotentialStep> calculatePotentialSteps(
     std::vector<PotentialStep> result;
     result.reserve((track.width() + track.height())
             * potentialFieldTypes.size() * 2);
-    Point princessTarget = track.getPrincess(playerId);
-    auto addResult = [&](Directions direction, int position, int fieldType) {
-        std::array<Point, 1> target{{princessTarget}};
+
+    Point root = track.getPrincess(playerId);
+    auto addStep = [&](Directions direction, int position, int fieldType) {
+        std::array<Point, 1> target{{root}};
         transformPoints(track, target, direction, position);
         result.emplace_back(gameState, opponentsInfo,
                 Step{direction, position, fieldType, target[0]}, playerId);
     };
+    auto addSteps = [&](Directions direction, int position, int fieldType) {
+        addStep(direction, position, fieldType);
+        addStep(static_cast<Directions>(oppositeDirection(direction)),
+                position, fieldType);
+    };
+
+    int maxDistance = std::max({root.x + 1, root.y + 1,
+            static_cast<int>(track.width()) - root.x,
+            static_cast<int>(track.height()) - root.y});
+
     for (int fieldType : potentialFieldTypes) {
-        for (int x = 0; x < static_cast<int>(track.width()); ++x) {
-            addResult(down, x, fieldType);
-            addResult(up, x, fieldType);
-        }
-        for (int y = 0; y < static_cast<int>(track.height()); ++y) {
-            addResult(right, y, fieldType);
-            addResult(left, y, fieldType);
+        addSteps(down, root.x, fieldType);
+        addSteps(left, root.y, fieldType);
+    }
+    for (int distance = 1; distance < maxDistance; ++distance) {
+        for (int fieldType : potentialFieldTypes) {
+            int value = root.x - distance;
+            if (value >= 0) {
+                addSteps(down, value, fieldType);
+            }
+
+            value = root.x + distance;
+            if (value < static_cast<int>(track.width())) {
+                addSteps(down, value, fieldType);
+            }
+
+            value = root.y - distance;
+            if (value >= 0) {
+                addSteps(left, value, fieldType);
+            }
+
+            value = root.y + distance;
+            if (value < static_cast<int>(track.height())) {
+                addSteps(left, value, fieldType);
+            }
         }
     }
+
     return result;
 }
 
