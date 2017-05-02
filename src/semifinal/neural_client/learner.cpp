@@ -168,9 +168,6 @@ public:
               gameParams(std::move(gameParams)),
               strategyStrings(std::move(strategyStrings)),
               chooserFactory(rng) {
-        for (std::size_t i = 0; i < 4; ++i) {
-            scores.push_back(std::make_shared<Score>());
-        }
     }
 
     GameManager(const GameManager&) = delete;
@@ -187,11 +184,25 @@ public:
     }
 
     void run() {
+        scores.clear();
+        for (std::size_t i = 0; i < 4; ++i) {
+            scores.push_back(std::make_shared<Score>());
+        }
+
         std::vector<ChoosingStrategy> strategies = createStrategies(rng,
                 strategyStrings,
                 [this](const GameState& gameState) {
                     return this->chooserFactory(gameState);
                 });
+
+        // std::uniform_int_distribution<> sizeDistribution(6, 15);
+        // int height = sizeDistribution(rng);
+        // int width = sizeDistribution(rng);
+        // int numDisplays = std::uniform_int_distribution<>(
+        //         4, width*height/4)(rng);
+        // int maxTick = std::uniform_int_distribution<>(
+        //         numDisplays, 2*numDisplays)(rng);
+        // gameParams = GameParameters{width, height, numDisplays, maxTick};
         Game game{rng, gameParams.width, gameParams.height,
                     gameParams.numDisplays, gameParams.maxTick,
                     strategies, scores};
@@ -241,6 +252,14 @@ int main(int argc, const char* argv[]) {
                     numDisplays, 2*numDisplays)(rng);
             gameParams.push_back(GameParameters{height, width, numDisplays,
                                 maxTick});
+            // game params: h: 12 w: 8 d: 8 t: 10
+            // game params: h: 10 w: 8 d: 12 t: 18
+            // game params: h: 6 w: 8 d: 7 t: 13
+            // game params: h: 11 w: 11 d: 23 t: 26
+            // game params: h: 15 w: 14 d: 18 t: 19
+
+            std::cerr << "game params: h: " << height << " w: " << width
+                      << " d: " << numDisplays << " t: " << maxTick << std::endl;
         }
 
         util::ThreadPool threadPool{options.numThreads};
