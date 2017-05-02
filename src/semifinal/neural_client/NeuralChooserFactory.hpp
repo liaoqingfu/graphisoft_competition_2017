@@ -2,12 +2,13 @@
 #define NEURAL_CLIENT_NEURALCHOOSERFACTORY_HPP
 
 #include <IChooser.hpp>
-#include <RandomChooser.hpp>
 #include <BestChooser.hpp>
-#include <MaxReachableChooser.hpp>
-#include <PrincessMovingChooser.hpp>
-#include <MonitorDefendingChooser.hpp>
 #include <LookaheadChooser.hpp>
+#include <MaxReachableChooser.hpp>
+#include <MonitorDefendingChooser.hpp>
+#include <OpponentPushCheckingChooser.hpp>
+#include <PrincessMovingChooser.hpp>
+#include <RandomChooser.hpp>
 
 #include <GameState.hpp>
 
@@ -51,23 +52,25 @@ public:
         //assert(result.size() == outputNeuronCount);
         int lookaheadDepth = 1;
         float lookaheadWeight = result[0]; // 4;
-        float monitorReachabilityWeight = result[1]; // 10;
-        float areaReachabilityWeight = result[2]; // 2;
-        float princessMovingWeight = result[3]; // 10;
+        float opponentPushCheckingWeight = result[1];
+        float monitorReachabilityWeight = result[2]; // 10;
+        float areaReachabilityWeight = result[3]; // 2;
+        float princessMovingWeight = result[4]; // 10;
         bool princessMovingOverride = false;
-        float maxReachableWeight = result[4]; // 2;
+        float maxReachableWeight = result[5]; // 2;
         return createChoosers(lookaheadDepth, lookaheadWeight,
-                monitorReachabilityWeight, areaReachabilityWeight,
-                princessMovingWeight, princessMovingOverride,
-                maxReachableWeight);
+                opponentPushCheckingWeight, monitorReachabilityWeight,
+                areaReachabilityWeight, princessMovingWeight,
+                princessMovingOverride, maxReachableWeight);
     }
 
 private:
-    std::unique_ptr<LookaheadChooser> createChoosers(int lookaheadDepth,
-            int lookaheadWeight, int monitorReachabilityWeight,
-            int areaReachabilityWeight, int princessMovingWeight,
-            bool princessMovingOverride, int maxReachableWeight) {
-        return std::make_unique<LookaheadChooser>(
+    std::unique_ptr<LookaheadChooser> createChoosers(float lookaheadDepth,
+            float lookaheadWeight, float opponentPushCheckingWeight,
+            float monitorReachabilityWeight, float areaReachabilityWeight,
+            float princessMovingWeight, bool princessMovingOverride,
+            float maxReachableWeight) {
+        return std::make_unique<LookaheadChooser>(c<OpponentPushCheckingChooser>(
                 c<MonitorDefendingChooser>(
                         c<PrincessMovingChooser>(
                                 c<MaxReachableChooser>(
@@ -75,7 +78,7 @@ private:
                                         maxReachableWeight),
                                 princessMovingWeight, princessMovingOverride),
                         monitorReachabilityWeight, areaReachabilityWeight),
-                lookaheadDepth, lookaheadWeight);
+                opponentPushCheckingWeight), lookaheadDepth, lookaheadWeight);
     }
 
     template<typename T, typename...Args>

@@ -52,7 +52,8 @@ Options parseOptions(int argc, const char* argv[]) {
     po::options_description description;
     Options options;
     options.learningParameters.inputNeuronCount = 5;
-    options.learningParameters.outputNeuronCount = 5;
+    options.learningParameters.outputNeuronCount = 6;
+    options.learningParameters.neuronPerHiddenLayer = 15;
     description.add_options()
             ("help,h", "Show this help.")
             ("seed,S", defaultValue(options.seed))
