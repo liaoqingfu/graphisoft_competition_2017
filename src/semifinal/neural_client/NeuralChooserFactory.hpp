@@ -50,12 +50,12 @@ public:
         std::vector<float> result = neuralNetwork.get(0).evaluateInput(inputs);
         //assert(result.size() == outputNeuronCount);
         int lookaheadDepth = 1;
-        int lookaheadWeight = result[0]; // 4;
-        int monitorReachabilityWeight = result[1]; // 10;
-        int areaReachabilityWeight = result[2]; // 2;
-        int princessMovingWeight = result[3]; // 10;
+        float lookaheadWeight = result[0]; // 4;
+        float monitorReachabilityWeight = result[1]; // 10;
+        float areaReachabilityWeight = result[2]; // 2;
+        float princessMovingWeight = result[3]; // 10;
         bool princessMovingOverride = false;
-        int maxReachableWeight = result[4]; // 2;
+        float maxReachableWeight = result[4]; // 2;
         return createChoosers(lookaheadDepth, lookaheadWeight,
                 monitorReachabilityWeight, areaReachabilityWeight,
                 princessMovingWeight, princessMovingOverride,
