@@ -82,6 +82,23 @@ void processAhehadStrategy(const PotentialStep& step,
     }
 }
 
+int calculateBetweenWeight(const PotentialStep& step,
+        Point princessTarget) {
+    const GameState& gameState = step.getGameState();
+    const Track& track = gameState.track;
+    int result = 1;
+    std::vector<Point> target{princessTarget};
+    for (const PotentialStep& nextStep : calculatePotentialSteps(
+                gameState, step.getOpponentInfo())) {
+        TemporaryStep temporaryStep2{gameState, nextStep.getStep(), target};
+        if (track.isReachableFrom(target[0],
+                track.getMonitor(gameState.targetMonitor))) {
+            result += 1;
+        }
+    }
+    return result;
+}
+
 } // unnamed namespace
 
 void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
@@ -97,18 +114,21 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
                 track.getPrincess(step.getGameState().gameInfo.playerId));
         reachablePointValues.resize(reachablePoints.size(), 0);
 
-        switch (lookahead) {
-        case LookaheadType::normal:
+        if (lookahead == LookaheadType::ahead) {
+            processAhehadStrategy(step, reachablePoints, reachablePointValues);
+        } else {
             calculateTargetValues(step, reachablePoints,
                     [&reachablePointValues](std::size_t i) {
                         ++reachablePointValues[i];
                     });
-            break;
-        case LookaheadType::ahead:
-            processAhehadStrategy(step, reachablePoints, reachablePointValues);
-            break;
-        case LookaheadType::between:
-            assert(false && "Not yet implemented");
+            if (lookahead == LookaheadType::between) {
+                for (std::size_t i = 0; i < reachablePoints.size(); ++i) {
+                    if (reachablePointValues[i] != 0) {
+                        reachablePointValues[i] = calculateBetweenWeight(
+                                step, reachablePoints[i]);
+                    }
+                }
+            }
         }
     }
 
