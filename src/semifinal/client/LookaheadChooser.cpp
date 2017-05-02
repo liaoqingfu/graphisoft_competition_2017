@@ -43,6 +43,45 @@ void calculateTargetValues(
     }
 }
 
+void processAhehadStrategy(const PotentialStep& step,
+        std::vector<Point>& reachablePoints,
+        std::vector<int>& reachablePointValues) {
+    const GameState& gameState = step.getGameState();
+    const Track& track = gameState.track;
+    for (const PotentialStep& nextStep : calculatePotentialSteps(
+                gameState, step.getOpponentInfo())) {
+        TemporaryStep temporaryStep2{gameState, nextStep.getStep(),
+                reachablePoints};
+        std::unordered_map<Point, std::vector<std::size_t>>
+                transformations;
+        std::vector<Point> transformedPoints;
+        for (std::size_t i = 0; i < reachablePoints.size(); ++i) {
+            for (Point target : track.getReachablePoints(
+                    reachablePoints[i])) {
+                auto iterator = transformations.find(target);
+                if (iterator == transformations.end()) {
+                    iterator = transformations.emplace(target,
+                            std::vector<std::size_t>{}).first;
+                    transformedPoints.push_back(target);
+                }
+                iterator->second.push_back(i);
+            }
+        }
+
+        std::vector<int> collectedValues(transformedPoints.size(), 0);
+        calculateTargetValues(nextStep, transformedPoints,
+                [&collectedValues](std::size_t i) {
+                    ++collectedValues[i];
+                });
+        for (std::size_t i = 0; i < transformedPoints.size(); ++i) {
+            for (std::size_t j : transformations.at(
+                    transformedPoints[i])) {
+                reachablePointValues[j] += collectedValues[i];
+            }
+        }
+    }
+}
+
 } // unnamed namespace
 
 void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
@@ -58,44 +97,18 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
                 track.getPrincess(step.getGameState().gameInfo.playerId));
         reachablePointValues.resize(reachablePoints.size(), 0);
 
-        if (lookahead == LookaheadType::normal) {
+        switch (lookahead) {
+        case LookaheadType::normal:
             calculateTargetValues(step, reachablePoints,
                     [&reachablePointValues](std::size_t i) {
                         ++reachablePointValues[i];
                     });
-        } else {
-            for (const PotentialStep& nextStep : calculatePotentialSteps(
-                        gameState, step.getOpponentInfo())) {
-                TemporaryStep temporaryStep2{gameState, nextStep.getStep(),
-                        reachablePoints};
-                std::unordered_map<Point, std::vector<std::size_t>>
-                        transformations;
-                std::vector<Point> transformedPoints;
-                for (std::size_t i = 0; i < reachablePoints.size(); ++i) {
-                    for (Point target : track.getReachablePoints(
-                            reachablePoints[i])) {
-                        auto iterator = transformations.find(target);
-                        if (iterator == transformations.end()) {
-                            iterator = transformations.emplace(target,
-                                    std::vector<std::size_t>{}).first;
-                            transformedPoints.push_back(target);
-                        }
-                        iterator->second.push_back(i);
-                    }
-                }
-
-                std::vector<int> collectedValues(transformedPoints.size(), 0);
-                calculateTargetValues(nextStep, transformedPoints,
-                        [&collectedValues](std::size_t i) {
-                            ++collectedValues[i];
-                        });
-                for (std::size_t i = 0; i < transformedPoints.size(); ++i) {
-                    for (std::size_t j : transformations.at(
-                            transformedPoints[i])) {
-                        reachablePointValues[j] += collectedValues[i];
-                    }
-                }
-            }
+            break;
+        case LookaheadType::ahead:
+            processAhehadStrategy(step, reachablePoints, reachablePointValues);
+            break;
+        case LookaheadType::between:
+            assert(false && "Not yet implemented");
         }
     }
 
