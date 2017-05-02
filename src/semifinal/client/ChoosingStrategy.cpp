@@ -230,11 +230,16 @@ void ChoosingStrategy::updateOpponentsInfo(const Track& track, int opponentId) {
         assert(prevSt.playerId >= 0 &&
                prevSt.playerId < gameState.gameInfo.numPlayers);
 
+        const auto& prevTrack = this->prevSt.gameState.track;
         OpponentData& opponentData = opponentsInfo[prevSt.playerId];
-        opponentData.lastPush = getPush(
-                prevSt.gameState.track, track, opponentId);
+        opponentData.lastPush = getPush(prevTrack, track, opponentId);
         opponentData.extraField =
             getExtraField(prevSt.gameState.track, opponentData.lastPush);
+        // If the opponent just picked up a monitor, then the last push is
+        // irrelevant for any further movement of this opponent.
+        if (prevTrack.getRemainingMonitors() != track.getRemainingMonitors()) {
+            opponentData.lastPush = invalidPush;
+        }
 
         setTargetMonitors(track);
     }

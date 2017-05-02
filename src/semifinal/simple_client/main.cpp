@@ -30,11 +30,12 @@ struct Options {
 };
 
 int main(int argc, const char* argv[]) {
+    Options options;
+    std::cerr << options.strategyString;
     if (argc <= 3) {
         std::cerr << "Usage: " << argv[0] << " host port task-id\n";
         return 1;
     }
-    Options options;
     options.hostname = argv[1];
     options.port = boost::lexical_cast<int>(argv[2]);
     options.taskId = boost::lexical_cast<int>(argv[3]);
