@@ -50,7 +50,7 @@ public:
         };
         std::vector<float> result = neuralNetwork.get(0).evaluateInput(inputs);
         //assert(result.size() == outputNeuronCount);
-        int lookaheadDepth = 1;
+        LookaheadType lookaheadType = LookaheadType::normal;
         float lookaheadWeight = result[0]; // 4;
         float opponentPushCheckingWeight = result[1];
         float monitorReachabilityWeight = result[2]; // 10;
@@ -58,14 +58,15 @@ public:
         float princessMovingWeight = result[4]; // 10;
         bool princessMovingOverride = false;
         float maxReachableWeight = result[5]; // 2;
-        return createChoosers(lookaheadDepth, lookaheadWeight,
+        return createChoosers(lookaheadType, lookaheadWeight,
                 opponentPushCheckingWeight, monitorReachabilityWeight,
                 areaReachabilityWeight, princessMovingWeight,
                 princessMovingOverride, maxReachableWeight);
     }
 
 private:
-    std::unique_ptr<LookaheadChooser> createChoosers(float lookaheadDepth,
+    std::unique_ptr<LookaheadChooser> createChoosers(
+            LookaheadType lookaheadType,
             float lookaheadWeight, float opponentPushCheckingWeight,
             float monitorReachabilityWeight, float areaReachabilityWeight,
             float princessMovingWeight, bool princessMovingOverride,
@@ -78,7 +79,7 @@ private:
                                         maxReachableWeight),
                                 princessMovingWeight, princessMovingOverride),
                         monitorReachabilityWeight, areaReachabilityWeight),
-                opponentPushCheckingWeight), lookaheadDepth, lookaheadWeight);
+                opponentPushCheckingWeight), lookaheadType, lookaheadWeight);
     }
 
     template<typename T, typename...Args>

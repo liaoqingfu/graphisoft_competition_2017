@@ -18,7 +18,7 @@ struct Options {
     std::string password = "T&kX,!RT;vXK";
     unsigned seed = 2;
     std::string strategyString = "ChoosingStrategy("
-        "LookaheadChooser(1,"
+        "LookaheadChooser(normal,"
             "MonitorDefendingChooser("
                 "PrincessMovingChooser("
                     "MaxReachableChooser("

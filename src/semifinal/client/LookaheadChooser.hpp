@@ -10,14 +10,25 @@
 #include <iostream>
 #include <unordered_map>
 
+enum class LookaheadType {
+    normal, ahead, between
+};
+
+std::string to_string(LookaheadType type);
+
+inline
+std::ostream& operator<<(std::ostream& os, LookaheadType type) {
+    return os << to_string(type);
+}
+
 class LookaheadChooser : public DelegatingChooser {
 public:
     LookaheadChooser(std::shared_ptr<IChooser> chooser,
-            int lookahead, double weightMultiplier) :
+            LookaheadType lookahead, double weightMultiplier) :
             DelegatingChooser(std::move(chooser)),
             lookahead(lookahead),
             weightMultiplier(weightMultiplier),
-            name("LookaheadChooser" + std::to_string(lookahead)) {
+            name("LookaheadChooser " + to_string(lookahead)) {
         if (debugEnabled) {
             std::cerr << "Construct: " << lookahead << "\n";
         }
@@ -30,7 +41,7 @@ private:
     void processStep(std::vector<PotentialStep>& stepValues,
             const PotentialStep& step);
 
-    int lookahead;
+    LookaheadType lookahead;
     double weightMultiplier;
     std::string name;
 };

@@ -58,7 +58,7 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
                 track.getPrincess(step.getGameState().gameInfo.playerId));
         reachablePointValues.resize(reachablePoints.size(), 0);
 
-        if (lookahead == 1) {
+        if (lookahead == LookaheadType::normal) {
             calculateTargetValues(step, reachablePoints,
                     [&reachablePointValues](std::size_t i) {
                         ++reachablePointValues[i];
@@ -118,3 +118,13 @@ void LookaheadChooser::processStep(std::vector<PotentialStep>& stepValues,
         stepValues.push_back(std::move(step2));
     }
 }
+
+std::string to_string(LookaheadType type) {
+    switch (type) {
+    case LookaheadType::normal: return "normal";
+    case LookaheadType::ahead: return "ahead";
+    case LookaheadType::between: return "between";
+    default: return "none";
+    }
+}
+
