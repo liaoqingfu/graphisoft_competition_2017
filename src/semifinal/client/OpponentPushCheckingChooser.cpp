@@ -41,7 +41,7 @@ void OpponentPushCheckingChooser::processStep(PotentialStep& step) {
                                 == oppositeDirection(push.direction))) {
             step.addWeight(-weightMultiplier);
             step.addDebugInfo(PotentialStep::DebugInfo{
-                    "MaxReachableChooser", -1.0, -weightMultiplier});
+                    "OpponentPushCheckingChooser", -1.0, -weightMultiplier});
         }
     }
 }

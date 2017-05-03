@@ -94,6 +94,9 @@ Push getPush(const Track& prevTrack, const Track& currentTrack,
             }
         }
     }
+    if (evidence.empty()) {
+        return invalidPush;
+    }
     const auto& best = *std::max_element(evidence.begin(), evidence.end(),
             [](const auto& lhs, const auto& rhs) {
                 return lhs.second < rhs.second;
