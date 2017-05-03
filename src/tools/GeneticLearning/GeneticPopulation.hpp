@@ -52,7 +52,7 @@ private:
     static constexpr float mutationRate = 0.1;
     static constexpr float crossoverRate = 0.7;
     static constexpr float maxPerturbation = 0.3;
-    static constexpr unsigned bestTopN = 8;
+    static constexpr unsigned bestTopN = 2;
     static constexpr unsigned bestCopies = 1;
 };
 
