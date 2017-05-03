@@ -54,6 +54,7 @@ Options parseOptions(int argc, const char* argv[]) {
     options.learningParameters.inputNeuronCount = 5;
     options.learningParameters.outputNeuronCount = 6;
     options.learningParameters.neuronPerHiddenLayer = 15;
+    options.learningParameters.populationSize = 20;
     description.add_options()
             ("help,h", "Show this help.")
             ("seed,S", defaultValue(options.seed))
@@ -115,21 +116,6 @@ Options parseOptions(int argc, const char* argv[]) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 using MazeNeuralNetwork = MultiNeuralNetwork<1>;
-
-//----------------------------------------------------------------------------//
-
-MazeNeuralNetwork getNeuralNetwork() {
-    static constexpr unsigned inputNeuronCount = 5;
-    static constexpr unsigned outputNeuronCount = 5;
-    static constexpr unsigned hiddenLayerCount = 1;
-    static constexpr unsigned neuronPerHiddenLayer = 60;
-
-    MazeNeuralNetwork result{hiddenLayerCount,
-                neuronPerHiddenLayer,
-                inputNeuronCount,
-                outputNeuronCount};
-    return result;
-}
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -212,8 +198,8 @@ public:
 
     float getFitness() const {
         // TODO include other players score
-        return static_cast<float>(scores[0]->score)
-                / gameParams.numDisplays;
+        return static_cast<float>(scores[0]->score);
+        //        / gameParams.numDisplays;
     }
 
     std::string getDebugInfo() const {
@@ -262,6 +248,13 @@ int main(int argc, const char* argv[]) {
             std::cerr << "game params: h: " << height << " w: " << width
                       << " d: " << numDisplays << " t: " << maxTick << std::endl;
         }
+
+        gameParams.clear();
+        gameParams.push_back(GameParameters{12, 8, 8, 10});
+        gameParams.push_back(GameParameters{10, 8, 12, 18});
+        gameParams.push_back(GameParameters{6, 8, 7, 13});
+        gameParams.push_back(GameParameters{11, 11, 23, 26});
+        gameParams.push_back(GameParameters{15, 14, 18, 19});
 
         util::ThreadPool threadPool{options.numThreads};
         threadPool.start();
