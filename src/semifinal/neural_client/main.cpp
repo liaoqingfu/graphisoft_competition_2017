@@ -82,13 +82,14 @@ int main(int argc, const char* argv[]) {
 
     try {
         platform_dep::enable_socket _;
-        std::mt19937 rng{options.seed};
+        std::shared_ptr<std::mt19937> rng = std::make_shared<std::mt19937>(
+                options.seed);
 
         using Solver = GenericSolver<ChoosingStrategy>;
         std::unique_ptr<Solver> solver;
         if (options.strategyString != "") {
             solver = std::make_unique<Solver>(
-                            parseStrategy(options.strategyString, rng));
+                            parseStrategy(options.strategyString, *rng));
         } else {
             std::cerr << "Neural network is used!" << std::endl;
             using ChooserFactory = NeuralChooserFactory<MazeNeuralNetwork>;
