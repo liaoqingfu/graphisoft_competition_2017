@@ -151,7 +151,7 @@ void GeneticPopulation::calculateStats() {
 
     auto minmax = std::minmax_element(population.begin(), population.end());
     worstFitnessIndex = minmax.first - population.begin();
-    bestFitnessIndex = minmax.second - population.end();
+    bestFitnessIndex = minmax.second - population.begin();
 
     totalFitness = boost::accumulate(population, 0.f,
             [](float sum, const Genome& genome) { return sum + genome.fitness; });
