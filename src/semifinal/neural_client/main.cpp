@@ -3,6 +3,7 @@
 #include <client.hpp>
 #include <AssemblingChooser.hpp>
 #include <ChoosingStrategy.hpp>
+#include <Debug.hpp>
 #include <GenericSolver.hpp>
 #include <StrategyParser.hpp>
 
@@ -24,6 +25,7 @@ struct Options {
     unsigned seed = 0;
     std::string strategyString = "";
     std::string aiFile = "best.ai";
+    bool debug;
 };
 
 namespace po = boost::program_options;
@@ -48,6 +50,7 @@ Options parseOptions(int argc, const char* argv[]) {
             ("seed,S", defaultValue(options.seed))
             ("strategy,s", po::value(&options.strategyString))
             ("ai-file,a", defaultValue(options.aiFile))
+            ("debug,d", po::bool_switch(&options.debug))
             ;
 
     po::variables_map vm;
@@ -76,6 +79,7 @@ MazeNeuralNetwork getNeuralNetwork(std::string aiFile) {
 
 int main(int argc, const char* argv[]) {
     Options options = parseOptions(argc, argv);
+    debugEnabled = options.debug;
     if (options.seed == 0) {
         options.seed = std::random_device{}();
     }
