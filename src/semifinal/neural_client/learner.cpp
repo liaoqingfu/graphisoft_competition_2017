@@ -55,6 +55,7 @@ Options parseOptions(int argc, const char* argv[]) {
     options.learningParameters.outputNeuronCount = 6;
     options.learningParameters.neuronPerHiddenLayer = 15;
     options.learningParameters.populationSize = 20;
+    options.learningParameters.populationCutoff = 4;
     description.add_options()
             ("help,h", "Show this help.")
             ("seed,S", defaultValue(options.seed))
