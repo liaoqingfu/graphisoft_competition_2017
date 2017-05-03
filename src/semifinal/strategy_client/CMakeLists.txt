@@ -1,8 +1,5 @@
 project(StrategyClient)
 file (GLOB sources "*.cpp")
-include_directories(${Matrix_SOURCE_DIR})
-include_directories(${Track_SOURCE_DIR})
-include_directories(${Client_SOURCE_DIR})
 add_executable(strategy_client ${sources})
 target_link_libraries(strategy_client client)
 target_link_libraries(strategy_client ${Boost_LIBRARIES})

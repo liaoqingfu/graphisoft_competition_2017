@@ -1,7 +1,4 @@
 file (GLOB sources *.cpp)
-include_directories(${Matrix_SOURCE_DIR})
-include_directories(${Track_SOURCE_DIR})
-include_directories(${Client_SOURCE_DIR})
 add_executable(semifinal_test ${sources})
 target_link_libraries(semifinal_test client)
 target_link_libraries(semifinal_test ${Boost_LIBRARIES})

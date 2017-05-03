@@ -1,4 +1,5 @@
 project(GeneticLearning)
 file (GLOB sources "*.cpp")
-include_directories(${NeuralNetwork_SOURCE_DIR})
 add_library(GeneticLearning ${sources})
+target_link_libraries(GeneticLearning NeuralNetwork)
+target_include_directories(GeneticLearning PUBLIC .)

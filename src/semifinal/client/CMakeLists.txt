@@ -1,6 +1,5 @@
 project(Client)
 file (GLOB sources "*.cpp")
-include_directories(${Matrix_SOURCE_DIR})
-include_directories(${Track_SOURCE_DIR})
 add_library(client ${sources})
-target_link_libraries(client Matrix track)
+target_include_directories(client PUBLIC .)
+target_link_libraries(client track)
