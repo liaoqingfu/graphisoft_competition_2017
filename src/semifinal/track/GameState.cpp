@@ -81,7 +81,8 @@ GameInfo parseInitial(const std::vector<std::string>& input) {
     return result;
 }
 
-void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
+boost::optional<std::string> parseTickInfo(
+    GameState& gs, const std::vector<std::string>& input) {
 
     std::vector<int> fields;
     const auto& gi = gs.gameInfo;
@@ -99,6 +100,7 @@ void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
                 // TODO instead of throw we might need this as a bool return
                 // value
                 std::cerr << "Error received: " << line << std::endl;
+                return line;
                 // throw std::runtime_error(
                 //     std::string("error in previous command: ")
                 //         .append(tokens.at(1)));
@@ -131,6 +133,7 @@ void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
         }
     } // for
     gs.track = Track(gi.width, gi.height, fields, monitors, princesses);
+    return {};
 }
 
 std::string parseGameEnd(const std::vector<std::string>& input) {

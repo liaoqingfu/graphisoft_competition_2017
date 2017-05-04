@@ -79,8 +79,8 @@ std::ostream& operator<<(std::ostream& os, const Step& step) {
 }
 
 GameInfo parseInitial(const std::vector<std::string>& input);
-void parseTickInfo(GameState& gameState,
-        const std::vector<std::string>& input);
+boost::optional<std::string> parseTickInfo(
+    GameState& gameState, const std::vector<std::string>& input);
 std::vector<std::string> createOutput(const Track& track,
         const Step& step, Point ourPosition);
 

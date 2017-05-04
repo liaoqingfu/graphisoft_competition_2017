@@ -19,7 +19,14 @@ public:
             gameState = std::make_unique<GameState>(parseInitial(tickInfos));
             return {};
         }
-        parseTickInfo(*gameState, tickInfos);
+        auto error = parseTickInfo(*gameState, tickInfos);
+        if (error) {
+            std::cerr << "Error str: " << *error << std::endl;
+            if (error->find("Not sent PUSH") != std::string::npos) {
+                std::cerr << "Skipping message because of prev timeout\n";
+                return {};
+            }
+        }
 
         std::cout << "Player " << gameState->activePlayerId << "\n"
                 << toBox(gameState->track, gameState->gameInfo.playerId,
