@@ -16,6 +16,7 @@ struct GameInfo {
     int maxTick = -1;
     int numPlayers = 4; // in semifinal this is const
     int playerId = -1;
+    std::vector<Point> blocked;
 };
 
 // Dynamic data, might change with every tick
