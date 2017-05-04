@@ -11,6 +11,8 @@
 #include <cstdlib>
 #include <stdexcept>
 
+#include <netinet/tcp.h>
+
 void print(std::ostream& os, const std::vector<std::string> msg, const char* prefix) {
 	for (const auto& m : msg) {
 		os << prefix << m << std::endl;
@@ -49,6 +51,13 @@ public:
 				std::string(host_name) + ":" + std::to_string(port) +
 				" error code: " + std::to_string(socketerrno));
 		}
+
+        int flag = 1;
+        int result = setsockopt(socket_handler.get_handler(), IPPROTO_TCP,
+                TCP_NODELAY, (char*) &flag, sizeof(int));
+        if (result < 0) {
+            socket_handler.invalidate();
+        }
     }
 
     void login(const char* team_name, const char* password, int task_id) {
