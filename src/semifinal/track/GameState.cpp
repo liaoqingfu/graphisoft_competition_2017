@@ -48,6 +48,12 @@ GameInfo parseInitial(const std::vector<std::string>& input) {
             result.playerId = stoi(tokens.at(1));
         } else if (tokens.at(0) == "MAXTICK") {
             result.maxTick = stoi(tokens.at(1));
+        } else if (tokens.at(0) == "DISPLAYS") {
+            for (std::size_t i = 1; i < tokens.size(); ++i) {
+                result.targets.push_back(stoi(tokens.at(1)));
+            }
+        } else if (tokens.at(0) == "BLOCKED") {
+            result.blocked.push_back({stoi(tokens.at(1)), stoi(tokens.at(2))});
         }
     }
     return result;

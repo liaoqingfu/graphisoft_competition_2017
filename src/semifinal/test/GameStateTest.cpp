@@ -5,7 +5,7 @@
 BOOST_AUTO_TEST_SUITE(GameStateTest)
 
 BOOST_AUTO_TEST_CASE(TemporaryStepTest) {
-    GameInfo gameInfo{3, 3, 0, 1, 1, 0};
+    GameInfo gameInfo{3, 3, 0, 1, 1, 0, {}, {}};
     Track originalTrack(3, 3, {
             1, 2, 3,
             4, 5, 6,
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(TemporaryStepTest) {
 }
 
 BOOST_AUTO_TEST_CASE(MovePoints) {
-    GameInfo gameInfo{3, 3, 0, 1, 1, 0};
+    GameInfo gameInfo{3, 3, 0, 1, 1, 0, {}, {}};
     Track originalTrack(3, 3, {
             1, 2, 3,
             4, 5, 6,

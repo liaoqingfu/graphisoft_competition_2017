@@ -8,7 +8,7 @@
 BOOST_AUTO_TEST_SUITE(PotentialStepTest)
 
 BOOST_AUTO_TEST_CASE(CalcualtePotentialSteps) {
-    GameInfo gameInfo{3, 2, 0, 1, 1, 0};
+    GameInfo gameInfo{3, 2, 0, 1, 1, 0, {}, {}};
     Point princessPosition{1, 0};
     Track originalTrack(3, 2, {
             1, 2, 3,

@@ -17,6 +17,7 @@ struct GameInfo {
     int numPlayers = 4; // in semifinal this is const
     int playerId = -1;
     std::vector<Point> blocked;
+    std::vector<int> targets;
 };
 
 // Dynamic data, might change with every tick
