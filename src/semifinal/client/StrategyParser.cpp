@@ -9,6 +9,7 @@
 #include "RandomChooser.hpp"
 #include "StrategyParser.hpp"
 #include "MonitorDefendingChooser.hpp"
+#include "MMMChooser.hpp"
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_bind.hpp>
@@ -62,9 +63,10 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
 
         quotedString %= lit('"') >> no_skip [*(char_ - char_('"'))] >> lit('"');
 
-        chooser %= randomChooser | lookaheadChooser | princessMovingChooser
-                | bestChooser | monitorDefendingChooser | maxReachableChooser
-                | distanceChooser | opponentPushCheckingChooser | neuralChooser;
+        chooser %= randomChooser | lookaheadChooser | princessMovingChooser |
+                   bestChooser | monitorDefendingChooser | maxReachableChooser |
+                   distanceChooser | opponentPushCheckingChooser |
+                   neuralChooser | mmmChooser;
         randomChooser = (lit("RandomChooser") >> lit('(') >> lit(')'))[
                 _val = make_shared_<RandomChooser>(phoenix::ref(rng))];
         lookaheadChooser = (lit("LookaheadChooser") >> lit('(')
@@ -91,7 +93,9 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
                 >> lit('(') >> chooser >> ',' >> double_ >> lit(')'))[
                         _val = make_shared_<OpponentPushCheckingChooser>(
                                 _1, _2)];
-
+        mmmChooser =
+            (lit("MMMChooser") >> lit('(') >> chooser >> ',' >> double_ >>
+             lit(')'))[_val = make_shared_<MMMChooser>(_1, _2)];
 
         neuralChooser = (lit("NeuralChooser") >> lit('(')
                 >> quotedString >> lit(')'))[_val = make_shared_<NeuralChooser>(
@@ -129,6 +133,8 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
             ascii::space_type> opponentPushCheckingChooser;
     qi::rule<Iterator, std::shared_ptr<NeuralChooser>(),
             ascii::space_type> neuralChooser;
+    qi::rule<Iterator, std::shared_ptr<MMMChooser>(), ascii::space_type>
+        mmmChooser;
 };
 
 
