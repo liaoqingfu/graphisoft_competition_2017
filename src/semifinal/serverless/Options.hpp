@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include <Point.hpp>
+
 struct Options {
     int numRuns = 1;
     unsigned seed = 0;
@@ -15,6 +17,7 @@ struct Options {
     std::size_t jobs = 1;
     bool debug;
     int numPlayers = 4;
+    std::vector<Point> blocked;
 };
 
 Options parseOptions(int argc, const char* argv[]);

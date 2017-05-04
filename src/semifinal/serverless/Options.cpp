@@ -30,6 +30,7 @@ Options parseOptions(int argc, const char* argv[]) {
         ("time-limit,t", defaultValue(options.maxTick))
         ("jobs,j", defaultValue(options.jobs))
         ("num-players,p", defaultValue(options.numPlayers))
+        ("blocked", po::value(&options.blocked)->multitoken())
         ("debug", po::bool_switch(&options.debug))
         ;
 

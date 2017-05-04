@@ -38,7 +38,7 @@ int main(int argc, const char* argv[]) {
         for (int i = 0; i < options.numRuns; ++i) {
             std::cout << "Run #" << i << "\n";
             Game game{rng, options.width, options.height, options.numDisplays,
-                        options.maxTick, options.numPlayers,
+                        options.maxTick, options.numPlayers, options.blocked,
                         createStrategies(rng, options),
                         scores};
             game.run(options.numRuns == 1);
@@ -53,7 +53,7 @@ int main(int argc, const char* argv[]) {
                                 j += options.jobs) {
                             Game game{rng, options.width, options.height,
                                         options.numDisplays, options.maxTick,
-                                        options.numPlayers,
+                                        options.numPlayers, options.blocked,
                                     createStrategies(rng, options), scores};
                             game.run(false);
                             std::cout << ".";

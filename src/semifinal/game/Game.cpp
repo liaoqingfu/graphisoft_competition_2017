@@ -5,7 +5,7 @@
 #include <set>
 
 Game::Game(std::mt19937& rng, int width, int height, int numDisplays, int maxTick,
-        int numPlayers,
+        int numPlayers,std::vector<Point> blocked,
         const std::vector<ChoosingStrategy>& strategies,
         const std::vector<std::shared_ptr<Score>>& scores)
         : rng(&rng),
@@ -13,7 +13,8 @@ Game::Game(std::mt19937& rng, int width, int height, int numDisplays, int maxTic
           height(height),
           numDisplays(numDisplays),
           maxTick(maxTick),
-          numPlayers(numPlayers) {
+          numPlayers(numPlayers),
+          blocked(std::move(blocked)) {
     assert(scores.size() == static_cast<std::size_t>(numPlayers));
     for (int i = 0; i < numPlayers; ++i) {
         playerStates.emplace_back(strategies[i % strategies.size()], i,
@@ -62,6 +63,7 @@ GameState Game::generateGame() {
     gi.numDisplays = numDisplays;
     gi.maxTick = maxTick;
     gi.numPlayers = numPlayers;
+    gi.blocked = blocked;
     result.currentTick = 0;
     result.extraField = 15;
 

@@ -4,6 +4,7 @@
 #include "Direction.hpp"
 #include "Hash.hpp"
 
+#include <istream>
 #include <ostream>
 #include <stddef.h>
 
@@ -83,7 +84,10 @@ int distanceSquare(Point p1, Point p2) {
     return difference.x * difference.x + difference.y * difference.y;
 }
 
+Point parsePoint(const std::string& s);
+
 std::ostream& operator<<(std::ostream& os, Point p);
+std::istream& operator>>(std::istream& os, Point& p);
 Direction toDirection(const Point& source, const Point& destination);
 
 namespace std {
