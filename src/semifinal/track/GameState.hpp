@@ -84,6 +84,8 @@ void parseTickInfo(GameState& gameState,
 std::vector<std::string> createOutput(const Track& track,
         const Step& step, Point ourPosition);
 
+std::string parseGameEnd(const std::vector<std::string>& input);
+
 inline
 int executeStep(Track& track, int playerId, const Step& step,
         bool checkMovability = true) {

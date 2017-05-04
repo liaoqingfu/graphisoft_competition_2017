@@ -115,7 +115,7 @@ public:
 public:
 	void run() {
 		std::vector<std::string> tmp = receive_message();
-		print(std::cerr,tmp,"received: ");
+		print(std::cerr,tmp,"received init: ");
 
 		if(socket_handler.valid()) {
 			your_solver.init(tmp);
@@ -123,10 +123,10 @@ public:
 
 		while(socket_handler.valid()) {
 			tmp = receive_message();
-			print(std::cerr,tmp,"received: ");
+			print(std::cerr,tmp,"received tick: ");
 			if(socket_handler.valid()) {
-				if(tmp.size() == 1 && tmp[0].find("END") == 0) {
-					your_solver.end(tmp[0]);
+				if(tmp.size() == 1 && tmp[0].find("SCORE") == 0) {
+					your_solver.end(tmp);
 					break;
 				}
 				tmp = your_solver.process(tmp);

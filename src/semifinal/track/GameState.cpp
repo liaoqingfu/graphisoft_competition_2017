@@ -19,11 +19,18 @@ std::vector<std::string> split(const std::string& line) {
 
 using std::stoi;
 
-GameInfo parseInitial(const std::vector<std::string>& input) {
-    GameInfo result;
+void printNextStart(const std::vector<std::string>& tokens) {
+            std::string kind = tokens.at(3) == "0" ? "TEST" : "REAL";
+            std::cerr << "Level " << stoi(tokens.at(1))
+                      << " will be started in " << stoi(tokens.at(2))
+                      << " seconds. This will be a " << kind << " game."
+                      << std::endl;
+}
+
+void parseLogin(const std::vector<std::string>& input) {
+
     for (const auto& line : input) {
         auto tokens = split(line);
-
         if (tokens.size() == 0) {
             throw std::runtime_error("init: received empty line from server");
         }
@@ -36,6 +43,19 @@ GameInfo parseInitial(const std::vector<std::string>& input) {
                 throw std::runtime_error(
                     std::string("auth error: ").append(tokens.at(1)));
             }
+        } else if (tokens.at(0) == "NEXTSTART") {
+            printNextStart(tokens);
+        }
+    }
+}
+
+GameInfo parseInitial(const std::vector<std::string>& input) {
+    GameInfo result;
+    for (const auto& line : input) {
+        auto tokens = split(line);
+
+        if (tokens.at(0) == "ID") {
+            std::cerr << "ID of game is '" << tokens.at(1) << "'" << std::endl;
         } else if (tokens.at(0) == "LEVEL") {
             // TODO check level is the same we requested
             // auto level = stoi(tokens.at(1));
@@ -111,6 +131,23 @@ void parseTickInfo(GameState& gs, const std::vector<std::string>& input) {
         }
     } // for
     gs.track = Track(gi.width, gi.height, fields, monitors, princesses);
+}
+
+std::string parseGameEnd(const std::vector<std::string>& input) {
+    std::string result;
+    for (const auto& line : input) {
+        auto tokens = split(line);
+
+        if (tokens.at(0) == "SCORE") {
+            result = line;
+        } else if (tokens.at(0) == "ID") {
+            std::cerr << "ID of the game is: '" << tokens.at(1)
+                      << "'" << std::endl;
+        } else if (tokens.at(0) == "NEXTSTART") {
+            printNextStart(tokens);
+        }
+    }
+    return result;
 }
 
 std::vector<std::string> createOutput(const Track& track,
