@@ -57,7 +57,7 @@ void MMMChooser::processStep(PotentialStep& step) {
             w += d;
         }
     }
-    w = w / aliveTargets_.size();
+    w = w / (N - 1);
     w = 1.0 - w;
 
     double ww = w * weightMultiplier;
