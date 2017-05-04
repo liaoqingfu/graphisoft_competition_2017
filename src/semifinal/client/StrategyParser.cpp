@@ -96,7 +96,7 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
         neuralChooser = (lit("NeuralChooser") >> lit('(')
                 >> quotedString >> lit(')'))[_val = make_shared_<NeuralChooser>(
                         phoenix::construct<NeuralChooserFactory>(
-                                phoenix::ref(rng),
+                                make_shared_<std::mt19937>(phoenix::ref(rng)),
                                 phoenix::bind(
                                         &getNeuralNetwork<MazeNeuralNetwork>,
                                         _1)))];

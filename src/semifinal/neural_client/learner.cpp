@@ -149,9 +149,10 @@ struct GameParameters {
 
 class GameManager {
 public:
-    GameManager(std::mt19937& rng, LearningParameters learningParams,
+    GameManager(unsigned seed, LearningParameters learningParams,
             GameParameters gameParams, std::vector<std::string> strategyStrings)
-            : rng(rng),
+            : seed(seed / learningParams.populationSize),
+              rng(std::make_shared<std::mt19937>(this->seed)),
               learningParams(std::move(learningParams)),
               gameParams(std::move(gameParams)),
               strategyStrings(std::move(strategyStrings)),
@@ -177,7 +178,10 @@ public:
             scores.push_back(std::make_shared<Score>());
         }
 
-        std::vector<ChoosingStrategy> strategies = createStrategies(rng,
+        rng = std::make_shared<std::mt19937>(
+                ++seed / learningParams.populationSize);
+        chooserFactory.setRng(rng);
+        std::vector<ChoosingStrategy> strategies = createStrategies(*rng,
                 strategyStrings,
                 [this](const GameState& gameState) {
                     return this->chooserFactory(gameState);
@@ -191,7 +195,7 @@ public:
         // int maxTick = std::uniform_int_distribution<>(
         //         numDisplays, 2*numDisplays)(rng);
         // gameParams = GameParameters{width, height, numDisplays, maxTick};
-        Game game{rng, gameParams.width, gameParams.height,
+        Game game{*rng, gameParams.width, gameParams.height,
                     gameParams.numDisplays, gameParams.maxTick,
                     strategies, scores};
         game.run(false);
@@ -210,7 +214,8 @@ public:
     }
 
 private:
-    std::mt19937& rng;
+    unsigned seed;
+    std::shared_ptr<std::mt19937> rng;
     LearningParameters learningParams;
     GameParameters gameParams;
     std::vector<std::string> strategyStrings;
@@ -260,11 +265,12 @@ int main(int argc, const char* argv[]) {
         util::ThreadPool threadPool{options.numThreads};
         threadPool.start();
         boost::asio::io_service& ioService = threadPool.getIoService();
+        unsigned seed = std::uniform_int_distribution<>{}(rng);
         LearningController<GameParameters> learningController{
             options.learningParameters, gameParams, ioService};
         learningController.run<MazeNeuralNetwork>(
-                [&options, &rng](const GameParameters& gameParams) {
-                    return GameManager{rng, options.learningParameters,
+                [&options, &seed](const GameParameters& gameParams) {
+                    return GameManager{seed, options.learningParameters,
                                 gameParams, options.strategyStrings};
                 });
 

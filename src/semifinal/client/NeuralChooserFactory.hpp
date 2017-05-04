@@ -29,8 +29,8 @@ class NeuralChooserFactory {
 private:
 
 public:
-    explicit NeuralChooserFactory(std::mt19937& rng)
-            : rng(rng) {
+    explicit NeuralChooserFactory(std::shared_ptr<std::mt19937> rng)
+            : rng(std::move(rng)) {
 //               neuralNetwork(hiddenLayerCount,
 //                       neuronPerHiddenLayer,
 //                       inputNeuronCount,
@@ -39,8 +39,14 @@ public:
         // assert(learningParams.outputNeuronCount == outputNeronCount);
     }
 
-    NeuralChooserFactory(std::mt19937& rng, NeuralNetwork neuralNetwork)
-            : rng(rng), neuralNetwork(std::move(neuralNetwork)) {
+    NeuralChooserFactory(std::shared_ptr<std::mt19937> rng,
+            NeuralNetwork neuralNetwork)
+            : rng(std::move(rng)),
+              neuralNetwork(std::move(neuralNetwork)) {
+    }
+
+    void setRng(std::shared_ptr<std::mt19937> rng) {
+        this->rng = std::move(rng);
     }
 
     void setNeuralNetwork(NeuralNetwork neuralNetwork) {
@@ -85,7 +91,7 @@ private:
                 c<MonitorDefendingChooser>(
                         c<PrincessMovingChooser>(
                                 c<MaxReachableChooser>(
-                                        c<BestChooser>(c<RandomChooser>(rng)),
+                                        c<BestChooser>(c<RandomChooser>(*rng)),
                                         maxReachableWeight),
                                 princessMovingWeight, princessMovingOverride),
                         monitorReachabilityWeight, areaReachabilityWeight),
@@ -97,7 +103,7 @@ private:
         return std::make_shared<T>(std::forward<Args>(args)...);
     }
 
-    std::mt19937& rng;
+    std::shared_ptr<std::mt19937> rng;
     NeuralNetwork neuralNetwork;
 };
 

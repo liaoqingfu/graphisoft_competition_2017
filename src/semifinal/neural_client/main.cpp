@@ -3,6 +3,7 @@
 #include <client.hpp>
 #include <AssemblingChooser.hpp>
 #include <ChoosingStrategy.hpp>
+#include <Debug.hpp>
 #include <GenericSolver.hpp>
 #include <StrategyParser.hpp>
 
@@ -24,6 +25,7 @@ struct Options {
     unsigned seed = 0;
     std::string strategyString = "";
     std::string aiFile = "best.ai";
+    bool debug;
 };
 
 namespace po = boost::program_options;
@@ -48,6 +50,7 @@ Options parseOptions(int argc, const char* argv[]) {
             ("seed,S", defaultValue(options.seed))
             ("strategy,s", po::value(&options.strategyString))
             ("ai-file,a", defaultValue(options.aiFile))
+            ("debug,d", po::bool_switch(&options.debug))
             ;
 
     po::variables_map vm;
@@ -66,19 +69,21 @@ Options parseOptions(int argc, const char* argv[]) {
 
 int main(int argc, const char* argv[]) {
     Options options = parseOptions(argc, argv);
+    debugEnabled = options.debug;
     if (options.seed == 0) {
         options.seed = std::random_device{}();
     }
 
     try {
         platform_dep::enable_socket _;
-        std::mt19937 rng{options.seed};
+        std::shared_ptr<std::mt19937> rng = std::make_shared<std::mt19937>(
+                options.seed);
 
         using Solver = GenericSolver<ChoosingStrategy>;
         std::unique_ptr<Solver> solver;
         if (options.strategyString != "") {
             solver = std::make_unique<Solver>(
-                            parseStrategy(options.strategyString, rng));
+                            parseStrategy(options.strategyString, *rng));
         } else {
             std::cerr << "Neural network is used!" << std::endl;
             using ChooserFactory = NeuralChooserFactory<MazeNeuralNetwork>;
