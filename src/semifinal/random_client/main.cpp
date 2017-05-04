@@ -33,8 +33,10 @@ int main(int argc, char** argv) {
         std::mt19937 rng{seed};
 
         Solver solver{ChoosingStrategy{std::make_unique<RandomChooser>(rng)}};
-        client<Solver>(host_name, port, team_name,
-                password, task_id, std::move(solver)).run();
+        client<Solver> mazeClient(std::move(solver));
+        mazeClient.connectToServer(host_name, port);
+        mazeClient.login(team_name, password, task_id);
+        mazeClient.runGame();
 
     } catch(std::exception& e) {
         std::cerr << "Exception thrown. what(): " << e.what() << std::endl;

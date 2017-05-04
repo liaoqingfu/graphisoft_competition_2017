@@ -8,9 +8,13 @@ class GenericSolver {
 public:
     explicit GenericSolver(Strategy strategy) : strategy(std::move(strategy)) {}
 
-    void init(const std::vector<std::string>& /* fieldInfos */) {
+    void login(const std::vector<std::string>& loginInfos) {
+        parseLogin(loginInfos);
+    }
+
+    void init() {
         gameState = nullptr;
-        // TODO: handle bad login
+        strategy.reset();
     }
 
     std::vector<std::string> process(
@@ -52,6 +56,7 @@ public:
     void end(const std::vector<std::string>& endInfos) {
         std::string message = parseGameEnd(endInfos);
         std::cerr << "Game over: " << message << std::endl;
+        gameState = nullptr;
     }
 
 private:

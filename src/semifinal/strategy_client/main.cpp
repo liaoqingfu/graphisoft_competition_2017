@@ -21,6 +21,7 @@ struct Options {
     unsigned seed = 0;
     std::string strategyString;
     bool debug = false;
+    bool runForever = false;
 };
 
 namespace po = boost::program_options;
@@ -44,6 +45,7 @@ Options parseOptions(int argc, const char* argv[]) {
         ("seed,S", defaultValue(options.seed))
         ("strategy,s", po::value(&options.strategyString))
         ("debug", po::bool_switch(&options.debug))
+        ("run-forever,f", po::bool_switch(&options.runForever))
         ;
 
     po::variables_map vm;
@@ -58,6 +60,7 @@ Options parseOptions(int argc, const char* argv[]) {
     }
     return options;
 }
+
 int main(int argc, const char* argv[]) {
     Options options = parseOptions(argc, argv);
     if (options.seed == 0) {
@@ -65,19 +68,36 @@ int main(int argc, const char* argv[]) {
     }
     debugEnabled = options.debug;
 
-    try {
-        platform_dep::enable_socket _;
+    platform_dep::enable_socket _;
 
-        using Solver = GenericSolver<ChoosingStrategy>;
+    using Solver = GenericSolver<ChoosingStrategy>;
 
-        std::mt19937 rng{options.seed};
+    std::mt19937 rng{options.seed};
 
-        Solver solver{parseStrategy(options.strategyString, rng)};
-        client<Solver>(options.hostname.c_str(), options.port,
-                options.teamName.c_str(), options.password.c_str(),
-                options.taskId, std::move(solver)).run();
+    Solver solver{parseStrategy(options.strategyString, rng)};
+    client<Solver> mazeClient{std::move(solver)};
 
-    } catch(std::exception& e) {
-        std::cerr << "Exception thrown. what(): " << e.what() << std::endl;
+    mazeClient.connectToServer(options.hostname.c_str(),
+            options.port);
+    mazeClient.login(options.teamName.c_str(),
+            options.password.c_str(), options.taskId);
+    if (options.runForever) {
+        while (true) {
+            if (!mazeClient.isValid()) {
+                mazeClient.connectToServer(options.hostname.c_str(),
+                        options.port);
+                mazeClient.login(options.teamName.c_str(),
+                        options.password.c_str(), options.taskId);
+            }
+            if (mazeClient.isValid()) {
+                mazeClient.runForever();
+            } else {
+                std::cerr << "DEBUG: waiting 1 seconds to reconnect"
+                          << std::endl;
+                sleep(1);
+            }
+        }
+    } else {
+        mazeClient.runGame();
     }
 }

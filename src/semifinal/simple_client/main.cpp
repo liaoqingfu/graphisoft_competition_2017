@@ -48,10 +48,12 @@ int main(int argc, const char* argv[]) {
         std::mt19937 rng{options.seed};
 
         Solver solver{parseStrategy(options.strategyString, rng)};
-        client<Solver>(options.hostname.c_str(), options.port,
-                options.teamName.c_str(), options.password.c_str(),
-                options.taskId, std::move(solver)).run();
+        client<Solver> mazeClient(std::move(solver));
 
+        mazeClient.connectToServer(options.hostname.c_str(), options.port);
+        mazeClient.login(options.teamName.c_str(), options.password.c_str(),
+                options.taskId);
+        mazeClient.runGame();
     } catch(std::exception& e) {
         std::cerr << "Exception thrown. what(): " << e.what() << std::endl;
     }

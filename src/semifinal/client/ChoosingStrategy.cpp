@@ -270,3 +270,9 @@ Step ChoosingStrategy::ourTurn(GameState gameState) {
             boost::posix_time::microsec_clock::universal_time() - now) << "\n";
     return step;
 }
+
+void ChoosingStrategy::reset() {
+    gameState = GameState{};
+    opponentsInfo = OpponentsInfo{};
+    prevSt = PrevState{};
+}

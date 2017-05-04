@@ -23,10 +23,10 @@ class client {
 	std::string received_buffer;
 	solver your_solver;
 public:
-	client(const char* host_name, unsigned short port,
-            const char* team_name, const char* password, int task_id,
-            solver your_solver) : your_solver(std::move(your_solver)) {
+	explicit client(solver your_solver) : your_solver(std::move(your_solver)) {
+    }
 
+    void connectToServer(const char* host_name, unsigned short port) {
 		if(!socket_handler.valid()) {
 			throw std::runtime_error("Error: Cannot open a socket!");
 		}
@@ -48,7 +48,9 @@ public:
 				std::string(host_name) + ":" + std::to_string(port) +
 				" error code: " + std::to_string(socketerrno));
 		}
+    }
 
+    void login(const char* team_name, const char* password, int task_id) {
 		std::vector<std::string> login_messages;
 
 		login_messages.push_back(std::string("LOGIN ") + team_name + " " + password);
@@ -58,7 +60,14 @@ public:
 		}
 
 		send_messages(login_messages);
+		std::vector<std::string> tmp = receive_message();
+		print(std::cerr,tmp,"received login: ");
+        your_solver.login(tmp);
 	}
+
+    bool isValid() {
+        return socket_handler.valid();
+    }
 
 	void send_messages(const std::vector<std::string>& messages) {
 		std::string message;
@@ -103,6 +112,7 @@ public:
 		switch(received_bytes) {
 		case -1:
 			std::cerr << "Error: recv failed!" << std::endl;
+            socket_handler.invalidate();
 		case 0:
 			std::cerr << "Connection closed." << std::endl;
 			socket_handler.invalidate();
@@ -112,20 +122,25 @@ public:
 
 		return receive_message();
 	}
-public:
-	void run() {
-		std::vector<std::string> tmp = receive_message();
-		print(std::cerr,tmp,"received init: ");
 
+public:
+    void runForever() {
+        while (isValid()) {
+            runGame();
+        }
+    }
+
+	void runGame() {
+		std::vector<std::string> tmp;
 		if(socket_handler.valid()) {
-			your_solver.init(tmp);
+			your_solver.init();
 		}
 
 		while(socket_handler.valid()) {
 			tmp = receive_message();
 			print(std::cerr,tmp,"received tick: ");
 			if(socket_handler.valid()) {
-				if(tmp.size() == 1 && tmp[0].find("SCORE") == 0) {
+				if(tmp.size() == 3 && tmp[0].find("SCORE") == 0) {
 					your_solver.end(tmp);
 					break;
 				}
