@@ -221,6 +221,9 @@ void ChoosingStrategy::setTargetMonitors(const Track& currentTrack) {
 
 void ChoosingStrategy::updateOpponentsInfo(const Track& track, int opponentId) {
 
+    std::cerr << "Opponent " << opponentId << " numPlayers " <<
+            gameState.gameInfo.numPlayers << "\n";
+
     if (opponentsInfo[0].targetMonitors.empty()) {
         //std::cerr << "INITIALIZE TARGETS" << std::endl;
         for (auto& oi : opponentsInfo) {
@@ -231,9 +234,10 @@ void ChoosingStrategy::updateOpponentsInfo(const Track& track, int opponentId) {
     if (prevSt.playerId != -1 ) {
         //prevSt.playerId != gameState.gameInfo.playerId) {
 
-        assert(opponentId >= 0 && opponentId < gameState.gameInfo.numPlayers);
-        assert(prevSt.playerId >= 0 &&
-               prevSt.playerId < gameState.gameInfo.numPlayers);
+        assert(opponentId >= 0);
+        assert(opponentId < gameState.gameInfo.numPlayers);
+        assert(prevSt.playerId >= 0);
+        assert(prevSt.playerId < gameState.gameInfo.numPlayers);
 
         const auto& prevTrack = this->prevSt.gameState.track;
         OpponentData& opponentData = opponentsInfo[prevSt.playerId];
