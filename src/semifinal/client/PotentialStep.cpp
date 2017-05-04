@@ -13,6 +13,22 @@ std::vector<PotentialStep> calculatePotentialSteps(
             * potentialFieldTypes.size() * 2);
 
     Point root = track.getPrincess(playerId);
+
+    auto isBlocked = [&](Directions direction, int position) {
+        auto& blocked = gameState.gameInfo.blocked;
+        std::vector<Point>::const_iterator it;
+        if (direction == left || direction == right) {
+            it = std::find_if(
+                blocked.begin(), blocked.end(),
+                [position](const Point& p) { return p.y == position; });
+        } else {
+            it = std::find_if(
+                blocked.begin(), blocked.end(),
+                [position](const Point& p) { return p.x == position; });
+        }
+        return it != blocked.end();
+    };
+
     auto addStep = [&](Directions direction, int position, int fieldType) {
         std::array<Point, 1> target{{root}};
         transformPoints(track, target, direction, position);
@@ -20,9 +36,12 @@ std::vector<PotentialStep> calculatePotentialSteps(
                 Step{direction, position, fieldType, target[0]}, playerId);
     };
     auto addSteps = [&](Directions direction, int position, int fieldType) {
+        if (isBlocked(direction, position)) {
+            return;
+        }
         addStep(direction, position, fieldType);
-        addStep(static_cast<Directions>(oppositeDirection(direction)),
-                position, fieldType);
+        addStep(static_cast<Directions>(oppositeDirection(direction)), position,
+                fieldType);
     };
 
     int maxDistance = std::max({root.x + 1, root.y + 1,
