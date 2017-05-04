@@ -13,6 +13,7 @@ public:
     }
 
     void init() {
+        std::cerr << "Resetting gameState\n";
         gameState = nullptr;
         strategy.reset();
     }
@@ -21,6 +22,8 @@ public:
             const std::vector<std::string>& tickInfos) {
         if (gameState == nullptr) {
             gameState = std::make_unique<GameState>(parseInitial(tickInfos));
+            std::cerr << "Number of players (init): " << gameState->gameInfo.numPlayers
+                    << "\n";
             return {};
         }
         auto error = parseTickInfo(*gameState, tickInfos);
@@ -32,6 +35,8 @@ public:
             }
         }
 
+        std::cerr << "Number of players (step): " << gameState->gameInfo.numPlayers
+                << "\n";
         std::cout << "Player " << gameState->activePlayerId << "\n"
                 << toBox(gameState->track, gameState->gameInfo.playerId,
                            gameState->ourTurn() ? gameState->targetMonitor : -1,

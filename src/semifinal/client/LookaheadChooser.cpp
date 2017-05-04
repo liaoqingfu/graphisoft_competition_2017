@@ -9,7 +9,7 @@ Step LookaheadChooser::chooseBadStep(
         const std::vector<PotentialStep>& potentialSteps) {
     boost::posix_time::ptime limit =
             boost::posix_time::microsec_clock::universal_time()
-                    + boost::posix_time::millisec(1000);
+                    + boost::posix_time::millisec(1300);
     return processPotentialSteps(potentialSteps,
             [this, limit](auto& stepValues, const auto& step) {
                 if (boost::posix_time::microsec_clock::universal_time()

@@ -54,6 +54,7 @@ GameInfo parseInitial(const std::vector<std::string>& input) {
     for (const auto& line : input) {
         auto tokens = split(line);
 
+        std::cerr << "Number of tokens: " << tokens.size() << "\n";
         if (tokens.at(0) == "ID") {
             std::cerr << "ID of game is '" << tokens.at(1) << "'" << std::endl;
         } else if (tokens.at(0) == "LEVEL") {
@@ -70,6 +71,7 @@ GameInfo parseInitial(const std::vector<std::string>& input) {
             result.maxTick = stoi(tokens.at(1));
         } else if (tokens.at(0) == "PLAYERS") {
             result.numPlayers = tokens.size() - 1;
+            std::cerr << "Setting numPlayers to " << result.numPlayers << "\n";
         } else if (tokens.at(0) == "DISPLAYS") {
             for (std::size_t i = 1; i < tokens.size(); ++i) {
                 result.targets.push_back(stoi(tokens.at(1)));
