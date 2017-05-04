@@ -14,7 +14,7 @@
 
 struct Options {
     std::string hostname = "10.19.1.5";
-    int port = 42501;
+    int port = 42500;
     int taskId;
     std::string teamName = "elvont_gyar";
     std::string password = "T&kX,!RT;vXK";
