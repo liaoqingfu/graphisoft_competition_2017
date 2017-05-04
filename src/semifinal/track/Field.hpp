@@ -98,6 +98,7 @@ struct ColorInfo {
     std::string baseColor;
     std::string monitorColor;
     std::vector<std::string> princessColors;
+    bool blocked = false;
 };
 
 struct ColorDrawer {

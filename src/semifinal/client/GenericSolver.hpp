@@ -23,7 +23,8 @@ public:
 
         std::cout << "Player " << gameState->activePlayerId << "\n"
                 << toBox(gameState->track, gameState->gameInfo.playerId,
-                           gameState->ourTurn() ? gameState->targetMonitor : -1);
+                           gameState->ourTurn() ? gameState->targetMonitor : -1,
+                           gameState->gameInfo.blocked);
         if (gameState->ourTurn()) {
             auto step = strategy.ourTurn(*gameState);
             std::cout << "Step: " << step << "\n";
@@ -31,7 +32,8 @@ public:
             executeStep(trackAfter, gameState->gameInfo.playerId, step);
             std::cout << toBox(trackAfter,
                                gameState->gameInfo.playerId,
-                               gameState->targetMonitor);
+                               gameState->targetMonitor,
+                               gameState->gameInfo.blocked);
 
             return createOutput(gameState->track, step, gameState->ourPosition());
         } else {

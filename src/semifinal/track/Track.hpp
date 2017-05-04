@@ -59,7 +59,7 @@ private:
 std::ostream& operator<<(std::ostream& os, const Track& track);
 
 std::string toBox(const Track& track, int currentPrincess = -1,
-        int targetMonitor = -1);
+        int targetMonitor = -1, const std::vector<Point>& blocked = {});
 
 int getExtraField(const Track& track, Directions direction, int position);
 

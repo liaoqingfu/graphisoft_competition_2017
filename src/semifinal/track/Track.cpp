@@ -175,7 +175,8 @@ std::tuple<bool, int> getColor(Point p, const Track& track,
 
 } // unnamed namespace
 
-std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
+std::string toBox(const Track& track, int currentPrincess, int targetMonitor,
+        const std::vector<Point>& blocked) {
     std::string result;
 
     // header for X axis
@@ -219,6 +220,8 @@ std::string toBox(const Track& track, int currentPrincess, int targetMonitor) {
         p.y = y / BOXHEIGHT;
         for (p.x = 0; p.x < static_cast<int>(track.width()); ++p.x) {
 
+            colorInfo.blocked = std::find(blocked.begin(), blocked.end(),
+                    p) != blocked.end();
             int colorId = 0;
             bool drawColor = false;
             std::tie(drawColor, colorId) =

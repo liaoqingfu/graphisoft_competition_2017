@@ -123,7 +123,8 @@ void Game::run(bool print) {
                           << extraField
                           << clearColor()
                           << "\n"
-                          << toBox(gameState.track, playerId, targetMonitor);
+                          << toBox(gameState.track, playerId, targetMonitor,
+                                    gameState.gameInfo.blocked);
             }
 
             playerState.gameState.track = track;

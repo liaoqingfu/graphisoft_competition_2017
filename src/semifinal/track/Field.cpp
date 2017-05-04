@@ -46,18 +46,6 @@ std::string setColor(int background, int foreground) {
     return result;
 }
 
-//std::string to_string(const Field& field)
-//{
-    //assert(field.princess <= static_cast<int>(numPlayers));
-    //assert(field.type >= 0);
-    //assert(field.type < static_cast<int>(numFieldTypes));
-    //return setColor(field.monitor >= 0 ? monitorColor : defaultColor,
-                    //field.princess >= 0 ? playerColors[field.princess]
-                            //: defaultColor)
-            //+ fieldTypes[field.type]
-            //+ clearColor();
-//}
-
 const std::vector<int>& getIsomorphs(int fieldType) {
     assert(fieldType >= 1);
     assert(fieldType < static_cast<int>(numFieldTypes));
@@ -65,56 +53,77 @@ const std::vector<int>& getIsomorphs(int fieldType) {
 }
 
 namespace BigFieldLines {
-    constexpr static std::array<const char*, 2> upper{
-        {"┏━━━━━━━┓", "┏━┛   ┗━┓"}};
-    constexpr static std::array<const char*, 2> lower{
-        {"┗━━━━━━━┛", "┗━┓   ┏━┛"}};
+    using Array = std::array<const char*, 2>;
+    constexpr static Array upper(bool blocked) {
+        return blocked
+                ? Array{{"┏╍╍╍╍╍╍╍┓", "┏╍┛   ┗╍┓"}}
+                : Array{{"┏━━━━━━━┓", "┏━┛   ┗━┓"}};
+    }
+    constexpr static Array lower(bool blocked) {
+        return blocked
+                ? Array{{"┗╍╍╍╍╍╍╍┛", "┗╍┓   ┏╍┛"}}
+                : Array{{"┗━━━━━━━┛", "┗━┓   ┏━┛"}};
+    }
 
     namespace left {
-        constexpr static std::array<const char*, 2> u{ // up
-            { "┃","┛"}};
-        constexpr static std::array<const char*, 2> m{ // middle
-            { "┃"," "}};
-        constexpr static std::array<const char*, 2> d{ // down
-            { "┃","┓"}};
+        constexpr static Array u(bool blocked) {
+            return blocked ? Array{{ "╏","┛"}} : Array{{ "┃","┛"}};
+        };
+
+        constexpr static Array m(bool blocked) {
+            return blocked ? Array{{ "╏"," "}} : Array{{ "┃"," "}};
+        };
+
+        constexpr static Array d(bool blocked) {
+            return blocked ? Array{{ "╏","┓"}} : Array{{ "┃","┓"}};
+        };
     } // left
 
     namespace right {
-        constexpr static std::array<const char*, 2> u{
-            { "┃","┗"}};
-        constexpr static std::array<const char*, 2> m{ // middle
-            { "┃"," "}};
-        constexpr static std::array<const char*, 2> d{
-            { "┃","┏"}};
+        constexpr static Array u(bool blocked) {
+            return blocked ? Array{{ "╏","┗"}} : Array{{ "┃","┗"}};
+        };
+
+        constexpr static Array m(bool blocked) {
+            return blocked ? Array{{ "╏"," "}} : Array{{ "┃"," "}};
+        };
+
+        constexpr static Array d(bool blocked) {
+            return blocked ? Array{{ "╏","┏"}} : Array{{ "┃","┏"}};
+        };
     } // right
 
 } // BigFieldLines
 
 namespace {
-auto getLeftUChar(const Field& field) {
-    return BigFieldLines::left::u[(0b0010 & field.type) >> 1];
+auto getLeftUChar(const Field& field, bool blocked) {
+    return BigFieldLines::left::u(blocked)[(0b0010 & field.type) >> 1];
 }
-auto getLeftMChar(const Field& field) {
-    return BigFieldLines::left::m[(0b0010 & field.type) >> 1];
+auto getLeftMChar(const Field& field, bool blocked) {
+    return BigFieldLines::left::m(blocked)[(0b0010 & field.type) >> 1];
 }
-auto getLeftDChar(const Field& field) {
-    return BigFieldLines::left::d[(0b0010 & field.type) >> 1];
+auto getLeftDChar(const Field& field, bool blocked) {
+    return BigFieldLines::left::d(blocked)[(0b0010 & field.type) >> 1];
 }
-auto getRightUChar(const Field& field) {
-    return BigFieldLines::right::u[(0b1000 & field.type) >> 3];
+auto getRightUChar(const Field& field, bool blocked) {
+    return BigFieldLines::right::u(blocked)[(0b1000 & field.type) >> 3];
 }
-auto getRightMChar(const Field& field) {
-    return BigFieldLines::right::m[(0b1000 & field.type) >> 3];
+auto getRightMChar(const Field& field, bool blocked) {
+    return BigFieldLines::right::m(blocked)[(0b1000 & field.type) >> 3];
 }
-auto getRightDChar(const Field& field) {
-    return BigFieldLines::right::d[(0b1000 & field.type) >> 3];
+auto getRightDChar(const Field& field, bool blocked) {
+    return BigFieldLines::right::d(blocked)[(0b1000 & field.type) >> 3];
 }
 
-auto getUpperLine(const Field& field) {
-    return BigFieldLines::upper[0b0001 & field.type];
+auto getUpperLine(const Field& field, bool blocked) {
+    return BigFieldLines::upper(blocked)[0b0001 & field.type];
 }
-auto getLowerLine(const Field& field) {
-    return BigFieldLines::lower[(0b0100 & field.type) >> 2];
+auto getLowerLine(const Field& field, bool blocked) {
+    return BigFieldLines::lower(blocked)[(0b0100 & field.type) >> 2];
+}
+
+bool isBlocked(const boost::optional<ColorInfo>& colorInfo) {
+    return colorInfo ? colorInfo->blocked : false;
 }
 
 template<typename ColorGetter>
@@ -153,31 +162,31 @@ std::string getPrincesses(const Field field, unsigned begin, unsigned end,
 
 std::string get2ndLine(const Field& field,
         const boost::optional<ColorInfo>& colorInfo) {
-    auto result = std::string(getLeftUChar(field));
+    auto result = std::string(getLeftUChar(field, isBlocked(colorInfo)));
     if (field.noPrincess()) {
         result.append("       ");
     } else {
         // Add the first two princesses
         result.append(getPrincesses(field, 0, 2, colorInfo));
     }
-    return result.append(getRightUChar(field));
+    return result.append(getRightUChar(field, isBlocked(colorInfo)));
 }
 
 std::string getMiddleLine(const Field& field,
         const boost::optional<ColorInfo>& colorInfo) {
-    auto result = std::string(getLeftMChar(field));
+    auto result = std::string(getLeftMChar(field, isBlocked(colorInfo)));
     if (field.noPrincess()) {
         result.append("       ");
     } else {
         // Add the last two princesses if there is any
         result.append(getPrincesses(field, 2, 4, colorInfo));
     }
-    return result.append(getRightMChar(field));
+    return result.append(getRightMChar(field, isBlocked(colorInfo)));
 }
 
 std::string get4thLine(const Field& field,
         const boost::optional<ColorInfo>& colorInfo) {
-    auto result = std::string(getLeftDChar(field));
+    auto result = std::string(getLeftDChar(field, isBlocked(colorInfo)));
     if (field.monitor == -1) {
         result.append("       ");
     } else {
@@ -195,7 +204,7 @@ std::string get4thLine(const Field& field,
             result.append(" ");
         }
     }
-    return result.append(getRightDChar(field));
+    return result.append(getRightDChar(field, isBlocked(colorInfo)));
 }
 
 } // unnamed
@@ -204,7 +213,7 @@ std::string getBoxLine(const Field& field, unsigned i,
         const boost::optional<ColorInfo>& colorInfo) {
     switch(i) {
         case 0:
-            return getUpperLine(field);
+            return getUpperLine(field, isBlocked(colorInfo));
         case 1:
             return get2ndLine(field, colorInfo);
         case 2:
@@ -212,7 +221,7 @@ std::string getBoxLine(const Field& field, unsigned i,
         case 3:
             return get4thLine(field, colorInfo);
         case 4:
-            return getLowerLine(field);
+            return getLowerLine(field, isBlocked(colorInfo));
         default: return "";
     }
 }
