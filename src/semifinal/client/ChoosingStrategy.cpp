@@ -261,7 +261,8 @@ Step ChoosingStrategy::ourTurn(GameState gameState) {
     this->gameState = std::move(gameState);
     updateOpponentsInfo(this->gameState.track,
                         this->gameState.gameInfo.playerId);
+    Step step = calculateStep();
     std::cerr << "time spent on tick: " << boost::posix_time::to_simple_string(
             boost::posix_time::microsec_clock::universal_time() - now) << "\n";
-    return calculateStep();
+    return step;
 }
