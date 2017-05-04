@@ -177,6 +177,7 @@ std::tuple<bool, int> getColor(Point p, const Track& track,
 
 std::string toBox(const Track& track, int currentPrincess, int targetMonitor,
         const std::vector<Point>& blocked) {
+    return "";
     std::string result;
 
     // header for X axis
