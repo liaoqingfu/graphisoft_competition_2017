@@ -22,6 +22,7 @@ public:
             const std::vector<std::string>& tickInfos) {
         if (gameState == nullptr) {
             gameState = std::make_unique<GameState>(parseInitial(tickInfos));
+            strategy.setGameState(*gameState);
             std::cerr << "Number of players (init): " << gameState->gameInfo.numPlayers
                     << "\n";
             return {};

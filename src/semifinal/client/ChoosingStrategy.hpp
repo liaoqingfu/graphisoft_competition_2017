@@ -29,6 +29,8 @@ public:
 
     void reset();
 
+    void setGameState(GameState gameState);
+
 private:
     Step calculateStep();
 

@@ -260,6 +260,10 @@ void ChoosingStrategy::opponentsTurn(const Track& track, int playerId) {
     updateOpponentsInfo(track, playerId);
 }
 
+void ChoosingStrategy::setGameState(GameState gameState) {
+    this->gameState = std::move(gameState);
+}
+
 Step ChoosingStrategy::ourTurn(GameState gameState) {
     auto now = boost::posix_time::microsec_clock::universal_time();
     this->gameState = std::move(gameState);
