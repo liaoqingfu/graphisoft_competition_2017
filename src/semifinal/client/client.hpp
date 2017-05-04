@@ -27,6 +27,7 @@ public:
     }
 
     void connectToServer(const char* host_name, unsigned short port) {
+        socket_handler = platform_dep::tcp_socket{};
 		if(!socket_handler.valid()) {
 			throw std::runtime_error("Error: Cannot open a socket!");
 		}
