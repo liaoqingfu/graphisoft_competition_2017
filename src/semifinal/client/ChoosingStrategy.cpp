@@ -3,6 +3,8 @@
 #include "Hash.hpp"
 #include "PotentialStep.hpp"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
@@ -255,8 +257,11 @@ void ChoosingStrategy::opponentsTurn(const Track& track, int playerId) {
 }
 
 Step ChoosingStrategy::ourTurn(GameState gameState) {
+    auto now = boost::posix_time::microsec_clock::universal_time();
     this->gameState = std::move(gameState);
     updateOpponentsInfo(this->gameState.track,
                         this->gameState.gameInfo.playerId);
+    std::cerr << "time spent on tick: " << boost::posix_time::to_simple_string(
+            boost::posix_time::microsec_clock::universal_time() - now) << "\n";
     return calculateStep();
 }
