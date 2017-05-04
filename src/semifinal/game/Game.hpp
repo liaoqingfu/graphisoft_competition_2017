@@ -32,6 +32,7 @@ struct Score {
 struct Game : public std::enable_shared_from_this<Game> {
 public:
     Game(std::mt19937& rng, int width, int height, int numDisplays, int maxTick,
+            int numPlayers,
             const std::vector<ChoosingStrategy>& strategies,
             const std::vector<std::shared_ptr<Score>>& scores);
 
@@ -68,6 +69,7 @@ private:
     int height;
     int numDisplays;
     int maxTick;
+    int numPlayers;
     std::vector<PlayerState> playerStates;
 };
 

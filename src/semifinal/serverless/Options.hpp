@@ -14,6 +14,7 @@ struct Options {
     int maxTick = 40;
     std::size_t jobs = 1;
     bool debug;
+    int numPlayers = 4;
 };
 
 Options parseOptions(int argc, const char* argv[]);

@@ -46,7 +46,7 @@ namespace {
 constexpr int defaultExtraField = 15;
 
 Push getPush(const Track& prevTrack, const Track& currentTrack,
-        std::size_t opponentId) {
+        std::size_t opponentId, std::size_t numPlayers) {
     // Check if a monitor or a player other than the opponent is moved.
     std::size_t numMonitors = prevTrack.getAllMonitors().size();
     for (std::size_t i = 0; i < numMonitors; ++i) {
@@ -174,7 +174,7 @@ void ChoosingStrategy::setTargetMonitors(const Track& currentTrack) {
         // remove the monitor from all others targets
         int monitorId = getRemovedMonitor(prevTrack, currentTrack);
         // std::cerr << "One monitor Removed " << monitorId << std::endl;
-        for (int i = 0; i < (int)opponentsInfo.size(); ++i) {
+        for (int i = 0; i < gameState.gameInfo.numPlayers; ++i) {
             if (i == prevSt.playerId) continue;
 
             if (opponentsInfo[i].targetMonitors.count(monitorId)) {
@@ -235,7 +235,8 @@ void ChoosingStrategy::updateOpponentsInfo(const Track& track, int opponentId) {
 
         const auto& prevTrack = this->prevSt.gameState.track;
         OpponentData& opponentData = opponentsInfo[prevSt.playerId];
-        opponentData.lastPush = getPush(prevTrack, track, opponentId);
+        opponentData.lastPush = getPush(prevTrack, track, opponentId,
+                gameState.gameInfo.numPlayers);
         opponentData.extraField =
             getExtraField(prevSt.gameState.track, opponentData.lastPush);
         // If the opponent just picked up a monitor, then the last push is

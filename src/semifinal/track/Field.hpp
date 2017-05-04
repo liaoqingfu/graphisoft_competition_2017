@@ -29,8 +29,6 @@ constexpr const Neighbors& getNeighbors(Point) {
     return neighbors;
 }
 
-constexpr std::size_t numPlayers = 4;
-
 struct Field {
 
     int type = 0;
@@ -73,10 +71,10 @@ private:
 constexpr std::size_t numFieldTypes = 16;
 extern const std::array<std::string, numFieldTypes> fieldTypes;
 
-constexpr std::array<int, numPlayers> playerColors {{31, 32, 33, 34}};
+constexpr std::array<int, 10> playerColors {{31, 32, 33, 34, 35, 36, 91, 92, 93, 94}};
 
 constexpr int defaultColor = 0;
-constexpr int monitorColor = 36;
+constexpr int monitorColor = 97;
 
 std::string setColor(int background, int foreground);
 

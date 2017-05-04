@@ -5,15 +5,17 @@
 #include <set>
 
 Game::Game(std::mt19937& rng, int width, int height, int numDisplays, int maxTick,
+        int numPlayers,
         const std::vector<ChoosingStrategy>& strategies,
         const std::vector<std::shared_ptr<Score>>& scores)
         : rng(&rng),
           width(width),
           height(height),
           numDisplays(numDisplays),
-          maxTick(maxTick) {
-    assert(scores.size() == numPlayers);
-    for (int i = 0; i < static_cast<int>(numPlayers); ++i) {
+          maxTick(maxTick),
+          numPlayers(numPlayers) {
+    assert(scores.size() == static_cast<std::size_t>(numPlayers));
+    for (int i = 0; i < numPlayers; ++i) {
         playerStates.emplace_back(strategies[i % strategies.size()], i,
                 scores[i]);
     }
@@ -59,6 +61,7 @@ GameState Game::generateGame() {
     gi.height = height;
     gi.numDisplays = numDisplays;
     gi.maxTick = maxTick;
+    gi.numPlayers = numPlayers;
     result.currentTick = 0;
     result.extraField = 15;
 

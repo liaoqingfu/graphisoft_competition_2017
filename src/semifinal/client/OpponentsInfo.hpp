@@ -46,7 +46,7 @@ struct hash<Push> {
 
 } // namespace std
 
-using OpponentsInfo = std::array<OpponentData, 4>;
+using OpponentsInfo = std::array<OpponentData, 10>;
 
 inline std::ostream& operator<<(std::ostream& os, const OpponentData& od) {
     os << "extraField: " << od.extraField;

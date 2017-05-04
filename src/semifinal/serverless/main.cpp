@@ -29,7 +29,7 @@ int main(int argc, const char* argv[]) {
     debugEnabled = options.debug;
 
     std::vector<std::shared_ptr<Score>> scores;
-    for (std::size_t i = 0; i < numPlayers; ++i) {
+    for (int i = 0; i < options.numPlayers; ++i) {
         scores.push_back(std::make_shared<Score>());
     }
 
@@ -38,7 +38,8 @@ int main(int argc, const char* argv[]) {
         for (int i = 0; i < options.numRuns; ++i) {
             std::cout << "Run #" << i << "\n";
             Game game{rng, options.width, options.height, options.numDisplays,
-                        options.maxTick, createStrategies(rng, options),
+                        options.maxTick, options.numPlayers,
+                        createStrategies(rng, options),
                         scores};
             game.run(options.numRuns == 1);
         }
@@ -52,6 +53,7 @@ int main(int argc, const char* argv[]) {
                                 j += options.jobs) {
                             Game game{rng, options.width, options.height,
                                         options.numDisplays, options.maxTick,
+                                        options.numPlayers,
                                     createStrategies(rng, options), scores};
                             game.run(false);
                             std::cout << ".";
@@ -66,7 +68,7 @@ int main(int argc, const char* argv[]) {
     }
 
     std::cout << "Game over.\n";
-    for (std::size_t i = 0; i < numPlayers; ++i) {
+    for (int i = 0; i < options.numPlayers; ++i) {
         std::cout << setColor(defaultColor, playerColors[i])
                 << "Player " << i << " final score "
                 << scores[i]->score << " Total time spent: "
