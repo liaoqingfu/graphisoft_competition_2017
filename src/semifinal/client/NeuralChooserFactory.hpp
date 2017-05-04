@@ -1,22 +1,28 @@
 #ifndef NEURAL_CLIENT_NEURALCHOOSERFACTORY_HPP
 #define NEURAL_CLIENT_NEURALCHOOSERFACTORY_HPP
 
-#include <IChooser.hpp>
-#include <BestChooser.hpp>
-#include <LookaheadChooser.hpp>
-#include <MaxReachableChooser.hpp>
-#include <MonitorDefendingChooser.hpp>
-#include <OpponentPushCheckingChooser.hpp>
-#include <PrincessMovingChooser.hpp>
-#include <RandomChooser.hpp>
+#include "IChooser.hpp"
+#include "BestChooser.hpp"
+#include "LookaheadChooser.hpp"
+#include "MaxReachableChooser.hpp"
+#include "MonitorDefendingChooser.hpp"
+#include "OpponentPushCheckingChooser.hpp"
+#include "PrincessMovingChooser.hpp"
+#include "RandomChooser.hpp"
 
 #include <GameState.hpp>
 
+#include <MultiNeuralNetwork.hpp>
 #include <NeuronWeights.hpp>
 
+#include <boost/archive/text_iarchive.hpp>
+
 #include <memory>
+#include <random>
 
 //============================================================================//
+
+using MazeNeuralNetwork = MultiNeuralNetwork<1>;
 
 template<typename NeuralNetwork>
 class NeuralChooserFactory {
@@ -31,6 +37,10 @@ public:
 //                       outputNeuronCount) {
         // assert(learningParams.inputNeuronCount == inputNeronCount);
         // assert(learningParams.outputNeuronCount == outputNeronCount);
+    }
+
+    NeuralChooserFactory(std::mt19937& rng, NeuralNetwork neuralNetwork)
+            : rng(rng), neuralNetwork(std::move(neuralNetwork)) {
     }
 
     void setNeuralNetwork(NeuralNetwork neuralNetwork) {
@@ -90,6 +100,15 @@ private:
     std::mt19937& rng;
     NeuralNetwork neuralNetwork;
 };
+
+template<typename NeuralNetwork>
+NeuralNetwork getNeuralNetwork(std::string aiFile) {
+    NeuralNetwork result;
+    std::ifstream input{aiFile};
+    boost::archive::text_iarchive ar{input};
+    ar >> result;
+    return result;
+}
 
 //============================================================================//
 

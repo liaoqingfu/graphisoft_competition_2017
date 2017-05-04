@@ -64,16 +64,6 @@ Options parseOptions(int argc, const char* argv[]) {
     return options;
 }
 
-using MazeNeuralNetwork = MultiNeuralNetwork<1>;
-
-MazeNeuralNetwork getNeuralNetwork(std::string aiFile) {
-    MazeNeuralNetwork result;
-    std::ifstream input{aiFile};
-    boost::archive::text_iarchive ar{input};
-    ar >> result;
-    return result;
-}
-
 int main(int argc, const char* argv[]) {
     Options options = parseOptions(argc, argv);
     if (options.seed == 0) {
@@ -94,7 +84,7 @@ int main(int argc, const char* argv[]) {
             using ChooserFactory = NeuralChooserFactory<MazeNeuralNetwork>;
             using Chooser = AssemblingChooser<ChooserFactory>;
             ChooserFactory factory{rng};
-            factory.setNeuralNetwork(getNeuralNetwork(options.aiFile));
+            factory.setNeuralNetwork(getNeuralNetwork<MazeNeuralNetwork>(options.aiFile));
             solver = std::make_unique<Solver>(ChoosingStrategy(
                             std::make_shared<Chooser>(factory)));
         }

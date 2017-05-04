@@ -1,7 +1,7 @@
 #ifndef CLIENT_ASSEMBLINGCHOOSER_HPP
 #define CLIENT_ASSEMBLINGCHOOSER_HPP
 
-#include <IChooser.hpp>
+#include "IChooser.hpp"
 
 #include <cassert>
 #include <memory>

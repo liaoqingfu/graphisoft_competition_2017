@@ -1,7 +1,9 @@
+#include "AssemblingChooser.hpp"
 #include "BestChooser.hpp"
 #include "DistanceChooser.hpp"
 #include "LookaheadChooser.hpp"
 #include "MaxReachableChooser.hpp"
+#include "NeuralChooserFactory.hpp"
 #include "OpponentPushCheckingChooser.hpp"
 #include "PrincessMovingChooser.hpp"
 #include "RandomChooser.hpp"
@@ -9,6 +11,7 @@
 #include "MonitorDefendingChooser.hpp"
 
 #include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix_bind.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
@@ -32,12 +35,17 @@ auto make_shared_(Args&&... args) {
 
 template<typename Iterator>
 struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
+    using NeuralChooserFactory = ::NeuralChooserFactory<MazeNeuralNetwork>;
+    using NeuralChooser = AssemblingChooser<NeuralChooserFactory>;
+
     strategy(std::mt19937& rng) : strategy::base_type(start) {
         using qi::lit;
         using qi::_val;
         using qi::double_;
+        using qi::char_;
         using qi::int_;
         using qi::eps;
+        using qi::no_skip;
         using qi::_1;
         using qi::_2;
         using qi::_3;
@@ -52,9 +60,11 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
                 | lit("ahead")[_val = LookaheadType::ahead]
                 | lit("between")[_val = LookaheadType::between];
 
+        quotedString %= lit('"') >> no_skip [*(char_ - char_('"'))] >> lit('"');
+
         chooser %= randomChooser | lookaheadChooser | princessMovingChooser
                 | bestChooser | monitorDefendingChooser | maxReachableChooser
-                | distanceChooser | opponentPushCheckingChooser;
+                | distanceChooser | opponentPushCheckingChooser | neuralChooser;
         randomChooser = (lit("RandomChooser") >> lit('(') >> lit(')'))[
                 _val = make_shared_<RandomChooser>(phoenix::ref(rng))];
         lookaheadChooser = (lit("LookaheadChooser") >> lit('(')
@@ -81,10 +91,21 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
                 >> lit('(') >> chooser >> ',' >> double_ >> lit(')'))[
                         _val = make_shared_<OpponentPushCheckingChooser>(
                                 _1, _2)];
+
+
+        neuralChooser = (lit("NeuralChooser") >> lit('(')
+                >> quotedString >> lit(')'))[_val = make_shared_<NeuralChooser>(
+                        phoenix::construct<NeuralChooserFactory>(
+                                phoenix::ref(rng),
+                                phoenix::bind(
+                                        &getNeuralNetwork<MazeNeuralNetwork>,
+                                        _1)))];
     }
 
     qi::rule<Iterator, ChoosingStrategy(), ascii::space_type> start;
     qi::rule<Iterator, bool(), ascii::space_type> overrideParameter;
+    qi::rule<Iterator, std::string(), ascii::space_type> quotedString;
+
     qi::rule<Iterator, std::shared_ptr<IChooser>(), ascii::space_type>
             chooser;
     qi::rule<Iterator, std::shared_ptr<RandomChooser>(), ascii::space_type>
@@ -106,6 +127,8 @@ struct strategy : qi::grammar<Iterator, ChoosingStrategy(), ascii::space_type> {
             ascii::space_type> distanceChooser;
     qi::rule<Iterator, std::shared_ptr<OpponentPushCheckingChooser>(),
             ascii::space_type> opponentPushCheckingChooser;
+    qi::rule<Iterator, std::shared_ptr<NeuralChooser>(),
+            ascii::space_type> neuralChooser;
 };
 
 

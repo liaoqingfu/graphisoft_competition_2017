@@ -1,8 +1,10 @@
 include_rules
 
-INCLUDE_DIRS += -I$(MATRIX_DIR) -I$(TRACK_DIR) -I$(CLIENT_DIR) -I$(GAME_DIR)
+INCLUDE_DIRS += -I$(MATRIX_DIR) -I$(TRACK_DIR) -I$(CLIENT_DIR) -I$(GAME_DIR) \
+      -I$(NEURAL_NETWORK_DIR) -I$(GENETIC_LEARNING_DIR) \
+      -I$(CPP_UTIL_DIR)/include
 
-LD_FLAGS += -lboost_program_options -lboost_date_time -pthread
+LD_FLAGS += -lboost_program_options -lboost_serialization -lboost_filesystem -lboost_system -lboost_thread -lpthread
 
 include $(COMPILE_TUP)
 
@@ -10,5 +12,5 @@ include $(COMPILE_TUP)
 
 include $(LINK_TUP)
 
-: *.o $(GAME_LIB) $(CLIENT_LIB) $(TRACK_LIB) $(MATRIX_LIB) \
+: *.o $(GAME_LIB) $(CLIENT_LIB) $(TRACK_LIB) $(MATRIX_LIB) $(NEURAL_NETWORK_LIB) \
         |> !linker |> serverless
